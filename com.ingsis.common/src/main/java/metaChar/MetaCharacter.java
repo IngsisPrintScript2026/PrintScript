@@ -1,4 +1,6 @@
 package metaChar;
 
-public record MetaCharacter(Character character, int  ) {
+import position.Position;
+
+public record MetaCharacter(Character character, Position position) {
 }

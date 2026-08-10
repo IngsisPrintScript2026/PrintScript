@@ -1,2 +1,4 @@
 rootProject.name = 'PrintScript'
 include 'com.ingsis.common'
+include 'com.ingsis.charstream'
+include 'com.ingsis.lexer'
