@@ -1,5 +1,8 @@
+import node.Node;
+import result.Result;
 import tokenstream.TokenStream;
 
-public sealed interface Parser {
-    Result<ASTNode> parse(TokenStream stream);
+public interface Parser {
+    Result<Node> parse(TokenStream stream);
 }
+

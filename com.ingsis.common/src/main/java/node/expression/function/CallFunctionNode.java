@@ -1,0 +1,31 @@
+package node.expression.function;
+
+import node.expression.ExpressionNode;
+import node.expression.Identifier.IdentifierNode;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public record CallFunctionNode(
+        IdentifierNode identifierNode,
+        List<ExpressionNode> argumentNodes,
+        Integer line,
+        Integer column) implements ExpressionNode {
+
+    public CallFunctionNode {
+        argumentNodes = List.copyOf(argumentNodes);
+    }
+
+    @Override
+    public List<ExpressionNode> children() {
+        List<ExpressionNode> children = new ArrayList<>();
+        children.add(identifierNode);
+        children.addAll(argumentNodes);
+        return children;
+    }
+
+    @Override
+    public String symbol() {
+        return identifierNode.name();
+    }
+}
