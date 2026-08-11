@@ -11,6 +11,7 @@
             <option value="$PROJECT_DIR$/com.ingsis.charstream" />
             <option value="$PROJECT_DIR$/com.ingsis.common" />
             <option value="$PROJECT_DIR$/com.ingsis.lexer" />
+            <option value="$PROJECT_DIR$/com.ingsis.parser" />
           </set>
         </option>
       </GradleProjectSettings>
