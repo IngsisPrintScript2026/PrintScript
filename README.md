@@ -4,7 +4,7 @@ Este repositorio contiene la arquitectura completa para el analizador léxico (*
 
 ---
 
-## 🏛️ 1. Estructura de Módulos
+## 1. Estructura de Módulos
 
 * **`:com.ingsis.common`**: Modelos de dominio (`Token`, `Position`, `MetaCharacter`), mónadas de resultado (`Result<T>`) y la cadena de patrones para la clasificación de tipos de token (`TokenTypeMatcher`).
 * **`:com.ingsis.charstream`**: Adaptadores I/O para streaming de caracteres con pushback (`CharStream`, `StreamCharReader`, `PositionTracker`).
@@ -12,7 +12,7 @@ Este repositorio contiene la arquitectura completa para el analizador léxico (*
 
 ---
 
-## 📐 2. Decisiones de Diseño y Patrones Aplicados
+## 2. Decisiones de Diseño y Patrones Aplicados
 
 ### A. Evaluador Perezoso / Streaming (`SafeIterator<T>`)
 * **Decisión:** Para cumplir la restricción del enunciado de procesar archivos extensos que no entran en memoria, no se genera una lista global de tokens.
@@ -33,11 +33,11 @@ Este repositorio contiene la arquitectura completa para el analizador léxico (*
 
 ---
 
-## 🛠️ 3. Explicación Detallada de Métodos por Módulo
+## 3. Explicación Detallada de Métodos por Módulo
 
 ---
 
-### 📦 Módulo `:com.ingsis.common`
+### Módulo `:com.ingsis.common`
 
 #### Package `iterator`
 * **`SafeIterator<T>` (Interfaz)**
@@ -99,7 +99,7 @@ Este repositorio contiene la arquitectura completa para el analizador léxico (*
 
 ---
 
-### 📦 Módulo `:com.ingsis.charstream`
+### Módulo `:com.ingsis.charstream`
 
 #### Package `charstream`
 * **`CharReader` (Interfaz)**
@@ -120,7 +120,7 @@ Este repositorio contiene la arquitectura completa para el analizador léxico (*
 
 ---
 
-### 📦 Módulo `:com.ingsis.lexer`
+### Módulo `:com.ingsis.lexer`
 
 #### Package `lexer`
 * **`PrintScriptTokenizer` (Clase)**
@@ -143,7 +143,7 @@ Este repositorio contiene la arquitectura completa para el analizador léxico (*
 
 ---
 
-## 🧪 4. Ejecución de Pruebas Unitarias
+## 4. Ejecución de Pruebas Unitarias
 
 Para compilar y verificar el comportamiento del proyecto:
 
