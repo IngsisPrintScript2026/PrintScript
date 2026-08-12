@@ -26,4 +26,5 @@ public record NilExpressionNode() implements ExpressionNode {
     public Integer column() {
         return -1;
     }
+
 }

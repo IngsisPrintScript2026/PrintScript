@@ -28,4 +28,5 @@ public record CallFunctionNode(
     public String symbol() {
         return identifierNode.name();
     }
+
 }

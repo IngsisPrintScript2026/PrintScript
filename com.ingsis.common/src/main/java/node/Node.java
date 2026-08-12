@@ -9,3 +9,4 @@ public interface Node {
     String symbol();
     List<? extends Node> children();
 }
+

@@ -24,5 +24,6 @@ public final record StringLiteralNode(String rawValue, Integer line, Integer col
     public String symbol() {
         return rawValue;
     }
+
 }
 

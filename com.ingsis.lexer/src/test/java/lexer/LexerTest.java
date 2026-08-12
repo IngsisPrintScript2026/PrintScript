@@ -42,7 +42,7 @@ public class LexerTest {
             switch (res) {
                 case CorrectResult<IterationStep<Token>>(IterationStep<Token> step) -> {
                     tokens.add(step.value());
-                    currLexer = step.next();
+                    currLexer = step.nextStream();
                 }
                 case IncorrectResult<IterationStep<Token>> failure -> keepGoing = false;
             }

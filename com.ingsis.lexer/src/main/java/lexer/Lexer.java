@@ -38,7 +38,7 @@ public class Lexer implements SafeIterator<Token> {
 
         while (result instanceof CorrectResult<IterationStep<MetaCharacter>>(IterationStep<MetaCharacter> value)
                 && Character.isWhitespace(value.value().character())) {
-            curr = value.next();
+            curr = (SafeIterator<MetaCharacter>) value.next();
             result = curr.next();
         }
 
@@ -75,7 +75,7 @@ public class Lexer implements SafeIterator<Token> {
             if (processTokenizeStep(tr, step, state)) {
                 break;
             }
-            result = step.next().next();
+            result = ((SafeIterator<MetaCharacter>) step.next()).next();
         }
         return state;
     }
@@ -88,7 +88,7 @@ public class Lexer implements SafeIterator<Token> {
         return switch (tr) {
             case TokenizeResult.Complete(Token token) -> {
                 state.lastValidToken = token;
-                state.nextStreamAfterToken = step.next();
+                state.nextStreamAfterToken = (SafeIterator<MetaCharacter>) step.next();
                 state.lookaheadBuffer.clear();
                 yield false;
             }

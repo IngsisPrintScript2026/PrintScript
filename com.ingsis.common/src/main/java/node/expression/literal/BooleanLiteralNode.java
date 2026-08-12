@@ -22,6 +22,7 @@ public final record BooleanLiteralNode(Boolean rawValue, Integer line, Integer c
 
     @Override
     public String symbol() {
-        return rawValue.toString();
+        return String.valueOf(rawValue);
     }
+
 }

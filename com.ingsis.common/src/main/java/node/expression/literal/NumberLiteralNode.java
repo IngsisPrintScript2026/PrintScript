@@ -25,4 +25,6 @@ public final record NumberLiteralNode(BigDecimal rawValue, Integer line, Integer
     public String symbol() {
         return rawValue.toString();
     }
+
+
 }

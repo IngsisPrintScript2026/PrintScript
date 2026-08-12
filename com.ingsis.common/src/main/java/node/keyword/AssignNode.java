@@ -3,23 +3,18 @@ package node.keyword;
 import node.Node;
 import node.expression.ExpressionNode;
 import node.expression.Identifier.IdentifierNode;
-import node.keyword.declaration.DeclarationType;
 
-import java.sql.Types;
-import java.util.Collections;
 import java.util.List;
 
-public record DeclarationKeywordNode(
-        DeclarationType declarationType,
+public record AssignNode(
         IdentifierNode identifierNode,
         ExpressionNode expressionNode,
-        Types declaredType,
         Integer line,
         Integer column) implements Node {
 
     @Override
     public String symbol() {
-        return declarationType.keyword();
+        return "=";
     }
 
     @Override
@@ -27,10 +22,4 @@ public record DeclarationKeywordNode(
         return List.of(identifierNode, expressionNode);
     }
 
-    public boolean isMutable() {
-        return declarationType.isMutable();
-    }
-
 }
-
-

@@ -6,7 +6,8 @@ import java.util.List;
 
 public record OperatorNode(
         OperatorType operatorType,
-        List<ExpressionNode> children,
+        ExpressionNode left,
+        ExpressionNode right,
         Integer line,
         Integer column) implements ExpressionNode {
 
@@ -14,4 +15,10 @@ public record OperatorNode(
     public String symbol() {
         return operatorType.symbol();
     }
+
+    @Override
+    public List<ExpressionNode> children() {
+        return List.of(left, right);
+    }
+
 }
