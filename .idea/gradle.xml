@@ -10,6 +10,7 @@
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/com.ingsis.charstream" />
             <option value="$PROJECT_DIR$/com.ingsis.common" />
+            <option value="$PROJECT_DIR$/com.ingsis.engine" />
             <option value="$PROJECT_DIR$/com.ingsis.interpreter" />
             <option value="$PROJECT_DIR$/com.ingsis.lexer" />
             <option value="$PROJECT_DIR$/com.ingsis.parser" />
