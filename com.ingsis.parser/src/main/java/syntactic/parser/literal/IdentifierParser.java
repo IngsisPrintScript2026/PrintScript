@@ -14,7 +14,7 @@ public class IdentifierParser implements Parser<IdentifierNode> {
 
     @Override
     public Result<IterationStep<IdentifierNode>> parse(TokenStream stream) {
-        return switch (stream.consume(TokenType.IDENTIFIER)) {
+        return switch (stream.consume(token -> token != null && (token.type() == TokenType.IDENTIFIER || token.type() == TokenType.PRINTLN))) {
             case CorrectResult<IterationStep<Token>>(IterationStep<Token> step) -> {
                 IdentifierNode identifierNode = NodeFactory.createIdentifier(step.value());
                 yield Result.success(new IterationStep<>(identifierNode, (TokenStream) step.next()));

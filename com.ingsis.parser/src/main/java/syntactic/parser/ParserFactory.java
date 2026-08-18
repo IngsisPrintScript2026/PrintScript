@@ -19,14 +19,14 @@ import syntactic.parser.root.ConditionalParser;
 import syntactic.parser.root.DeclarationParser;
 import syntactic.parser.root.FunctionParser;
 import syntactic.parser.root.LineExpressionParser;
-import version.printscript.PrintScriptVersion;
+import version.Version;
 
 import java.util.concurrent.atomic.AtomicReference;
 
 public final class ParserFactory {
     private ParserFactory() {}
 
-    public static Parser<Node> createParser(PrintScriptVersion version) {
+    public static Parser<Node> createParser(Version version) {
         Parser<IdentifierNode> identifierParser = new IdentifierParser();
         Parser<NumberLiteralNode> numberLiteralParser = new NumberLiteralParser();
         Parser<StringLiteralNode> stringLiteralParser = new StringLiteralParser();

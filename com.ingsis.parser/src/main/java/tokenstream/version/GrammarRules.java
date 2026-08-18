@@ -3,7 +3,7 @@ package tokenstream.version;
 import token.Token;
 import token.TokenType;
 import tokenstream.rules.TokenMatchers;
-import version.printscript.PrintScriptVersion;
+import version.Version;
 
 import java.util.function.Predicate;
 
@@ -12,7 +12,7 @@ public record GrammarRules(
         Predicate<Token> supportedDataTypes,
         Predicate<Token> binaryOperators
 ) {
-    public static GrammarRules fromVersion(PrintScriptVersion version) {
+    public static GrammarRules fromVersion(Version version) {
         return switch (version) {
             case V_1_0 -> new GrammarRules(
                     TokenMatchers.isOneOf(TokenType.LET),

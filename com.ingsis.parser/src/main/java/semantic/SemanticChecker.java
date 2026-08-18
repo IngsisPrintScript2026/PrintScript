@@ -1,5 +1,6 @@
 package semantic;
 
+import iterator.IterationStep;
 import node.Node;
 import node.ProgramNode;
 import node.expression.function.CallFunctionNode;
@@ -7,6 +8,7 @@ import node.keyword.AssignNode;
 import node.keyword.DeclarationKeywordNode;
 import node.keyword.IfKeywordNode;
 import result.CorrectResult;
+import result.IncorrectResult;
 import result.Result;
 import semantic.environment.SemanticEnvironment;
 import semantic.handler.AssignNodeSemanticHandler;
@@ -14,21 +16,25 @@ import semantic.handler.CallFunctionNodeSemanticHandler;
 import semantic.handler.DeclarationNodeSemanticHandler;
 import semantic.handler.IfNodeSemanticHandler;
 import semantic.handler.SemanticNodeHandler;
+import syntactic.Parser;
+import tokenstream.TokenStream;
 
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 public class SemanticChecker {
+    private final Parser<Node> syntacticParser;
     private final Map<Class<? extends Node>, SemanticNodeHandler<?>> handlers;
 
-    public SemanticChecker(List<SemanticNodeHandler<?>> handlers) {
+    public SemanticChecker(Parser<Node> syntacticParser, List<SemanticNodeHandler<?>> handlers) {
+        this.syntacticParser = syntacticParser;
         this.handlers = handlers.stream()
                 .collect(Collectors.toMap(SemanticNodeHandler::nodeType, h -> h));
     }
 
-    public SemanticChecker() {
-        this(List.of(
+    public SemanticChecker(Parser<Node> syntacticParser) {
+        this(syntacticParser, List.of(
                 new DeclarationNodeSemanticHandler(),
                 new AssignNodeSemanticHandler(),
                 new IfNodeSemanticHandler(),
@@ -36,8 +42,44 @@ public class SemanticChecker {
         ));
     }
 
+    public SemanticChecker(List<SemanticNodeHandler<?>> handlers) {
+        this(null, handlers);
+    }
+
+    public SemanticChecker() {
+        this((Parser<Node>) null);
+    }
+
+    public Result<SemanticStep> parseAndCheckStatement(TokenStream stream, SemanticEnvironment env) {
+        if (syntacticParser == null) {
+            return Result.failure("SyntacticParser dependency must be injected into SemanticChecker to parse and check streams.");
+        }
+        Result<IterationStep<Node>> parseResult = syntacticParser.parse(stream);
+        if (!parseResult.isCorrect()) {
+            String err = ((IncorrectResult<IterationStep<Node>>) parseResult).error();
+            return Result.failure(err.startsWith("Syntactic error:") ? err : "Syntactic error: " + err);
+        }
+
+        IterationStep<Node> step = ((CorrectResult<IterationStep<Node>>) parseResult).value();
+        Node statement = step.value();
+        TokenStream nextStream = (TokenStream) step.next();
+
+        Result<SemanticEnvironment> semResult = checkNode(statement, env);
+        if (!semResult.isCorrect()) {
+            String err = ((IncorrectResult<SemanticEnvironment>) semResult).error();
+            return Result.failure(err.startsWith("Semantic error:") ? err : "Semantic error: " + err);
+        }
+
+        SemanticEnvironment updatedEnv = ((CorrectResult<SemanticEnvironment>) semResult).value();
+        return Result.success(new SemanticStep(statement, updatedEnv, nextStream));
+    }
+
     public Result<SemanticEnvironment> check(ProgramNode program) {
-        SemanticEnvironment currentEnv = new SemanticEnvironment();
+        return check(program, new SemanticEnvironment());
+    }
+
+    public Result<SemanticEnvironment> check(ProgramNode program, SemanticEnvironment initialEnv) {
+        SemanticEnvironment currentEnv = initialEnv;
         for (Node statement : program.statements()) {
             Result<SemanticEnvironment> stepRes = checkNode(statement, currentEnv);
             if (!stepRes.isCorrect()) {

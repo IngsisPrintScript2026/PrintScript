@@ -3,7 +3,6 @@ package syntactic;
 import iterator.IterationStep;
 import node.ProgramNode;
 import node.keyword.DeclarationKeywordNode;
-import node.expression.Identifier.IdentifierNode;
 import node.expression.literal.NumberLiteralNode;
 import org.junit.jupiter.api.Test;
 import position.Position;
@@ -12,7 +11,7 @@ import result.Result;
 import token.Token;
 import token.TokenType;
 import tokenstream.TokenStreamAdapter;
-import version.printscript.PrintScriptVersion;
+import version.Version;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -35,7 +34,7 @@ class SyntacticParserTest {
         );
 
         TokenStreamAdapter tokenStream = new TokenStreamAdapter(tokens, 0);
-        SyntacticParser parser = new SyntacticParser(PrintScriptVersion.V_1_0);
+        SyntacticParser parser = new SyntacticParser(Version.V_1_0);
 
         Result<IterationStep<ProgramNode>> result = parser.parse(tokenStream);
 
