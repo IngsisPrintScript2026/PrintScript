@@ -4,10 +4,10 @@ import node.expression.ExpressionNode;
 import node.expression.function.CallFunctionNode;
 import result.Result;
 import semantic.environment.SemanticEnvironment;
-import semantic.evaluator.ExpressionTypeInferencer;
+import semantic.evaluator.ExpressionTypeInference;
 
 public class CallFunctionNodeSemanticHandler implements SemanticNodeHandler<CallFunctionNode> {
-    private final ExpressionTypeInferencer typeInference = new ExpressionTypeInferencer();
+    private final ExpressionTypeInference typeInference = new ExpressionTypeInference();
 
     @Override
     public Class<CallFunctionNode> nodeType() {

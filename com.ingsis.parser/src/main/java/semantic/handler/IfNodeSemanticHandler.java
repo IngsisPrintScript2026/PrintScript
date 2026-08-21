@@ -1,15 +1,14 @@
 package semantic.handler;
 
-import node.Node;
 import node.expression.literal.DataType;
 import node.keyword.IfKeywordNode;
 import result.CorrectResult;
 import result.Result;
 import semantic.environment.SemanticEnvironment;
-import semantic.evaluator.ExpressionTypeInferencer;
+import semantic.evaluator.ExpressionTypeInference;
 
 public class IfNodeSemanticHandler implements SemanticNodeHandler<IfKeywordNode> {
-    private final ExpressionTypeInferencer typeInference = new ExpressionTypeInferencer();
+    private final ExpressionTypeInference typeInference = new ExpressionTypeInference();
 
     @Override
     public Class<IfKeywordNode> nodeType() {

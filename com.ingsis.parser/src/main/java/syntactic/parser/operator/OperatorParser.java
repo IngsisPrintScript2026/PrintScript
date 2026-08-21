@@ -12,6 +12,7 @@ import syntactic.Parser;
 import token.Token;
 import tokenstream.TokenStream;
 
+import java.math.BigDecimal;
 import java.util.function.Supplier;
 
 public final class OperatorParser implements Parser<ExpressionNode> {
@@ -23,7 +24,8 @@ public final class OperatorParser implements Parser<ExpressionNode> {
 
     @Override
     public Result<IterationStep<ExpressionNode>> parse(TokenStream stream) {
-        return parseExpression(stream, 0);
+        int baseCollector = 0;
+        return parseExpression(stream, baseCollector);
     }
 
     private Result<IterationStep<ExpressionNode>> parseExpression(TokenStream stream, int rightBindingPower) {
@@ -38,8 +40,8 @@ public final class OperatorParser implements Parser<ExpressionNode> {
         if (stream.isEmpty()) {
             return Result.success(new IterationStep<>(left, stream));
         }
-
-        Result<Token> peekResult = stream.peek(0);
+        int peekStart = 0;
+        Result<Token> peekResult = stream.peek(peekStart);
         if (!peekResult.isCorrect()) {
             return Result.success(new IterationStep<>(left, stream));
         }

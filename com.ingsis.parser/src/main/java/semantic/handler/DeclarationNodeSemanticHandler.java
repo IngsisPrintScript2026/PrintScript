@@ -6,10 +6,10 @@ import node.keyword.DeclarationKeywordNode;
 import result.CorrectResult;
 import result.Result;
 import semantic.environment.SemanticEnvironment;
-import semantic.evaluator.ExpressionTypeInferencer;
+import semantic.evaluator.ExpressionTypeInference;
 
 public class DeclarationNodeSemanticHandler implements SemanticNodeHandler<DeclarationKeywordNode> {
-    private final ExpressionTypeInferencer typeInferencer = new ExpressionTypeInferencer();
+    private final ExpressionTypeInference typeInferencer = new ExpressionTypeInference();
 
     @Override
     public Class<DeclarationKeywordNode> nodeType() {

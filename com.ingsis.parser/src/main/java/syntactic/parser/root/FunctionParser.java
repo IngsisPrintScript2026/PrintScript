@@ -33,7 +33,6 @@ public class FunctionParser implements Parser<CallFunctionNode> {
         if (!idResult.isCorrect()) {
             return Result.failure(((IncorrectResult<IterationStep<IdentifierNode>>) idResult).error());
         }
-
         IterationStep<IdentifierNode> idStep = ((CorrectResult<IterationStep<IdentifierNode>>) idResult).value();
         return parseArguments(idStep.value(), (TokenStream) idStep.next());
     }

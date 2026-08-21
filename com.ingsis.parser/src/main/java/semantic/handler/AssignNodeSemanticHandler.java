@@ -5,12 +5,12 @@ import node.keyword.AssignNode;
 import result.CorrectResult;
 import result.Result;
 import semantic.environment.SemanticEnvironment;
-import semantic.evaluator.ExpressionTypeInferencer;
+import semantic.evaluator.ExpressionTypeInference;
 
 import java.util.Optional;
 
 public class AssignNodeSemanticHandler implements SemanticNodeHandler<AssignNode> {
-    private final ExpressionTypeInferencer typeInferencer = new ExpressionTypeInferencer();
+    private final ExpressionTypeInference typeInferencer = new ExpressionTypeInference();
 
     @Override
     public Class<AssignNode> nodeType() {

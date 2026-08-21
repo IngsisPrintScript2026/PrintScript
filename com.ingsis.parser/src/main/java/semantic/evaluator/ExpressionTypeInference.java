@@ -14,7 +14,7 @@ import semantic.environment.SemanticEnvironment;
 
 import java.util.Optional;
 
-public class ExpressionTypeInferencer {
+public class ExpressionTypeInference {
 
     public Result<DataType> inferType(ExpressionNode expr, SemanticEnvironment env) {
         return switch (expr) {
@@ -61,6 +61,10 @@ public class ExpressionTypeInferencer {
     }
 
     private Result<DataType> inferFunctionType(CallFunctionNode call, SemanticEnvironment env) {
+        String fnName = call.identifierNode().name();
+        if ("readInput".equalsIgnoreCase(fnName) || "readEnv".equalsIgnoreCase(fnName)) {
+            return Result.success(null);
+        }
         return Result.success(DataType.STRING);
     }
 }

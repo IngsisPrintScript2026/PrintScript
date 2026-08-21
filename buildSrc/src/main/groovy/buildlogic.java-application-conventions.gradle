@@ -1,0 +1,15 @@
+plugins {
+    // Apply the common convention plugin for shared build configuration between library and application projects.
+    id 'buildlogic.java-common-conventions'
+
+    // Apply the application plugin to add support for building a CLI application in Java.
+    id 'application'
+
+    // Apply the shadow plugin to make easy to execute files
+    id 'com.github.johnrengelman.shadow'
+}
+
+dependencies {
+    // PicoCli dependency
+    implementation 'info.picocli:picocli:4.7.7'
+}

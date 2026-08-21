@@ -21,39 +21,45 @@ public final class BlockParserUtils {
             Parser<Node> statementParser,
             SymbolType openBrace,
             SymbolType closeBrace) {
-
-        Result<IterationStep<Token>> openResult = stream.consume(openBrace.tokenType());
-        if (!openResult.isCorrect()) {
-            return Result.failure(((IncorrectResult<IterationStep<Token>>) openResult).error());
+        Result<TokenStream> openRes = consumeSymbol(stream, openBrace);
+        if (!openRes.isCorrect()){
+            return Result.failure(((IncorrectResult<TokenStream>) openRes).error());
         }
+        return parseBlockStatements(((CorrectResult<TokenStream>) openRes).value(), statementParser, closeBrace, new ArrayList<>());
+    }
 
-        IterationStep<Token> openStep = ((CorrectResult<IterationStep<Token>>) openResult).value();
-        TokenStream currentStream = (TokenStream) openStep.next();
-        List<Node> statements = new ArrayList<>();
-
-        while (true) {
-            Result<Token> peekResult = currentStream.peek(0);
-            if (peekResult.isCorrect() && SymbolType.isSymbol(((CorrectResult<Token>) peekResult).value(), closeBrace)) {
-                break;
-            }
-            if (currentStream.isEmpty()) {
-                return Result.failure("Expected '" + closeBrace.symbol() + "' at end of block");
-            }
-            Result<IterationStep<Node>> stmtResult = statementParser.parse(currentStream);
-            if (!stmtResult.isCorrect()) {
-                return Result.failure(((IncorrectResult<IterationStep<Node>>) stmtResult).error());
-            }
-            IterationStep<Node> stmtStep = ((CorrectResult<IterationStep<Node>>) stmtResult).value();
-            statements.add(stmtStep.value());
-            currentStream = (TokenStream) stmtStep.next();
+    private static Result<IterationStep<List<Node>>> parseBlockStatements(
+            TokenStream stream, Parser<Node> parser, SymbolType closeBrace, List<Node> statements) {
+        if (isNextSymbol(stream, closeBrace)){
+            return finishBlock(stream, closeBrace, statements);
         }
-
-        Result<IterationStep<Token>> closeResult = currentStream.consume(closeBrace.tokenType());
-        if (!closeResult.isCorrect()) {
-            return Result.failure(((IncorrectResult<IterationStep<Token>>) closeResult).error());
+        if (stream.isEmpty()){
+            return Result.failure("Expected '" + closeBrace.symbol() + "' at end of block");
         }
+        Result<IterationStep<Node>> stmtRes = parser.parse(stream);
+        if (!stmtRes.isCorrect()){
+            return Result.failure(((IncorrectResult<IterationStep<Node>>) stmtRes).error());
+        }
+        IterationStep<Node> step = ((CorrectResult<IterationStep<Node>>) stmtRes).value();
+        statements.add(step.value());
+        return parseBlockStatements((TokenStream) step.next(), parser, closeBrace, statements);
+    }
 
-        IterationStep<Token> closeStep = ((CorrectResult<IterationStep<Token>>) closeResult).value();
-        return Result.success(new IterationStep<>(statements, (TokenStream) closeStep.next()));
+    private static Result<TokenStream> consumeSymbol(TokenStream stream, SymbolType symbol) {
+        Result<IterationStep<Token>> res = stream.consume(symbol.tokenType());
+        if (!res.isCorrect()) return Result.failure(((IncorrectResult<IterationStep<Token>>) res).error());
+        return Result.success((TokenStream) ((CorrectResult<IterationStep<Token>>) res).value().next());
+    }
+
+    private static boolean isNextSymbol(TokenStream stream, SymbolType symbol) {
+        Result<Token> peek = stream.peek(0);
+        return peek.isCorrect() && SymbolType.isSymbol(((CorrectResult<Token>) peek).value(), symbol);
+    }
+
+    private static Result<IterationStep<List<Node>>> finishBlock(
+            TokenStream stream, SymbolType closeBrace, List<Node> statements) {
+        Result<TokenStream> closeRes = consumeSymbol(stream, closeBrace);
+        if (!closeRes.isCorrect()) return Result.failure(((IncorrectResult<TokenStream>) closeRes).error());
+        return Result.success(new IterationStep<>(statements, ((CorrectResult<TokenStream>) closeRes).value()));
     }
 }

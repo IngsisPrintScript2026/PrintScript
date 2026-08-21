@@ -1,5 +1,8 @@
 package builtin;
 
+import builtin.provider.EnvProvider;
+import builtin.provider.InputProvider;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,8 +16,16 @@ public class DefaultFunctionRegistry implements FunctionRegistry {
         }
     }
 
+    public DefaultFunctionRegistry(InputProvider inputProvider, EnvProvider envProvider) {
+        this(List.of(
+                new PrintlnFunction(),
+                new ReadInputFunction(inputProvider),
+                new ReadEnvFunction(envProvider)
+        ));
+    }
+
     public DefaultFunctionRegistry() {
-        this(List.of(new PrintlnFunction()));
+        this(null, System::getenv);
     }
 
     @Override

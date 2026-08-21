@@ -48,4 +48,27 @@ class SyntacticParserTest {
         assertTrue(decl.expressionNode() instanceof NumberLiteralNode);
         assertEquals(new BigDecimal("42"), ((NumberLiteralNode) decl.expressionNode()).rawValue());
     }
+
+    @Test
+    void testParseProgramDirectAST() {
+        Position pos = new Position(1, 1);
+        List<Token> tokens = List.of(
+                new Token(TokenType.LET, "let", pos, pos),
+                new Token(TokenType.IDENTIFIER, "x", pos, pos),
+                new Token(TokenType.COLON, ":", pos, pos),
+                new Token(TokenType.NUMBER, "number", pos, pos),
+                new Token(TokenType.EQUAL, "=", pos, pos),
+                new Token(TokenType.NUMBER_LITERAL, "42", pos, pos),
+                new Token(TokenType.SEMICOLON, ";", pos, pos)
+        );
+
+        TokenStreamAdapter tokenStream = new TokenStreamAdapter(tokens, 0);
+        SyntacticParser parser = new SyntacticParser(Version.V_1_0);
+
+        Result<ProgramNode> result = parser.parseProgram(tokenStream);
+
+        assertTrue(result.isCorrect(), "El parseo directo a ProgramNode debería ser exitoso");
+        ProgramNode programNode = ((CorrectResult<ProgramNode>) result).value();
+        assertEquals(1, programNode.statements().size());
+    }
 }

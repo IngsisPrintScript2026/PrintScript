@@ -29,8 +29,7 @@ public final class SyntacticParser implements Parser<ProgramNode> {
         return chainParser.parse(stream);
     }
 
-    @Override
-    public Result<IterationStep<ProgramNode>> parse(TokenStream stream) {
+    public Result<ProgramNode> parseProgram(TokenStream stream) {
         List<Node> statements = new ArrayList<>();
         TokenStream currentStream = stream;
 
@@ -46,8 +45,16 @@ public final class SyntacticParser implements Parser<ProgramNode> {
             }
         }
 
-        ProgramNode programNode = new ProgramNode(statements, 1, 1);
-        return Result.success(new IterationStep<>(programNode, currentStream));
+        return Result.success(new ProgramNode(statements, 1, 1));
+    }
+
+    @Override
+    public Result<IterationStep<ProgramNode>> parse(TokenStream stream) {
+        return switch (parseProgram(stream)) {
+            case CorrectResult<ProgramNode>(ProgramNode programNode) ->
+                    Result.success(new IterationStep<>(programNode, stream));
+            case IncorrectResult<ProgramNode>(String err) -> Result.failure(err);
+        };
     }
 }
 

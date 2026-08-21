@@ -5,6 +5,7 @@ import node.ProgramNode;
 import node.expression.ExpressionNode;
 import node.expression.Identifier.IdentifierNode;
 import node.expression.function.CallFunctionNode;
+import node.expression.operator.OperatorNode;
 import node.keyword.AssignNode;
 import node.keyword.DeclarationKeywordNode;
 import node.keyword.IfKeywordNode;
@@ -39,7 +40,7 @@ public final class NodeFactory {
     }
 
     public static node.expression.operator.OperatorNode createOperator(node.expression.operator.OperatorType type, ExpressionNode left, ExpressionNode right, Token opToken) {
-        return new node.expression.operator.OperatorNode(type, left, right, opToken.startPosition().line(), opToken.startPosition().column());
+        return new OperatorNode(type, left, right, opToken.startPosition().line(), opToken.startPosition().column());
     }
 
     public static ProgramNode createProgram(List<Node> statements) {

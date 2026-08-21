@@ -15,19 +15,23 @@ public class StringLiteralParser implements Parser<StringLiteralNode> {
     public Result<IterationStep<StringLiteralNode>> parse(TokenStream stream) {
         return switch (stream.consume(TokenType.STRING_LITERAL)) {
             case CorrectResult<IterationStep<Token>>(IterationStep<Token> step) -> {
-                Token token = step.value();
-                String raw = token.value();
-                String cleanVal = (raw.startsWith("\"") && raw.endsWith("\"")) || (raw.startsWith("'") && raw.endsWith("'"))
-                        ? raw.substring(1, raw.length() - 1)
-                        : raw;
-                StringLiteralNode node = new StringLiteralNode(
-                        cleanVal,
-                        token.startPosition().line(),
-                        token.startPosition().column()
-                );
-                yield Result.success(new IterationStep<>(node, (TokenStream) step.next()));
+                StringLiteralNode node = getStringLiteralNode(step);
+                yield Result.success(new IterationStep<>(node, step.next()));
             }
             default -> Result.failure("Expected string literal token");
         };
+    }
+
+    private StringLiteralNode getStringLiteralNode(IterationStep<Token> step) {
+        Token token = step.value();
+        String raw = token.value();
+        String cleanVal = (raw.startsWith("\"") && raw.endsWith("\"")) || (raw.startsWith("'") && raw.endsWith("'"))
+                ? raw.substring(1, raw.length() - 1)
+                : raw;
+        return new StringLiteralNode(
+                cleanVal,
+                token.startPosition().line(),
+                token.startPosition().column()
+        );
     }
 }

@@ -15,6 +15,7 @@ import syntactic.parser.literal.IdentifierParser;
 import syntactic.parser.literal.NumberLiteralParser;
 import syntactic.parser.literal.StringLiteralParser;
 import syntactic.parser.operator.OperatorParser;
+import syntactic.parser.root.AssignParser;
 import syntactic.parser.root.ConditionalParser;
 import syntactic.parser.root.DeclarationParser;
 import syntactic.parser.root.FunctionParser;
@@ -28,6 +29,51 @@ public final class ParserFactory {
 
     public static Parser<Node> createParser(Version version) {
         Parser<IdentifierNode> identifierParser = new IdentifierParser();
+        Parser<ExpressionNode> prattParser = getExpressionNodeParser(identifierParser);
+
+        DeclarationParser declarationParser = new DeclarationParser(identifierParser, prattParser);
+        AssignParser assignParser = new AssignParser(identifierParser, prattParser);
+        LineExpressionParser lineExprParser = new LineExpressionParser(prattParser);
+
+        AtomicReference<Parser<Node>> stmtParserRef = new AtomicReference<>();
+        ConditionalParser conditionalParser = new ConditionalParser(prattParser, stream -> stmtParserRef.get().parse(stream));
+
+        Parser<Node> statementParser = stream -> {
+            if (stream == null || stream.isEmpty()) {
+                return Result.failure("EOF");
+            }
+            Result<IterationStep<node.keyword.DeclarationKeywordNode>> declRes = declarationParser.parse(stream);
+            if (declRes.isCorrect()) {
+                IterationStep<node.keyword.DeclarationKeywordNode> step = ((CorrectResult<IterationStep<node.keyword.DeclarationKeywordNode>>) declRes).value();
+                return Result.success(new IterationStep<>(step.value(), step.next()));
+            }
+
+            Result<IterationStep<node.keyword.AssignNode>> assignRes = assignParser.parse(stream);
+            if (assignRes.isCorrect()) {
+                IterationStep<node.keyword.AssignNode> step = ((CorrectResult<IterationStep<node.keyword.AssignNode>>) assignRes).value();
+                return Result.success(new IterationStep<>(step.value(), step.next()));
+            }
+
+            Result<IterationStep<node.keyword.IfKeywordNode>> ifRes = conditionalParser.parse(stream);
+            if (ifRes.isCorrect()) {
+                IterationStep<node.keyword.IfKeywordNode> step = ((CorrectResult<IterationStep<node.keyword.IfKeywordNode>>) ifRes).value();
+                return Result.success(new IterationStep<>(step.value(), step.next()));
+            }
+
+            Result<IterationStep<ExpressionNode>> exprRes = lineExprParser.parse(stream);
+            if (exprRes.isCorrect()) {
+                IterationStep<ExpressionNode> step = ((CorrectResult<IterationStep<ExpressionNode>>) exprRes).value();
+                return Result.success(new IterationStep<>(step.value(), step.next()));
+            }
+
+            return Result.failure("Failed to parse statement at token stream");
+        };
+
+        stmtParserRef.set(statementParser);
+        return statementParser;
+    }
+
+    private static Parser<ExpressionNode> getExpressionNodeParser(Parser<IdentifierNode> identifierParser) {
         Parser<NumberLiteralNode> numberLiteralParser = new NumberLiteralParser();
         Parser<StringLiteralNode> stringLiteralParser = new StringLiteralParser();
         Parser<BooleanLiteralNode> booleanLiteralParser = new BooleanLiteralParser();
@@ -71,36 +117,6 @@ public final class ParserFactory {
 
         Parser<ExpressionNode> prattParser = new OperatorParser(() -> primaryParser);
         exprParserRef.set(prattParser);
-
-        DeclarationParser declarationParser = new DeclarationParser(identifierParser, prattParser);
-        LineExpressionParser lineExprParser = new LineExpressionParser(prattParser);
-
-        AtomicReference<Parser<Node>> stmtParserRef = new AtomicReference<>();
-        ConditionalParser conditionalParser = new ConditionalParser(prattParser, stream -> stmtParserRef.get().parse(stream));
-
-        Parser<Node> statementParser = stream -> {
-            Result<IterationStep<node.keyword.DeclarationKeywordNode>> declRes = declarationParser.parse(stream);
-            if (declRes.isCorrect()) {
-                IterationStep<node.keyword.DeclarationKeywordNode> step = ((CorrectResult<IterationStep<node.keyword.DeclarationKeywordNode>>) declRes).value();
-                return Result.success(new IterationStep<>(step.value(), step.next()));
-            }
-
-            Result<IterationStep<node.keyword.IfKeywordNode>> ifRes = conditionalParser.parse(stream);
-            if (ifRes.isCorrect()) {
-                IterationStep<node.keyword.IfKeywordNode> step = ((CorrectResult<IterationStep<node.keyword.IfKeywordNode>>) ifRes).value();
-                return Result.success(new IterationStep<>(step.value(), step.next()));
-            }
-
-            Result<IterationStep<ExpressionNode>> exprRes = lineExprParser.parse(stream);
-            if (exprRes.isCorrect()) {
-                IterationStep<ExpressionNode> step = ((CorrectResult<IterationStep<ExpressionNode>>) exprRes).value();
-                return Result.success(new IterationStep<>(step.value(), step.next()));
-            }
-
-            return Result.failure("Failed to parse statement at token stream");
-        };
-
-        stmtParserRef.set(statementParser);
-        return statementParser;
+        return prattParser;
     }
 }

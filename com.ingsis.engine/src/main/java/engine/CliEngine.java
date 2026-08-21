@@ -84,6 +84,14 @@ public class CliEngine implements Callable<Integer>, Engine {
         semantic.environment.SemanticEnvironment semanticEnv = new semantic.environment.SemanticEnvironment();
         environment.Environment runtimeEnv = new environment.Environment();
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))) {
+            InputSupplier inputSupplier = prompt -> {
+                try {
+                    return reader.readLine();
+                } catch (IOException e) {
+                    return "";
+                }
+            };
+
             System.out.println(
                     "Entering CLI Engine REPL. Type empty line to execute and 'exit' to quit.");
             String line;
@@ -98,7 +106,7 @@ public class CliEngine implements Callable<Integer>, Engine {
                                 executeService.execute(
                                         version,
                                         emitter,
-                                        null,
+                                        inputSupplier,
                                         new ByteArrayInputStream(buffer.toString().getBytes()),
                                         semanticEnv,
                                         runtimeEnv);
@@ -130,7 +138,15 @@ public class CliEngine implements Callable<Integer>, Engine {
             Writer writer,
             OutputEmitter emitter) {
         if (operation == null || operation.equalsIgnoreCase("interpret")) {
-            return interpret(version, emitter, null, in);
+            InputSupplier inputSupplier = prompt -> {
+                try {
+                    BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+                    return br.readLine();
+                } catch (IOException e) {
+                    return "";
+                }
+            };
+            return interpret(version, emitter, inputSupplier, in);
         }
         return new IncorrectResult<>("Unknown operation: " + operation);
     }

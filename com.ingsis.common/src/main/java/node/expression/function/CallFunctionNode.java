@@ -2,6 +2,7 @@ package node.expression.function;
 
 import node.expression.ExpressionNode;
 import node.expression.Identifier.IdentifierNode;
+import node.visitor.NodeVisitor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +28,11 @@ public record CallFunctionNode(
     @Override
     public String symbol() {
         return identifierNode.name();
+    }
+
+    @Override
+    public <R, C> R accept(NodeVisitor<R, C> visitor, C context) {
+        return visitor.visit(this, context);
     }
 
 }

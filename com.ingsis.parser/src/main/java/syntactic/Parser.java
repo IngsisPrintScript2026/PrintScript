@@ -5,7 +5,6 @@ import node.Node;
 import result.Result;
 import tokenstream.TokenStream;
 
-public interface Parser<T extends Node> {
-    Result<IterationStep<T>> parse(TokenStream stream);
+public interface Parser<T extends Node> extends parser.Parser<T> {
 }
 

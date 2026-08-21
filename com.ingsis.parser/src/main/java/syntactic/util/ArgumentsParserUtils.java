@@ -22,48 +22,51 @@ public final class ArgumentsParserUtils {
             SymbolType openSymbol,
             SymbolType closeSymbol,
             SymbolType separatorSymbol) {
+        Result<TokenStream> openRes = consumeSymbol(stream, openSymbol);
+        if (!openRes.isCorrect()) return Result.failure(((IncorrectResult<TokenStream>) openRes).error());
+        TokenStream currentStream = ((CorrectResult<TokenStream>) openRes).value();
+        if (isNextSymbol(currentStream, closeSymbol)) return consumeClose(currentStream, closeSymbol, new ArrayList<>());
+        return parseItems(currentStream, itemParser, closeSymbol, separatorSymbol, new ArrayList<>());
+    }
 
-        Result<IterationStep<Token>> openResult = stream.consume(openSymbol.tokenType());
-        if (!openResult.isCorrect()) {
-            return Result.failure(((IncorrectResult<IterationStep<Token>>) openResult).error());
+    private static <T extends Node> Result<IterationStep<List<T>>> parseItems(
+            TokenStream stream, Parser<T> parser, SymbolType close, SymbolType sep, List<T> items) {
+        Result<IterationStep<T>> itemRes = parser.parse(stream);
+        if (!itemRes.isCorrect()){
+            return Result.failure(((IncorrectResult<IterationStep<T>>) itemRes).error());
         }
-
-        IterationStep<Token> openStep = ((CorrectResult<IterationStep<Token>>) openResult).value();
-        TokenStream currentStream = (TokenStream) openStep.next();
-        List<T> items = new ArrayList<>();
-
-        Result<Token> peek = currentStream.peek(0);
-        if (peek.isCorrect() && SymbolType.isSymbol(((CorrectResult<Token>) peek).value(), closeSymbol)) {
-            Result<IterationStep<Token>> closeResult = currentStream.consume(closeSymbol.tokenType());
-            IterationStep<Token> closeStep = ((CorrectResult<IterationStep<Token>>) closeResult).value();
-            return Result.success(new IterationStep<>(items, (TokenStream) closeStep.next()));
+        IterationStep<T> step = ((CorrectResult<IterationStep<T>>) itemRes).value();
+        items.add(step.value());
+        TokenStream nextStream = (TokenStream) step.next();
+        if (isNextSymbol(nextStream, close)){
+            return consumeClose(nextStream, close, items);
         }
-
-        while (true) {
-            Result<IterationStep<T>> itemResult = itemParser.parse(currentStream);
-            if (!itemResult.isCorrect()) {
-                return Result.failure(((IncorrectResult<IterationStep<T>>) itemResult).error());
-            }
-            IterationStep<T> itemStep = ((CorrectResult<IterationStep<T>>) itemResult).value();
-            items.add(itemStep.value());
-            currentStream = (TokenStream) itemStep.next();
-
-            Result<Token> nextPeek = currentStream.peek(0);
-            if (!nextPeek.isCorrect()) {
-                return Result.failure("Unexpected EOF reading arguments");
-            }
-
-            Token nextToken = ((CorrectResult<Token>) nextPeek).value();
-            if (SymbolType.isSymbol(nextToken, separatorSymbol)) {
-                Result<IterationStep<Token>> sepRes = currentStream.consume(separatorSymbol.tokenType());
-                currentStream = (TokenStream) ((CorrectResult<IterationStep<Token>>) sepRes).value().next();
-            } else if (SymbolType.isSymbol(nextToken, closeSymbol)) {
-                Result<IterationStep<Token>> closeRes = currentStream.consume(closeSymbol.tokenType());
-                IterationStep<Token> closeStep = ((CorrectResult<IterationStep<Token>>) closeRes).value();
-                return Result.success(new IterationStep<>(items, (TokenStream) closeStep.next()));
-            } else {
-                return Result.failure("Expected ',' or ')' in argument list");
-            }
+        if (isNextSymbol(nextStream, sep)){
+            return parseItems(advanceAfterSeparator(nextStream, sep), parser, close, sep, items);
         }
+        return Result.failure("Expected ',' or ')' in argument list");
+    }
+
+    private static Result<TokenStream> consumeSymbol(TokenStream stream, SymbolType symbol) {
+        Result<IterationStep<Token>> res = stream.consume(symbol.tokenType());
+        if (!res.isCorrect()) return Result.failure(((IncorrectResult<IterationStep<Token>>) res).error());
+        return Result.success((TokenStream) ((CorrectResult<IterationStep<Token>>) res).value().next());
+    }
+
+    private static boolean isNextSymbol(TokenStream stream, SymbolType symbol) {
+        Result<Token> peek = stream.peek(0);
+        return peek.isCorrect() && SymbolType.isSymbol(((CorrectResult<Token>) peek).value(), symbol);
+    }
+
+    private static <T extends Node> Result<IterationStep<List<T>>> consumeClose(
+            TokenStream stream, SymbolType closeSymbol, List<T> items) {
+        Result<TokenStream> closeRes = consumeSymbol(stream, closeSymbol);
+        if (!closeRes.isCorrect()) return Result.failure(((IncorrectResult<TokenStream>) closeRes).error());
+        return Result.success(new IterationStep<>(items, ((CorrectResult<TokenStream>) closeRes).value()));
+    }
+
+    private static TokenStream advanceAfterSeparator(TokenStream stream, SymbolType sep) {
+        Result<IterationStep<Token>> res = stream.consume(sep.tokenType());
+        return (TokenStream) ((CorrectResult<IterationStep<Token>>) res).value().next();
     }
 }

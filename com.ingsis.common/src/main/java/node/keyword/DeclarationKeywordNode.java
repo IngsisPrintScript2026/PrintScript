@@ -4,6 +4,7 @@ import node.Node;
 import node.expression.ExpressionNode;
 import node.expression.Identifier.IdentifierNode;
 import node.keyword.declaration.DeclarationType;
+import node.visitor.NodeVisitor;
 
 import java.sql.Types;
 import java.util.Collections;
@@ -29,6 +30,11 @@ public record DeclarationKeywordNode(
 
     public boolean isMutable() {
         return declarationType.isMutable();
+    }
+
+    @Override
+    public <R, C> R accept(NodeVisitor<R, C> visitor, C context) {
+        return visitor.visit(this, context);
     }
 
 }

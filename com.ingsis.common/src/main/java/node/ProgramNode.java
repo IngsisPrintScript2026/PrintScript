@@ -1,6 +1,8 @@
 package node;
 
 
+import node.visitor.NodeVisitor;
+
 import java.util.List;
 
 public record ProgramNode(List<Node> statements, Integer line, Integer column) implements Node {
@@ -17,6 +19,11 @@ public record ProgramNode(List<Node> statements, Integer line, Integer column) i
     @Override
     public List<Node> children() {
         return statements;
+    }
+
+    @Override
+    public <R, C> R accept(NodeVisitor<R, C> visitor, C context) {
+        return visitor.visit(this, context);
     }
 
 }

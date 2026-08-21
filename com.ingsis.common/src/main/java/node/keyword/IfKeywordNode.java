@@ -2,6 +2,7 @@ package node.keyword;
 
 import node.Node;
 import node.expression.ExpressionNode;
+import node.visitor.NodeVisitor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,5 +31,10 @@ public record IfKeywordNode(
         children.addAll(thenBody);
         children.addAll(elseBody);
         return children;
+    }
+
+    @Override
+    public <R, C> R accept(NodeVisitor<R, C> visitor, C context) {
+        return visitor.visit(this, context);
     }
 }

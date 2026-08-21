@@ -12,6 +12,9 @@ import node.expression.function.CallFunctionNode;
 import node.keyword.AssignNode;
 import node.keyword.DeclarationKeywordNode;
 import node.keyword.IfKeywordNode;
+import result.CorrectResult;
+import result.IncorrectResult;
+import result.Result;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,57 +35,87 @@ public class DefaultStatementExecutor implements StatementExecutor {
     }
 
     public DefaultStatementExecutor(Consumer<String> outputEmitter) {
-        this(new DefaultExpressionEvaluator(), new DefaultFunctionRegistry(), outputEmitter);
+        this(outputEmitter, new DefaultFunctionRegistry());
+    }
+
+    public DefaultStatementExecutor(Consumer<String> outputEmitter, FunctionRegistry functionRegistry) {
+        this(new DefaultExpressionEvaluator(functionRegistry, outputEmitter), functionRegistry, outputEmitter);
     }
 
     @Override
-    public void execute(Node statement, Environment env) {
-        switch (statement) {
+    public Result<Void> execute(Node statement, Environment env) {
+        return switch (statement) {
             case DeclarationKeywordNode decl -> executeDeclaration(decl, env);
             case AssignNode assign -> executeAssign(assign, env);
             case IfKeywordNode ifNode -> executeIf(ifNode, env);
             case CallFunctionNode call -> executeCall(call, env);
-            default -> throw new IllegalArgumentException("Unsupported statement node: " + statement);
+            default -> Result.failure("Unsupported statement node: " + statement);
+        };
+    }
+
+    private Result<Void> executeDeclaration(DeclarationKeywordNode decl, Environment env) {
+        Object value = null;
+        if (decl.expressionNode() != null) {
+            Result<Object> valRes = expressionEvaluator.evaluate(decl.expressionNode(), env);
+            if (!valRes.isCorrect()) return Result.failure(((IncorrectResult<Object>) valRes).error());
+            value = ((CorrectResult<Object>) valRes).value();
+        }
+        try {
+            env.declare(decl.identifierNode().name(), value, null, decl.isMutable());
+            return Result.success(null);
+        } catch (Exception e) {
+            return Result.failure("Declaration error: " + e.getMessage());
         }
     }
 
-    private void executeDeclaration(DeclarationKeywordNode decl, Environment env) {
-        Object value = decl.expressionNode() != null
-                ? expressionEvaluator.evaluate(decl.expressionNode(), env)
-                : null;
-        env.declare(decl.identifierNode().name(), value, null, decl.isMutable());
+    private Result<Void> executeAssign(AssignNode assign, Environment env) {
+        Result<Object> valRes = expressionEvaluator.evaluate(assign.expressionNode(), env);
+        if (!valRes.isCorrect()) return Result.failure(((IncorrectResult<Object>) valRes).error());
+        try {
+            env.assign(assign.identifierNode().name(), ((CorrectResult<Object>) valRes).value());
+            return Result.success(null);
+        } catch (Exception e) {
+            return Result.failure("Assignment error: " + e.getMessage());
+        }
     }
 
-    private void executeAssign(AssignNode assign, Environment env) {
-        Object value = expressionEvaluator.evaluate(assign.expressionNode(), env);
-        env.assign(assign.identifierNode().name(), value);
-    }
+    private Result<Void> executeIf(IfKeywordNode ifNode, Environment env) {
+        Result<Object> condRes = expressionEvaluator.evaluate(ifNode.condition(), env);
+        if (!condRes.isCorrect()) return Result.failure(((IncorrectResult<Object>) condRes).error());
 
-    private void executeIf(IfKeywordNode ifNode, Environment env) {
-        Object conditionValue = expressionEvaluator.evaluate(ifNode.condition(), env);
+        Object conditionValue = ((CorrectResult<Object>) condRes).value();
         if (!(conditionValue instanceof Boolean boolCond)) {
-            throw new RuntimeException("Condition of 'if' statement must evaluate to a boolean value");
+            return Result.failure("Condition of 'if' statement must evaluate to a boolean value");
         }
 
         Environment blockEnv = new Environment(env);
         List<Node> bodyToExecute = boolCond ? ifNode.thenBody() : ifNode.elseBody();
         for (Node stmt : bodyToExecute) {
-            execute(stmt, blockEnv);
+            Result<Void> execRes = execute(stmt, blockEnv);
+            if (!execRes.isCorrect()) return execRes;
         }
+        return Result.success(null);
     }
 
-    private void executeCall(CallFunctionNode call, Environment env) {
+    private Result<Void> executeCall(CallFunctionNode call, Environment env) {
         String functionName = call.identifierNode().name();
         BuiltInFunction function = functionRegistry.get(functionName);
         if (function == null) {
-            throw new RuntimeException("Undefined function: " + functionName);
+            return Result.failure("Undefined function: " + functionName);
         }
 
         List<Object> argValues = new ArrayList<>();
         for (ExpressionNode argNode : call.argumentNodes()) {
-            argValues.add(expressionEvaluator.evaluate(argNode, env));
+            Result<Object> argRes = expressionEvaluator.evaluate(argNode, env);
+            if (!argRes.isCorrect()) return Result.failure(((IncorrectResult<Object>) argRes).error());
+            argValues.add(((CorrectResult<Object>) argRes).value());
         }
 
-        function.execute(argValues, outputEmitter);
+        try {
+            function.execute(argValues, outputEmitter);
+            return Result.success(null);
+        } catch (Exception e) {
+            return Result.failure("Function execution error: " + e.getMessage());
+        }
     }
 }
