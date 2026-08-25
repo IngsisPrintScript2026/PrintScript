@@ -22,6 +22,7 @@ import version.Version;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 
 public class ExecuteService implements engine.Engine {
@@ -30,6 +31,16 @@ public class ExecuteService implements engine.Engine {
     public Result<String> interpret(
             Version version, engine.OutputEmitter emitter, engine.InputSupplier supplier, InputStream in) {
         return execute(version, emitter, supplier, in);
+    }
+
+    @Override
+    public Result<String> format(Version version, InputStream in, InputStream config, Writer writer) {
+        return new FormatService().format(version, in, config, writer);
+    }
+
+    @Override
+    public Result<String> analyze(Version version, InputStream in, InputStream config) {
+        return new LintService().analyze(version, in, config);
     }
 
     public Result<String> execute(

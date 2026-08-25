@@ -31,7 +31,7 @@ public class CliEngine implements Callable<Integer>, Engine {
 
     private final ExecuteService executeService = new ExecuteService();
 
-    @Parameters(index = "0", arity = "0..1", description = "Operation: interpret")
+    @Parameters(index = "0", arity = "0..1", description = "Operation: interpret, format, analyze")
     private String operation;
 
     @Option(
@@ -147,6 +147,10 @@ public class CliEngine implements Callable<Integer>, Engine {
                 }
             };
             return interpret(version, emitter, inputSupplier, in);
+        } else if (operation.equalsIgnoreCase("format")) {
+            return format(version, in, config, writer);
+        } else if (operation.equalsIgnoreCase("analyze") || operation.equalsIgnoreCase("lint")) {
+            return analyze(version, in, config);
         }
         return new IncorrectResult<>("Unknown operation: " + operation);
     }
@@ -178,6 +182,16 @@ public class CliEngine implements Callable<Integer>, Engine {
             Version version, OutputEmitter emitter, InputSupplier supplier, InputStream in) {
         if (emitter == null) emitter = System.out::println;
         return executeService.execute(version, emitter, supplier, in);
+    }
+
+    @Override
+    public Result<String> format(Version version, InputStream in, InputStream config, Writer writer) {
+        return executeService.format(version, in, config, writer);
+    }
+
+    @Override
+    public Result<String> analyze(Version version, InputStream in, InputStream config) {
+        return executeService.analyze(version, in, config);
     }
 
     public static void main(String[] args) {

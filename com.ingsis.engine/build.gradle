@@ -22,8 +22,11 @@ dependencies {
     implementation project(':com.ingsis.common')
     implementation project(':com.ingsis.charstream')
     implementation project(':com.ingsis.lexer')
-    implementation project(':com.ingsis.parser')
+    implementation project(':com.ingsis.syntactic')
+    implementation project(':com.ingsis.semantic')
     implementation project(':com.ingsis.interpreter')
+    implementation project(':com.ingsis.formatter')
+    implementation project(':com.ingsis.sca')
     implementation 'info.picocli:picocli:4.7.5'
 
     testImplementation platform('org.junit:junit-bom:6.0.0')

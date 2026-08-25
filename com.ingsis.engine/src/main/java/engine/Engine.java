@@ -9,4 +9,10 @@ import java.io.Writer;
 public interface Engine {
     Result<String> interpret(
             Version version, OutputEmitter emitter, InputSupplier supplier, InputStream in);
+
+    Result<String> format(
+            Version version, InputStream in, InputStream config, Writer writer);
+
+    Result<String> analyze(
+            Version version, InputStream in, InputStream config);
 }
