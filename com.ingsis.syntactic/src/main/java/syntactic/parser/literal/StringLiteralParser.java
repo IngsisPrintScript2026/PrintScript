@@ -26,8 +26,8 @@ public class StringLiteralParser implements Parser<StringLiteralNode> {
         Token token = step.value();
         String raw = token.value();
         String cleanVal = (raw.startsWith("\"") && raw.endsWith("\"")) || (raw.startsWith("'") && raw.endsWith("'"))
-                ? raw.substring(1, raw.length() - 1)
-                : raw;
+                ? new String(raw.substring(1, raw.length() - 1).toCharArray())
+                : new String(raw.toCharArray());
         return new StringLiteralNode(
                 cleanVal,
                 token.startPosition().line(),

@@ -7,6 +7,7 @@ import node.expression.Identifier.IdentifierNode;
 import node.expression.literal.BooleanLiteralNode;
 import node.expression.literal.NumberLiteralNode;
 import node.expression.literal.StringLiteralNode;
+import node.keyword.IfKeywordNode;
 import result.CorrectResult;
 import result.Result;
 import syntactic.Parser;
@@ -20,52 +21,52 @@ import syntactic.parser.root.ConditionalParser;
 import syntactic.parser.root.DeclarationParser;
 import syntactic.parser.root.FunctionParser;
 import syntactic.parser.root.LineExpressionParser;
+import syntactic.version.VersionStrategy;
+import syntactic.version.VersionStrategyRegistry;
 import version.Version;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 
 public final class ParserFactory {
     private ParserFactory() {}
 
     public static Parser<Node> createParser(Version version) {
+        VersionStrategy strategy = new VersionStrategyRegistry().getStrategy(version != null ? version : Version.V_1_0);
         Parser<IdentifierNode> identifierParser = new IdentifierParser();
-        Parser<ExpressionNode> prattParser = getExpressionNodeParser(identifierParser);
+        Parser<ExpressionNode> prattParser = getExpressionNodeParser(identifierParser, strategy);
 
-        DeclarationParser declarationParser = new DeclarationParser(identifierParser, prattParser);
+        DeclarationParser declarationParser = new DeclarationParser(
+                identifierParser,
+                prattParser,
+                strategy.declarationKeywords(),
+                strategy.supportedDataTypes()
+        );
         AssignParser assignParser = new AssignParser(identifierParser, prattParser);
         LineExpressionParser lineExprParser = new LineExpressionParser(prattParser);
 
         AtomicReference<Parser<Node>> stmtParserRef = new AtomicReference<>();
         ConditionalParser conditionalParser = new ConditionalParser(prattParser, stream -> stmtParserRef.get().parse(stream));
 
+        List<Parser<? extends Node>> parsers = strategy.statementParsers(
+                declarationParser,
+                assignParser,
+                conditionalParser,
+                lineExprParser
+        );
+
         Parser<Node> statementParser = stream -> {
             if (stream == null || stream.isEmpty()) {
                 return Result.failure("EOF");
             }
-            Result<IterationStep<node.keyword.DeclarationKeywordNode>> declRes = declarationParser.parse(stream);
-            if (declRes.isCorrect()) {
-                IterationStep<node.keyword.DeclarationKeywordNode> step = ((CorrectResult<IterationStep<node.keyword.DeclarationKeywordNode>>) declRes).value();
-                return Result.success(new IterationStep<>(step.value(), step.next()));
+            for (Parser<? extends Node> p : parsers) {
+                Result<? extends IterationStep<? extends Node>> res = p.parse(stream);
+                if (res.isCorrect()) {
+                    IterationStep<? extends Node> step = ((CorrectResult<? extends IterationStep<? extends Node>>) res).value();
+                    return Result.success(new IterationStep<>(step.value(), step.next()));
+                }
             }
-
-            Result<IterationStep<node.keyword.AssignNode>> assignRes = assignParser.parse(stream);
-            if (assignRes.isCorrect()) {
-                IterationStep<node.keyword.AssignNode> step = ((CorrectResult<IterationStep<node.keyword.AssignNode>>) assignRes).value();
-                return Result.success(new IterationStep<>(step.value(), step.next()));
-            }
-
-            Result<IterationStep<node.keyword.IfKeywordNode>> ifRes = conditionalParser.parse(stream);
-            if (ifRes.isCorrect()) {
-                IterationStep<node.keyword.IfKeywordNode> step = ((CorrectResult<IterationStep<node.keyword.IfKeywordNode>>) ifRes).value();
-                return Result.success(new IterationStep<>(step.value(), step.next()));
-            }
-
-            Result<IterationStep<ExpressionNode>> exprRes = lineExprParser.parse(stream);
-            if (exprRes.isCorrect()) {
-                IterationStep<ExpressionNode> step = ((CorrectResult<IterationStep<ExpressionNode>>) exprRes).value();
-                return Result.success(new IterationStep<>(step.value(), step.next()));
-            }
-
             return Result.failure("Failed to parse statement at token stream");
         };
 
@@ -73,45 +74,31 @@ public final class ParserFactory {
         return statementParser;
     }
 
-    private static Parser<ExpressionNode> getExpressionNodeParser(Parser<IdentifierNode> identifierParser) {
+    private static Parser<ExpressionNode> getExpressionNodeParser(
+            Parser<IdentifierNode> identifierParser, VersionStrategy strategy) {
         Parser<NumberLiteralNode> numberLiteralParser = new NumberLiteralParser();
         Parser<StringLiteralNode> stringLiteralParser = new StringLiteralParser();
         Parser<BooleanLiteralNode> booleanLiteralParser = new BooleanLiteralParser();
 
         AtomicReference<Parser<ExpressionNode>> exprParserRef = new AtomicReference<>();
+        Supplier<Parser<ExpressionNode>> exprParserSupplier = () -> exprParserRef.get();
 
         Parser<ExpressionNode> primaryParser = stream -> {
-            Result<IterationStep<NumberLiteralNode>> numRes = numberLiteralParser.parse(stream);
-            if (numRes.isCorrect()) {
-                IterationStep<NumberLiteralNode> step = ((CorrectResult<IterationStep<NumberLiteralNode>>) numRes).value();
-                return Result.success(new IterationStep<>(step.value(), step.next()));
+            FunctionParser functionParser = new FunctionParser(identifierParser, exprParserSupplier.get());
+            List<Parser<? extends ExpressionNode>> primaryList = strategy.primaryParsers(
+                    numberLiteralParser,
+                    stringLiteralParser,
+                    booleanLiteralParser,
+                    functionParser,
+                    identifierParser
+            );
+            for (Parser<? extends ExpressionNode> p : primaryList) {
+                Result<? extends IterationStep<? extends ExpressionNode>> res = p.parse(stream);
+                if (res.isCorrect()) {
+                    IterationStep<? extends ExpressionNode> step = ((CorrectResult<? extends IterationStep<? extends ExpressionNode>>) res).value();
+                    return Result.success(new IterationStep<>(step.value(), step.next()));
+                }
             }
-
-            Result<IterationStep<StringLiteralNode>> strRes = stringLiteralParser.parse(stream);
-            if (strRes.isCorrect()) {
-                IterationStep<StringLiteralNode> step = ((CorrectResult<IterationStep<StringLiteralNode>>) strRes).value();
-                return Result.success(new IterationStep<>(step.value(), step.next()));
-            }
-
-            Result<IterationStep<BooleanLiteralNode>> boolRes = booleanLiteralParser.parse(stream);
-            if (boolRes.isCorrect()) {
-                IterationStep<BooleanLiteralNode> step = ((CorrectResult<IterationStep<BooleanLiteralNode>>) boolRes).value();
-                return Result.success(new IterationStep<>(step.value(), step.next()));
-            }
-
-            FunctionParser functionParser = new FunctionParser(identifierParser, exprParserRef.get());
-            Result<IterationStep<node.expression.function.CallFunctionNode>> fnRes = functionParser.parse(stream);
-            if (fnRes.isCorrect()) {
-                IterationStep<node.expression.function.CallFunctionNode> step = ((CorrectResult<IterationStep<node.expression.function.CallFunctionNode>>) fnRes).value();
-                return Result.success(new IterationStep<>(step.value(), step.next()));
-            }
-
-            Result<IterationStep<IdentifierNode>> idRes = identifierParser.parse(stream);
-            if (idRes.isCorrect()) {
-                IterationStep<IdentifierNode> step = ((CorrectResult<IterationStep<IdentifierNode>>) idRes).value();
-                return Result.success(new IterationStep<>(step.value(), step.next()));
-            }
-
             return Result.failure("Unrecognized primary expression token stream");
         };
 

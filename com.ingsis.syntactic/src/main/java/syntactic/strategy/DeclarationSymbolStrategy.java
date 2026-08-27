@@ -18,6 +18,7 @@ public interface DeclarationSymbolStrategy {
             Token keywordToken,
             DeclarationType declType,
             IdentifierNode identifier,
+            node.expression.literal.DataType declaredType,
             TokenStream stream,
             Parser<ExpressionNode> expressionParser);
 }

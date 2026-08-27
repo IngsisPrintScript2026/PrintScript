@@ -36,6 +36,9 @@ public class DeclarationScaHandler implements ScaNodeHandler<DeclarationKeywordN
                         name, context.identifierFormat(), idNode.line(), idNode.column()));
             }
         }
+        if (decl.expressionNode() != null) {
+            violations.addAll(sca.analyzeStatement(decl.expressionNode(), env, context));
+        }
         return violations;
     }
 }

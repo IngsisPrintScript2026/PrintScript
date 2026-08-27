@@ -22,6 +22,10 @@ public final class NodeFactory {
         return new IdentifierNode(token.value(), token.startPosition().line(), token.startPosition().column());
     }
 
+    public static DeclarationKeywordNode createDeclaration(DeclarationType type, IdentifierNode id, ExpressionNode expr, node.expression.literal.DataType declaredType, Token keyword) {
+        return new DeclarationKeywordNode(type, id, expr, declaredType, keyword.startPosition().line(), keyword.startPosition().column());
+    }
+
     public static DeclarationKeywordNode createDeclaration(DeclarationType type, IdentifierNode id, ExpressionNode expr, Token keyword) {
         return new DeclarationKeywordNode(type, id, expr, null, keyword.startPosition().line(), keyword.startPosition().column());
     }

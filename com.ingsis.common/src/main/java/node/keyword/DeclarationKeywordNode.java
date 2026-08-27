@@ -3,10 +3,10 @@ package node.keyword;
 import node.Node;
 import node.expression.ExpressionNode;
 import node.expression.Identifier.IdentifierNode;
+import node.expression.literal.DataType;
 import node.keyword.declaration.DeclarationType;
 import node.visitor.NodeVisitor;
 
-import java.sql.Types;
 import java.util.Collections;
 import java.util.List;
 
@@ -14,9 +14,13 @@ public record DeclarationKeywordNode(
         DeclarationType declarationType,
         IdentifierNode identifierNode,
         ExpressionNode expressionNode,
-        Types declaredType,
+        DataType declaredType,
         Integer line,
         Integer column) implements Node {
+
+    public DataType dataType() {
+        return declaredType;
+    }
 
     @Override
     public String symbol() {

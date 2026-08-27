@@ -4,6 +4,8 @@ plugins {
 
 dependencies {
     implementation project(':com.ingsis.common')
+    implementation project(':com.ingsis.charstream')
+    implementation project(':com.ingsis.lexer')
     implementation project(':com.ingsis.syntactic')
     implementation 'org.yaml:snakeyaml:2.2'
 }

@@ -37,10 +37,11 @@ public class AssignNodeSemanticHandler implements SemanticNodeHandler<AssignNode
         }
 
         DataType exprType = ((CorrectResult<DataType>) exprTypeRes).value();
-        if (symbol.type() != null && symbol.type() != exprType) {
+        if (exprType != null && symbol.type() != null && symbol.type() != exprType) {
             return Result.failure("Type mismatch in assignment to variable '" + varName + "' at line " + assign.line());
         }
 
-        return Result.success(env.define(varName, exprType, symbol.isMutable(), true));
+        DataType finalType = exprType != null ? exprType : symbol.type();
+        return Result.success(env.define(varName, finalType, symbol.isMutable(), true));
     }
 }

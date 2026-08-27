@@ -27,6 +27,7 @@ public class EmptyDeclarationSymbolStrategy implements DeclarationSymbolStrategy
             Token keywordToken,
             DeclarationType declType,
             IdentifierNode identifier,
+            node.expression.literal.DataType declaredType,
             TokenStream stream,
             Parser<ExpressionNode> expressionParser) {
 
@@ -37,7 +38,7 @@ public class EmptyDeclarationSymbolStrategy implements DeclarationSymbolStrategy
 
         IterationStep<Token> semiStep = ((CorrectResult<IterationStep<Token>>) semiResult).value();
         DeclarationKeywordNode node = NodeFactory.createDeclaration(
-                declType, identifier, new NilExpressionNode(), keywordToken);
+                declType, identifier, new NilExpressionNode(), declaredType, keywordToken);
 
         return Result.success(new IterationStep<>(node, (TokenStream) semiStep.next()));
     }

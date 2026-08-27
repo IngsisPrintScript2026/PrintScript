@@ -1,0 +1,5 @@
+spaceBeforeColon: false
+spaceAfterColon: true
+spaceAroundOperators: true
+indentSize: 4
+lineBreaksAfterPrintln: 1

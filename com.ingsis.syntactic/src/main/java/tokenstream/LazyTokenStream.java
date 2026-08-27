@@ -8,55 +8,63 @@ import result.Result;
 import token.Token;
 import token.TokenType;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Predicate;
 
 public final class LazyTokenStream implements TokenStream {
 
-    private SafeIterator<Token> currentLexer;
-    private final List<Token> buffer;
+    private static class Node {
+        final Token token;
+        final String error;
+        final boolean isEof;
+        private SafeIterator<Token> lexer;
+        private Node next;
+
+        Node(Token token, SafeIterator<Token> lexer) {
+            this.token = token;
+            this.lexer = lexer;
+            this.error = null;
+            this.isEof = false;
+        }
+
+        Node(String error, boolean isEof) {
+            this.token = null;
+            this.lexer = null;
+            this.error = error;
+            this.isEof = isEof;
+        }
+
+        synchronized Node nextNode() {
+            if (next == null) {
+                if (lexer == null) {
+                    next = new Node("EOF: Se alcanzó el fin del flujo de tokens.", true);
+                } else {
+                    Result<IterationStep<Token>> res = lexer.next();
+                    switch (res) {
+                        case CorrectResult<IterationStep<Token>>(IterationStep<Token> step) -> {
+                            next = new Node(step.value(), step.nextStream());
+                        }
+                        case IncorrectResult<IterationStep<Token>>(String err) -> {
+                            boolean eof = "EOF".equalsIgnoreCase(err) || err.contains("EOF");
+                            next = new Node(err, eof);
+                        }
+                    }
+                    lexer = null;
+                }
+            }
+            return next;
+        }
+    }
+
+    private final Node currentNode;
     private final int pointer;
-    private boolean isEof;
-    private String lexerError;
 
     public LazyTokenStream(SafeIterator<Token> lexer) {
-        this(lexer, new ArrayList<>(), 0, false, null);
+        this(new Node(null, lexer).nextNode(), 0);
     }
 
-    private LazyTokenStream(
-            SafeIterator<Token> currentLexer,
-            List<Token> buffer,
-            int pointer,
-            boolean isEof,
-            String lexerError) {
-        this.currentLexer = currentLexer;
-        this.buffer = buffer;
+    private LazyTokenStream(Node currentNode, int pointer) {
+        this.currentNode = currentNode;
         this.pointer = pointer;
-        this.isEof = isEof;
-        this.lexerError = lexerError;
-    }
-
-    private boolean fillBufferUpTo(int index) {
-        while (buffer.size() <= index && !isEof && currentLexer != null) {
-            Result<IterationStep<Token>> result = currentLexer.next();
-            switch (result) {
-                case CorrectResult<IterationStep<Token>>(IterationStep<Token> step) -> {
-                    buffer.add(step.value());
-                    currentLexer = step.nextStream();
-                }
-                case IncorrectResult<IterationStep<Token>>(String err) -> {
-                    if (!"EOF".equalsIgnoreCase(err)) {
-                        lexerError = err;
-                    }
-                    isEof = true;
-                }
-            }
-            if (isEof) {
-                break;
-            }
-        }
-        return buffer.size() > index;
     }
 
     @Override
@@ -66,14 +74,14 @@ public final class LazyTokenStream implements TokenStream {
 
     @Override
     public Result<IterationStep<Token>> consume() {
-        if (!fillBufferUpTo(pointer)) {
-            if (lexerError != null) {
-                return Result.failure("Lexical error: " + lexerError);
+        if (currentNode == null || currentNode.token == null) {
+            if (currentNode != null && currentNode.error != null && !currentNode.isEof) {
+                return Result.failure("Lexical error: " + currentNode.error);
             }
             return Result.failure("EOF: Se alcanzó el fin del flujo de tokens.");
         }
-        Token currentToken = buffer.get(pointer);
-        TokenStream nextStream = new LazyTokenStream(currentLexer, buffer, pointer + 1, isEof, lexerError);
+        Token currentToken = currentNode.token;
+        TokenStream nextStream = new LazyTokenStream(currentNode.nextNode(), pointer + 1);
         return Result.success(new IterationStep<>(currentToken, nextStream));
     }
 
@@ -94,22 +102,28 @@ public final class LazyTokenStream implements TokenStream {
 
     @Override
     public Result<Token> peek(int offset) {
-        int targetIndex = pointer + offset;
-        if (targetIndex < 0) {
-            return Result.failure("Índice fuera de los límites del stream: " + targetIndex);
+        if (offset < 0) {
+            return Result.failure("Índice fuera de los límites del stream: " + offset);
         }
-        if (!fillBufferUpTo(targetIndex)) {
-            if (lexerError != null) {
-                return Result.failure("Lexical error: " + lexerError);
+        Node curr = currentNode;
+        for (int i = 0; i < offset; i++) {
+            if (curr == null || curr.isEof) {
+                return Result.failure("Índice fuera de los límites del stream: " + offset);
             }
-            return Result.failure("Índice fuera de los límites del stream: " + targetIndex);
+            curr = curr.nextNode();
         }
-        return Result.success(buffer.get(targetIndex));
+        if (curr == null || curr.token == null) {
+            if (curr != null && curr.error != null && !curr.isEof) {
+                return Result.failure("Lexical error: " + curr.error);
+            }
+            return Result.failure("Índice fuera de los límites del stream: " + offset);
+        }
+        return Result.success(curr.token);
     }
 
     @Override
     public boolean isEmpty() {
-        return !fillBufferUpTo(pointer);
+        return currentNode == null || currentNode.token == null;
     }
 
     @Override
@@ -117,3 +131,6 @@ public final class LazyTokenStream implements TokenStream {
         return pointer;
     }
 }
+
+
+

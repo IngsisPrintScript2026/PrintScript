@@ -8,6 +8,7 @@ import result.CorrectResult;
 import result.IncorrectResult;
 import result.Result;
 import service.ExecuteService;
+import service.ValidationService;
 import version.Version;
 
 import java.io.BufferedReader;
@@ -30,8 +31,9 @@ import java.util.concurrent.Callable;
 public class CliEngine implements Callable<Integer>, Engine {
 
     private final ExecuteService executeService = new ExecuteService();
+    private final ValidationService validationService = new ValidationService();
 
-    @Parameters(index = "0", arity = "0..1", description = "Operation: interpret, format, analyze")
+    @Parameters(index = "0", arity = "0..1", description = "Operation: Validation, Execution, Formatting, Analyzing")
     private String operation;
 
     @Option(
@@ -137,7 +139,7 @@ public class CliEngine implements Callable<Integer>, Engine {
             InputStream config,
             Writer writer,
             OutputEmitter emitter) {
-        if (operation == null || operation.equalsIgnoreCase("interpret")) {
+        if (operation == null || operation.equalsIgnoreCase("Execution") || operation.equalsIgnoreCase("interpret") || operation.equalsIgnoreCase("exec")) {
             InputSupplier inputSupplier = prompt -> {
                 try {
                     BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -147,9 +149,11 @@ public class CliEngine implements Callable<Integer>, Engine {
                 }
             };
             return interpret(version, emitter, inputSupplier, in);
-        } else if (operation.equalsIgnoreCase("format")) {
+        } else if (operation.equalsIgnoreCase("Validation") || operation.equalsIgnoreCase("validate")) {
+            return validate(version, in);
+        } else if (operation.equalsIgnoreCase("Formatting") || operation.equalsIgnoreCase("format") || operation.equalsIgnoreCase("fmt")) {
             return format(version, in, config, writer);
-        } else if (operation.equalsIgnoreCase("analyze") || operation.equalsIgnoreCase("lint")) {
+        } else if (operation.equalsIgnoreCase("Analyzing") || operation.equalsIgnoreCase("analyze") || operation.equalsIgnoreCase("lint")) {
             return analyze(version, in, config);
         }
         return new IncorrectResult<>("Unknown operation: " + operation);
@@ -175,6 +179,11 @@ public class CliEngine implements Callable<Integer>, Engine {
             e.printStackTrace();
             return false;
         }
+    }
+
+    @Override
+    public Result<String> validate(Version version, InputStream in) {
+        return validationService.validate(version, in);
     }
 
     @Override

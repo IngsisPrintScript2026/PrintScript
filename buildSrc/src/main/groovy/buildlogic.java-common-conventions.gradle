@@ -138,8 +138,8 @@ spotbugs {
     toolVersion = '4.8.3'
     // Do not let SpotBugs failures fail the build in CI runs
     ignoreFailures = true
-    effort = 'max'
-    reportLevel = 'low'
+    effort.set(com.github.spotbugs.snom.Effort.valueOf('MAX'))
+    reportLevel.set(com.github.spotbugs.snom.Confidence.valueOf('LOW'))
 }
 
 // ============ CHECKSTYLE REPORTS ============

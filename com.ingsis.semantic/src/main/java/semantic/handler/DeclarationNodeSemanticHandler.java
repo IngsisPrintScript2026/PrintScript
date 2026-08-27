@@ -34,6 +34,11 @@ public class DeclarationNodeSemanticHandler implements SemanticNodeHandler<Decla
         }
 
         DataType inferredType = ((CorrectResult<DataType>) exprTypeRes).value();
-        return Result.success(env.define(varName, inferredType, decl.isMutable(), true));
+        if (inferredType != null && decl.dataType() != null && decl.dataType() != inferredType) {
+            return Result.failure(String.format("Semantic error at line %d, column %d: cannot assign type %s to variable '%s' of type %s",
+                    decl.line(), decl.column(), inferredType, varName, decl.dataType()));
+        }
+        DataType finalType = decl.dataType() != null ? decl.dataType() : inferredType;
+        return Result.success(env.define(varName, finalType, decl.isMutable(), true));
     }
 }

@@ -2,20 +2,24 @@ package formatter;
 
 public record FormatContext(
         int indentLevel,
-        int indentSpaces,
-        boolean spaceBeforeColon,
-        boolean spaceAfterColon,
-        boolean spaceAroundEquals,
-        boolean spaceAroundOperators,
-        int lineBreaksAfterPrintln,
-        boolean ifBraceSameLine) {
+        Integer indentSpaces,
+        Boolean spaceBeforeColon,
+        Boolean spaceAfterColon,
+        Boolean spaceAroundEquals,
+        Boolean spaceAroundOperators,
+        Boolean lineBreakAfterStatement,
+        Integer lineBreaksAfterPrintln,
+        Boolean singleSpaceSeparation,
+        Boolean ifBraceSameLine,
+        Boolean ifBraceBelowLine) {
 
     public FormatContext() {
-        this(0, 4, false, true, true, true, 1, true);
+        this(0, null, null, null, null, null, null, null, null, null, null);
     }
 
     public String getIndent() {
-        return " ".repeat(Math.max(0, indentLevel * indentSpaces));
+        int spaces = (indentSpaces != null) ? indentSpaces : 4;
+        return " ".repeat(Math.max(0, indentLevel * spaces));
     }
 
     public FormatContext incrementIndent() {
@@ -26,7 +30,10 @@ public record FormatContext(
                 spaceAfterColon,
                 spaceAroundEquals,
                 spaceAroundOperators,
+                lineBreakAfterStatement,
                 lineBreaksAfterPrintln,
-                ifBraceSameLine);
+                singleSpaceSeparation,
+                ifBraceSameLine,
+                ifBraceBelowLine);
     }
 }

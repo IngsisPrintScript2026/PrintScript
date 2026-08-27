@@ -101,14 +101,22 @@ public class DeclarationParser implements Parser<DeclarationKeywordNode> {
         Result<IterationStep<Token>> typeResult = stream.consume(literalMatcher);
 
         return switch (typeResult) {
-            case CorrectResult<IterationStep<Token>>(IterationStep<Token> typeStep) ->
-                    parseStrategy(keywordToken, declType, identifier, (TokenStream) typeStep.next());
+            case CorrectResult<IterationStep<Token>>(IterationStep<Token> typeStep) -> {
+                DataType declaredType = DataType.fromTokenType(typeStep.value().type())
+                        .or(() -> DataType.fromKeyword(typeStep.value().value()))
+                        .orElse(null);
+                yield parseStrategy(keywordToken, declType, identifier, declaredType, (TokenStream) typeStep.next());
+            }
             case IncorrectResult<IterationStep<Token>>(String err) -> Result.failure(err);
         };
     }
 
     private Result<IterationStep<DeclarationKeywordNode>> parseStrategy(
-            Token keywordToken, DeclarationType declType, IdentifierNode identifier, TokenStream stream) {
+            Token keywordToken,
+            DeclarationType declType,
+            IdentifierNode identifier,
+            DataType declaredType,
+            TokenStream stream) {
         Result<Token> peekResult = stream.peek(0);
         if (!peekResult.isCorrect()) {
             return Result.failure("Fin de archivo inesperado al parsear declaración");
@@ -117,7 +125,7 @@ public class DeclarationParser implements Parser<DeclarationKeywordNode> {
         Optional<SymbolType> symbolOpt = SymbolType.fromToken(peekToken);
         if (symbolOpt.isPresent() && symbolStrategies.containsKey(symbolOpt.get())) {
             DeclarationSymbolStrategy strategy = symbolStrategies.get(symbolOpt.get());
-            return strategy.parse(keywordToken, declType, identifier, stream, expressionParser);
+            return strategy.parse(keywordToken, declType, identifier, declaredType, stream, expressionParser);
         }
         return Result.failure("Símbolo inesperado en la declaración: " + peekToken.value());
     }

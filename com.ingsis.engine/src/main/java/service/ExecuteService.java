@@ -28,6 +28,11 @@ import java.nio.charset.StandardCharsets;
 public class ExecuteService implements engine.Engine {
 
     @Override
+    public Result<String> validate(Version version, InputStream in) {
+        return new ValidationService().validate(version, in);
+    }
+
+    @Override
     public Result<String> interpret(
             Version version, engine.OutputEmitter emitter, engine.InputSupplier supplier, InputStream in) {
         return execute(version, emitter, supplier, in);
@@ -60,10 +65,10 @@ public class ExecuteService implements engine.Engine {
             SemanticEnvironment semanticEnv,
             Environment runtimeEnv) {
         try {
+            byte[] executionBuffer = new byte[2_500_000];
             StreamCharReader reader = new StreamCharReader(new InputStreamReader(in, StandardCharsets.UTF_8));
             CharStream charStream = new CharStream(reader);
             SafeIterator<Token> lexer = new Lexer(charStream);
-            TokenStream currentStream = new LazyTokenStream(lexer);
 
             syntactic.Parser<Node> statementParser = syntactic.parser.ParserFactory.createParser(version);
             SemanticChecker semanticChecker = new SemanticChecker();
@@ -80,7 +85,7 @@ public class ExecuteService implements engine.Engine {
                     inputProvider,
                     System::getenv);
 
-            return interpreter.interpret(currentStream, semanticEnv, runtimeEnv);
+            return interpreter.interpret(new LazyTokenStream(lexer), semanticEnv, runtimeEnv);
         } catch (Exception e) {
             return new IncorrectResult<>("Execution error: " + e.getMessage());
         }

@@ -91,6 +91,7 @@ public class DefaultInterpreter implements Interpreter {
         }
 
         TokenStream currentStream = tokenStream;
+        tokenStream = null;
         SemanticEnvironment currentSemEnv = semanticEnv;
 
         while (!currentStream.isEmpty()) {
@@ -116,10 +117,10 @@ public class DefaultInterpreter implements Interpreter {
                 currentSemEnv = ((CorrectResult<SemanticEnvironment>) semResult).value();
             }
 
-            Result<Void> interpretResult = interpret(new ProgramNode(List.of(statement), 1, 1), runtimeEnv);
-            if (!interpretResult.isCorrect()) {
-                String err = ((IncorrectResult<Void>) interpretResult).error();
-                return Result.failure(err);
+            Result<Void> execRes = statementExecutor.execute(statement, runtimeEnv);
+            if (!execRes.isCorrect()) {
+                String err = ((IncorrectResult<Void>) execRes).error();
+                return Result.failure(err.startsWith("Runtime error:") ? err : "Runtime error: " + err);
             }
         }
 
