@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -e
+
+echo "🔍 [Pre-Commit] Ejecutando Formatter (Spotless) y Linters (Check)..."
+
+# Aplicar formato de código
+./gradlew spotlessApply --daemon
+
+# Re-agregar al staging los archivos que Spotless haya formateado
+git update-index --again
+
+# Ejecutar análisis estático y linters
+./gradlew check -x test --daemon
+
+echo "✅ [Pre-Commit] Verificaciones completadas con éxito."

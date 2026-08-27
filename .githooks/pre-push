@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -e
+
+echo "🧪 [Pre-Push] Ejecutando suite de tests unitarios e integración..."
+
+# Ejecutar pruebas
+./gradlew test --daemon
+
+echo "✅ [Pre-Push] Todos los tests pasaron exitosamente. Enviando cambios al repositorio..."
