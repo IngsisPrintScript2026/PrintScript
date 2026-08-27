@@ -1,13 +1,16 @@
+/*
+ * My Project
+ */
+
 package sca.handler;
 
+import java.util.ArrayList;
+import java.util.List;
 import node.Node;
 import node.keyword.IfKeywordNode;
 import sca.ASTSca;
 import sca.ScaContext;
 import semantic.environment.SemanticEnvironment;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class IfScaHandler implements ScaNodeHandler<IfKeywordNode> {
     @Override
@@ -16,7 +19,8 @@ public class IfScaHandler implements ScaNodeHandler<IfKeywordNode> {
     }
 
     @Override
-    public List<String> check(IfKeywordNode ifNode, SemanticEnvironment env, ScaContext context, ASTSca sca) {
+    public List<String> check(
+            IfKeywordNode ifNode, SemanticEnvironment env, ScaContext context, ASTSca sca) {
         List<String> violations = new ArrayList<>();
         for (Node stmt : ifNode.thenBody()) {
             violations.addAll(sca.analyzeStatement(stmt, env, context));

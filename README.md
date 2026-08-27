@@ -50,8 +50,7 @@ Si el primer argumento enviado es directamente un número de versión (ej: `1.0`
 * **`:com.ingsis.common`**: Modelos de dominio (`Token`, `Position`, `MetaCharacter`, `Node`), mónadas de resultado (`Result<T>`) e interfaces base.
 * **`:com.ingsis.charstream`**: Adaptadores I/O para streaming de caracteres con pushback (`CharStream`, `StreamCharReader`, `PositionTracker`).
 * **`:com.ingsis.lexer`**: Orquestador léxico (`Lexer`) e intérprete de estados de acumulación (`PrintScriptTokenizer`).
-* **`:com.ingsis.syntactic`**: Parser sintáctico del lenguaje que construye el AST (`ProgramNode`).
-* **`:com.ingsis.semantic`**: Validador semántico y de tipos (`SemanticChecker`).
+* **`:com.ingsis.parser`**: Parser sintáctico del lenguaje que construye el AST (`ProgramNode`) y validador semántico/de tipos (`SemanticChecker`).
 * **`:com.ingsis.formatter`**: Formateador de código fuente basado en AST mediante Visitor con Dispatch y Handlers configurables via YAML.
 * **`:com.ingsis.sca`**: Analizador estático de código basado en AST y entorno semántico mediante Visitor con Dispatch y Handlers configurables via YAML.
 * **`:com.ingsis.interpreter`**: Intérprete y evaluador de sentencias/expresiones sobre el AST.

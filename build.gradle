@@ -2,8 +2,10 @@ plugins {
     id 'java'
 }
 
-group = 'org.example'
-version = '1.0-SNAPSHOT'
+allprojects {
+    group = 'org.example'
+    version = '1.0-SNAPSHOT'
+}
 
 subprojects {
     group = 'org.example'

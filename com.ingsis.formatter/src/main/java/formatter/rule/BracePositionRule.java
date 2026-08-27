@@ -1,3 +1,7 @@
+/*
+ * My Project
+ */
+
 package formatter.rule;
 
 import formatter.FormatContext;
@@ -10,11 +14,13 @@ public class BracePositionRule implements FormattingRule {
         if (current == null || current.type() != TokenType.LBRACE) {
             return false;
         }
-        return Boolean.TRUE.equals(context.ifBraceSameLine()) || Boolean.TRUE.equals(context.ifBraceBelowLine());
+        return Boolean.TRUE.equals(context.ifBraceSameLine())
+                || Boolean.TRUE.equals(context.ifBraceBelowLine());
     }
 
     @Override
-    public String formatSeparator(Token prev, Token current, String originalSeparator, FormatContext context) {
+    public String formatSeparator(
+            Token prev, Token current, String originalSeparator, FormatContext context) {
         if (Boolean.TRUE.equals(context.ifBraceSameLine())) {
             return " ";
         }

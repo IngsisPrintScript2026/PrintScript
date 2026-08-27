@@ -1,3 +1,7 @@
+/*
+ * My Project
+ */
+
 package formatter;
 
 public record FormatContext(
@@ -14,12 +18,39 @@ public record FormatContext(
         Boolean ifBraceBelowLine) {
 
     public FormatContext() {
-        this(0, null, null, null, null, null, null, null, null, null, null);
+        this(0, 4, false, true, true, true, false, 1, false, true, false);
+    }
+
+    public boolean isSpaceBeforeColon() {
+        return Boolean.TRUE.equals(spaceBeforeColon);
+    }
+
+    public boolean isSpaceAfterColon() {
+        return spaceAfterColon != null ? spaceAfterColon : true;
+    }
+
+    public boolean isSpaceAroundEquals() {
+        return spaceAroundEquals != null ? spaceAroundEquals : true;
+    }
+
+    public boolean isSpaceAroundOperators() {
+        return spaceAroundOperators != null ? spaceAroundOperators : true;
+    }
+
+    public boolean isIfBraceSameLine() {
+        return ifBraceSameLine != null ? ifBraceSameLine : true;
+    }
+
+    public int getIndentSpaces() {
+        return indentSpaces != null ? indentSpaces : 4;
+    }
+
+    public int getLineBreaksAfterPrintln() {
+        return lineBreaksAfterPrintln != null ? lineBreaksAfterPrintln : 1;
     }
 
     public String getIndent() {
-        int spaces = (indentSpaces != null) ? indentSpaces : 4;
-        return " ".repeat(Math.max(0, indentLevel * spaces));
+        return " ".repeat(Math.max(0, indentLevel * getIndentSpaces()));
     }
 
     public FormatContext incrementIndent() {

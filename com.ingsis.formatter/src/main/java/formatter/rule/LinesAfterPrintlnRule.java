@@ -1,3 +1,7 @@
+/*
+ * My Project
+ */
+
 package formatter.rule;
 
 import formatter.FormatContext;
@@ -17,11 +21,15 @@ public class LinesAfterPrintlnRule implements FormattingRule {
 
     @Override
     public boolean applies(Token prev, Token current, FormatContext context) {
-        return prev != null && prev.type() == TokenType.SEMICOLON && isAfterPrintln && context.lineBreaksAfterPrintln() != null;
+        return prev != null
+                && prev.type() == TokenType.SEMICOLON
+                && isAfterPrintln
+                && context.lineBreaksAfterPrintln() != null;
     }
 
     @Override
-    public String formatSeparator(Token prev, Token current, String originalSeparator, FormatContext context) {
+    public String formatSeparator(
+            Token prev, Token current, String originalSeparator, FormatContext context) {
         int breaks = context.lineBreaksAfterPrintln();
         isAfterPrintln = false;
         return "\n".repeat(breaks + 1);

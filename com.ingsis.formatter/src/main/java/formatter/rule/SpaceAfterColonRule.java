@@ -1,3 +1,7 @@
+/*
+ * My Project
+ */
+
 package formatter.rule;
 
 import formatter.FormatContext;
@@ -11,7 +15,8 @@ public class SpaceAfterColonRule implements FormattingRule {
     }
 
     @Override
-    public String formatSeparator(Token prev, Token current, String originalSeparator, FormatContext context) {
+    public String formatSeparator(
+            Token prev, Token current, String originalSeparator, FormatContext context) {
         return context.spaceAfterColon() ? " " : "";
     }
 }

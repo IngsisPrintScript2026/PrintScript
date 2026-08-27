@@ -1,3 +1,7 @@
+/*
+ * My Project
+ */
+
 package formatter.handler;
 
 import formatter.ASTFormatter;
@@ -6,6 +10,7 @@ import node.Node;
 
 public interface FormatNodeHandler<T extends Node> {
     Class<T> nodeType();
+
     String format(T node, FormatContext context, ASTFormatter formatter);
 
     @SuppressWarnings("unchecked")

@@ -1,11 +1,13 @@
+/*
+ * My Project
+ */
+
 package formatter.handler;
 
 import formatter.ASTFormatter;
 import formatter.FormatContext;
-import node.Node;
-import node.ProgramNode;
-
 import java.util.stream.Collectors;
+import node.ProgramNode;
 
 public class ProgramNodeFormatHandler implements FormatNodeHandler<ProgramNode> {
     @Override

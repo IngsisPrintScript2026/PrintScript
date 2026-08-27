@@ -1,7 +1,15 @@
+/*
+ * My Project
+ */
+
 package formatter;
 
 import formatter.config.YamlFormatRulesLoader;
 import formatter.handler.*;
+import java.io.InputStream;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import node.Node;
 import node.ProgramNode;
 import node.expression.ExpressionNode;
@@ -18,29 +26,25 @@ import node.keyword.IfKeywordNode;
 import node.visitor.NodeVisitor;
 import result.Result;
 
-import java.io.InputStream;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 public class ASTFormatter implements NodeVisitor<String, FormatContext>, Formatter {
     private final Map<Class<? extends Node>, FormatNodeHandler<?>> handlers;
     private final FormatContext defaultContext;
 
     public ASTFormatter(List<FormatNodeHandler<?>> handlerList, FormatContext defaultContext) {
-        this.handlers = handlerList.stream()
-                .collect(Collectors.toMap(FormatNodeHandler::nodeType, h -> h));
+        this.handlers =
+                handlerList.stream().collect(Collectors.toMap(FormatNodeHandler::nodeType, h -> h));
         this.defaultContext = defaultContext != null ? defaultContext : new FormatContext();
     }
 
     public ASTFormatter(FormatContext defaultContext) {
-        this(List.of(
-                new DeclarationNodeFormatHandler(),
-                new AssignNodeFormatHandler(),
-                new IfNodeFormatHandler(),
-                new CallFunctionNodeFormatHandler(),
-                new ProgramNodeFormatHandler()
-        ), defaultContext);
+        this(
+                List.of(
+                        new DeclarationNodeFormatHandler(),
+                        new AssignNodeFormatHandler(),
+                        new IfNodeFormatHandler(),
+                        new CallFunctionNodeFormatHandler(),
+                        new ProgramNodeFormatHandler()),
+                defaultContext);
     }
 
     public ASTFormatter() {
@@ -86,8 +90,11 @@ public class ASTFormatter implements NodeVisitor<String, FormatContext>, Formatt
 
     public String formatExpression(ExpressionNode expr, FormatContext context) {
         if (expr instanceof OperatorNode op) {
-            String opSymbol = context.spaceAroundOperators() ? (" " + op.symbol() + " ") : op.symbol();
-            return formatExpression(op.left(), context) + opSymbol + formatExpression(op.right(), context);
+            String opSymbol =
+                    context.isSpaceAroundOperators() ? (" " + op.symbol() + " ") : op.symbol();
+            return formatExpression(op.left(), context)
+                    + opSymbol
+                    + formatExpression(op.right(), context);
         } else if (expr instanceof IdentifierNode id) {
             return id.name();
         } else if (expr instanceof StringLiteralNode str) {
@@ -98,9 +105,10 @@ public class ASTFormatter implements NodeVisitor<String, FormatContext>, Formatt
         } else if (expr instanceof BooleanLiteralNode bool) {
             return String.valueOf(bool.rawValue());
         } else if (expr instanceof CallFunctionNode call) {
-            String args = call.argumentNodes().stream()
-                    .map(arg -> formatExpression(arg, context))
-                    .collect(Collectors.joining(", "));
+            String args =
+                    call.argumentNodes().stream()
+                            .map(arg -> formatExpression(arg, context))
+                            .collect(Collectors.joining(", "));
             return call.identifierNode().name() + "(" + args + ")";
         } else if (expr instanceof LiteralNode<?> lit) {
             return lit.symbol();

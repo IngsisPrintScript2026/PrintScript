@@ -1,3 +1,7 @@
+/*
+ * My Project
+ */
+
 package formatter.handler;
 
 import formatter.ASTFormatter;
@@ -15,7 +19,7 @@ public class AssignNodeFormatHandler implements FormatNodeHandler<AssignNode> {
         StringBuilder sb = new StringBuilder();
         sb.append(context.getIndent());
         sb.append(assign.identifierNode().name());
-        if (context.spaceAroundEquals()) {
+        if (context.isSpaceAroundEquals()) {
             sb.append(" = ");
         } else {
             sb.append("=");

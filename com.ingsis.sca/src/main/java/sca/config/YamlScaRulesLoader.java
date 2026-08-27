@@ -1,10 +1,13 @@
-package sca.config;
+/*
+ * My Project
+ */
 
-import org.yaml.snakeyaml.Yaml;
-import sca.ScaContext;
+package sca.config;
 
 import java.io.InputStream;
 import java.util.Map;
+import org.yaml.snakeyaml.Yaml;
+import sca.ScaContext;
 
 public class YamlScaRulesLoader {
 
@@ -19,9 +22,20 @@ public class YamlScaRulesLoader {
                 return new ScaContext();
             }
 
-            String identifierFormat = getString(data, "identifier_format", "identifier-format", null);
-            boolean mandatoryPrintln = getBoolean(data, "mandatory-variable-or-literal-in-println", "mandatory-variable-or-literal-in-println", false);
-            boolean mandatoryReadInput = getBoolean(data, "mandatory-variable-or-literal-in-readInput", "mandatory-variable-or-literal-in-readinput", false);
+            String identifierFormat =
+                    getString(data, "identifier_format", "identifier-format", null);
+            boolean mandatoryPrintln =
+                    getBoolean(
+                            data,
+                            "mandatory-variable-or-literal-in-println",
+                            "mandatory-variable-or-literal-in-println",
+                            false);
+            boolean mandatoryReadInput =
+                    getBoolean(
+                            data,
+                            "mandatory-variable-or-literal-in-readInput",
+                            "mandatory-variable-or-literal-in-readinput",
+                            false);
 
             return new ScaContext(identifierFormat, mandatoryPrintln, mandatoryReadInput);
         } catch (Exception e) {
@@ -29,7 +43,8 @@ public class YamlScaRulesLoader {
         }
     }
 
-    private static String getString(Map<String, Object> map, String key1, String key2, String defaultValue) {
+    private static String getString(
+            Map<String, Object> map, String key1, String key2, String defaultValue) {
         if (map.containsKey(key1) && map.get(key1) != null) {
             return map.get(key1).toString();
         }
@@ -39,7 +54,8 @@ public class YamlScaRulesLoader {
         return defaultValue;
     }
 
-    private static boolean getBoolean(Map<String, Object> map, String key1, String key2, boolean defaultValue) {
+    private static boolean getBoolean(
+            Map<String, Object> map, String key1, String key2, boolean defaultValue) {
         if (map.containsKey(key1)) {
             return parseBoolean(map.get(key1), defaultValue);
         }

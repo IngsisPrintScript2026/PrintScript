@@ -1,3 +1,7 @@
+/*
+ * My Project
+ */
+
 package sca;
 
 public record ScaContext(

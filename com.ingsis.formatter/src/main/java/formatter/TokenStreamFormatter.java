@@ -1,3 +1,7 @@
+/*
+ * My Project
+ */
+
 package formatter;
 
 import charstream.CharStream;
@@ -5,18 +9,17 @@ import charstream.StreamCharReader;
 import formatter.rule.*;
 import iterator.IterationStep;
 import iterator.SafeIterator;
-import lexer.Lexer;
-import result.CorrectResult;
-import result.Result;
-import token.Token;
-import token.TokenType;
-
 import java.io.InputStream;
 import java.io.StringReader;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import lexer.Lexer;
+import result.CorrectResult;
+import result.Result;
+import token.Token;
+import token.TokenType;
 
 public class TokenStreamFormatter implements Formatter {
 
@@ -29,15 +32,16 @@ public class TokenStreamFormatter implements Formatter {
     }
 
     public TokenStreamFormatter(FormatContext context) {
-        this(context, List.of(
-                new SpaceAfterColonRule(),
-                new SpaceBeforeColonRule(),
-                new SpaceAroundEqualsRule(),
-                new SpaceAroundOperatorsRule(),
-                new LineBreakAfterStatementRule(),
-                new SingleSpaceSeparationRule(),
-                new BracePositionRule()
-        ));
+        this(
+                context,
+                List.of(
+                        new SpaceAfterColonRule(),
+                        new SpaceBeforeColonRule(),
+                        new SpaceAroundEqualsRule(),
+                        new SpaceAroundOperatorsRule(),
+                        new LineBreakAfterStatementRule(),
+                        new SingleSpaceSeparationRule(),
+                        new BracePositionRule()));
     }
 
     public TokenStreamFormatter() {

@@ -1,3 +1,7 @@
+/*
+ * My Project
+ */
+
 package formatter.handler;
 
 import formatter.ASTFormatter;
@@ -19,7 +23,7 @@ public class IfNodeFormatHandler implements FormatNodeHandler<IfKeywordNode> {
         sb.append(formatter.formatExpression(ifNode.condition(), context));
         sb.append(")");
 
-        if (context.ifBraceSameLine()) {
+        if (context.isIfBraceSameLine()) {
             sb.append(" {\n");
         } else {
             sb.append("\n");
@@ -37,7 +41,7 @@ public class IfNodeFormatHandler implements FormatNodeHandler<IfKeywordNode> {
         sb.append("}");
 
         if (ifNode.elseBody() != null && !ifNode.elseBody().isEmpty()) {
-            if (context.ifBraceSameLine()) {
+            if (context.isIfBraceSameLine()) {
                 sb.append(" else {\n");
             } else {
                 sb.append("\n");

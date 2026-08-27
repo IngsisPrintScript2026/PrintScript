@@ -1,3 +1,7 @@
+/*
+ * My Project
+ */
+
 package formatter.handler;
 
 import formatter.ASTFormatter;
@@ -15,18 +19,19 @@ public class DeclarationNodeFormatHandler implements FormatNodeHandler<Declarati
     }
 
     @Override
-    public String format(DeclarationKeywordNode decl, FormatContext context, ASTFormatter formatter) {
+    public String format(
+            DeclarationKeywordNode decl, FormatContext context, ASTFormatter formatter) {
         StringBuilder sb = new StringBuilder();
         sb.append(context.getIndent());
         sb.append(decl.declarationType().keyword());
         sb.append(" ");
         sb.append(decl.identifierNode().name());
 
-        if (context.spaceBeforeColon()) {
+        if (context.isSpaceBeforeColon()) {
             sb.append(" ");
         }
         sb.append(":");
-        if (context.spaceAfterColon()) {
+        if (context.isSpaceAfterColon()) {
             sb.append(" ");
         }
 
@@ -42,8 +47,9 @@ public class DeclarationNodeFormatHandler implements FormatNodeHandler<Declarati
         }
         sb.append(typeStr);
 
-        if (decl.expressionNode() != null && !(decl.expressionNode() instanceof NilExpressionNode)) {
-            if (context.spaceAroundEquals()) {
+        if (decl.expressionNode() != null
+                && !(decl.expressionNode() instanceof NilExpressionNode)) {
+            if (context.isSpaceAroundEquals()) {
                 sb.append(" = ");
             } else {
                 sb.append("=");

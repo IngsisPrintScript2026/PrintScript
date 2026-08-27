@@ -1,3 +1,7 @@
+/*
+ * My Project
+ */
+
 package formatter.rule;
 
 import formatter.FormatContext;
@@ -10,11 +14,13 @@ public class SpaceAroundEqualsRule implements FormattingRule {
         if (context.spaceAroundEquals() == null) {
             return false;
         }
-        return (prev != null && prev.type() == TokenType.EQUAL) || (current != null && current.type() == TokenType.EQUAL);
+        return (prev != null && prev.type() == TokenType.EQUAL)
+                || (current != null && current.type() == TokenType.EQUAL);
     }
 
     @Override
-    public String formatSeparator(Token prev, Token current, String originalSeparator, FormatContext context) {
+    public String formatSeparator(
+            Token prev, Token current, String originalSeparator, FormatContext context) {
         return Boolean.TRUE.equals(context.spaceAroundEquals()) ? " " : "";
     }
 }

@@ -1,10 +1,13 @@
+/*
+ * My Project
+ */
+
 package formatter.handler;
 
 import formatter.ASTFormatter;
 import formatter.FormatContext;
-import node.expression.function.CallFunctionNode;
-
 import java.util.stream.Collectors;
+import node.expression.function.CallFunctionNode;
 
 public class CallFunctionNodeFormatHandler implements FormatNodeHandler<CallFunctionNode> {
     @Override
@@ -18,13 +21,15 @@ public class CallFunctionNodeFormatHandler implements FormatNodeHandler<CallFunc
         sb.append(context.getIndent());
         sb.append(call.identifierNode().name());
         sb.append("(");
-        String args = call.argumentNodes().stream()
-                .map(arg -> formatter.formatExpression(arg, context))
-                .collect(Collectors.joining(", "));
+        String args =
+                call.argumentNodes().stream()
+                        .map(arg -> formatter.formatExpression(arg, context))
+                        .collect(Collectors.joining(", "));
         sb.append(args);
         sb.append(");");
 
-        if ("println".equalsIgnoreCase(call.identifierNode().name()) && context.lineBreaksAfterPrintln() > 1) {
+        if ("println".equalsIgnoreCase(call.identifierNode().name())
+                && context.lineBreaksAfterPrintln() > 1) {
             sb.append("\n".repeat(context.lineBreaksAfterPrintln() - 1));
         }
 
