@@ -1,3 +1,7 @@
+/*
+ * My Project
+ */
+
 package token;
 
 import java.util.Optional;
@@ -20,8 +24,13 @@ public enum SymbolType {
         this.symbol = symbol;
     }
 
-    public TokenType tokenType() { return tokenType; }
-    public String symbol() { return symbol; }
+    public TokenType tokenType() {
+        return tokenType;
+    }
+
+    public String symbol() {
+        return symbol;
+    }
 
     public static boolean isSymbol(Token token, SymbolType symbolType) {
         if (token == null || symbolType == null) {

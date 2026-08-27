@@ -1,9 +1,12 @@
+/*
+ * My Project
+ */
+
 package node.expression.literal;
 
+import java.util.Optional;
 import token.Token;
 import token.TokenType;
-
-import java.util.Optional;
 
 public enum DataType {
     BOOLEAN,

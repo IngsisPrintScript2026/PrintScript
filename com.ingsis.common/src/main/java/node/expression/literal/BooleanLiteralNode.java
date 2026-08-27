@@ -1,11 +1,14 @@
-package node.expression.literal;
+/*
+ * My Project
+ */
 
-import node.expression.ExpressionNode;
-import node.expression.LiteralNode;
-import result.Result;
+package node.expression.literal;
 
 import java.util.Collections;
 import java.util.List;
+import node.expression.ExpressionNode;
+import node.expression.LiteralNode;
+import result.Result;
 
 public final record BooleanLiteralNode(Boolean rawValue, Integer line, Integer column)
         implements LiteralNode<Boolean> {
@@ -24,5 +27,4 @@ public final record BooleanLiteralNode(Boolean rawValue, Integer line, Integer c
     public String symbol() {
         return String.valueOf(rawValue);
     }
-
 }

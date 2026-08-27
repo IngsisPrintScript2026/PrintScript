@@ -1,3 +1,7 @@
+/*
+ * My Project
+ */
+
 package parser;
 
 import iterator.IterationStep;

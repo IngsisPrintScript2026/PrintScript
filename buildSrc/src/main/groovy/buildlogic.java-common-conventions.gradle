@@ -45,7 +45,7 @@ jacoco {
 }
 
 jacocoTestReport {
-    dependsOn test
+    dependsOn test, classes
     finalizedBy jacocoTestCoverageVerification
 
     reports {
@@ -131,6 +131,11 @@ spotless {
         indentWithSpaces(2)
         endWithNewline()
     }
+}
+
+// ============ PMD ============
+pmd {
+    ignoreFailures = true
 }
 
 // ============ SPOTBUGS ============

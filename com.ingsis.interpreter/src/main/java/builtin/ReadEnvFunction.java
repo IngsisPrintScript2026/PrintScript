@@ -1,11 +1,14 @@
+/*
+ * My Project
+ */
+
 package builtin;
 
 import builtin.provider.EnvProvider;
-import node.expression.literal.DataType;
-
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.function.Consumer;
+import node.expression.literal.DataType;
 
 public class ReadEnvFunction implements BuiltInFunction {
     private final EnvProvider envProvider;
@@ -33,10 +36,12 @@ public class ReadEnvFunction implements BuiltInFunction {
             throw new RuntimeException("Runtime error: readEnv requires 1 argument (env var name)");
         }
         String varName = String.valueOf(arguments.get(0));
-        String envValue = (envProvider != null) ? envProvider.getEnv(varName) : System.getenv(varName);
+        String envValue =
+                (envProvider != null) ? envProvider.getEnv(varName) : System.getenv(varName);
 
         if (envValue == null) {
-            throw new RuntimeException("Runtime error: Environment variable '" + varName + "' is not set");
+            throw new RuntimeException(
+                    "Runtime error: Environment variable '" + varName + "' is not set");
         }
 
         return coerce(envValue, targetType);
@@ -51,14 +56,16 @@ public class ReadEnvFunction implements BuiltInFunction {
                 try {
                     yield new BigDecimal(raw.trim());
                 } catch (Exception e) {
-                    throw new RuntimeException("Runtime error: Cannot parse env var value '" + raw + "' as number");
+                    throw new RuntimeException(
+                            "Runtime error: Cannot parse env var value '" + raw + "' as number");
                 }
             }
             case BOOLEAN -> {
                 String clean = raw.trim().toLowerCase();
                 if (clean.equals("true")) yield Boolean.TRUE;
                 if (clean.equals("false")) yield Boolean.FALSE;
-                throw new RuntimeException("Runtime error: Cannot parse env var value '" + raw + "' as boolean");
+                throw new RuntimeException(
+                        "Runtime error: Cannot parse env var value '" + raw + "' as boolean");
             }
         };
     }

@@ -1,3 +1,7 @@
+/*
+ * My Project
+ */
+
 package evaluator;
 
 import environment.Environment;
@@ -7,5 +11,6 @@ import result.Result;
 
 public interface ExpressionEvaluator {
     Result<Object> evaluate(ExpressionNode expr, Environment env);
+
     Result<Object> evaluate(ExpressionNode expr, Environment env, DataType targetType);
 }

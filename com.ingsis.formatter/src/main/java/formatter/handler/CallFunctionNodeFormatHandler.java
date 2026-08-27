@@ -29,8 +29,8 @@ public class CallFunctionNodeFormatHandler implements FormatNodeHandler<CallFunc
         sb.append(");");
 
         if ("println".equalsIgnoreCase(call.identifierNode().name())
-                && context.lineBreaksAfterPrintln() > 1) {
-            sb.append("\n".repeat(context.lineBreaksAfterPrintln() - 1));
+                && context.getLineBreaksAfterPrintln() > 1) {
+            sb.append("\n".repeat(context.getLineBreaksAfterPrintln() - 1));
         }
 
         return sb.toString();

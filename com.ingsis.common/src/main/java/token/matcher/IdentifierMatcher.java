@@ -1,8 +1,12 @@
+/*
+ * My Project
+ */
+
 package token.matcher;
 
+import java.util.regex.Pattern;
 import result.Result;
 import token.TokenType;
-import java.util.regex.Pattern;
 
 public class IdentifierMatcher extends AbstractTokenTypeMatcher {
     private static final Pattern PATTERN = Pattern.compile("^[a-zA-Z_][a-zA-Z0-9_]*$");

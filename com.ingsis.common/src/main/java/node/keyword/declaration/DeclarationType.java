@@ -1,9 +1,12 @@
+/*
+ * My Project
+ */
+
 package node.keyword.declaration;
 
+import java.util.Optional;
 import token.Token;
 import token.TokenType;
-
-import java.util.Optional;
 
 public enum DeclarationType {
     LET("let", true),
@@ -17,8 +20,13 @@ public enum DeclarationType {
         this.isMutable = isMutable;
     }
 
-    public String keyword() { return keyword; }
-    public boolean isMutable() { return isMutable; }
+    public String keyword() {
+        return keyword;
+    }
+
+    public boolean isMutable() {
+        return isMutable;
+    }
 
     public static boolean exists(Token token) {
         if (token == null) {
@@ -35,8 +43,7 @@ public enum DeclarationType {
         if (token == null) {
             return Optional.empty();
         }
-        return fromTokenType(token.type())
-                .or(() -> fromKeyword(token.value()));
+        return fromTokenType(token.type()).or(() -> fromKeyword(token.value()));
     }
 
     public static Optional<DeclarationType> fromTokenType(TokenType tokenType) {

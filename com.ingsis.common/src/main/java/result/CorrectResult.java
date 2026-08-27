@@ -1,3 +1,7 @@
+/*
+ * My Project
+ */
+
 package result;
 
 public record CorrectResult<T>(T value) implements Result<T> {

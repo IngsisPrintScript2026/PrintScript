@@ -1,12 +1,16 @@
+/*
+ * My Project
+ */
+
 package token;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 import result.CorrectResult;
 import result.IncorrectResult;
 import result.Result;
 import token.matcher.chain.TokenMatcher;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 public class TokenMatcherTest {
 
@@ -37,14 +41,17 @@ public class TokenMatcherTest {
     private void assertSuccess(TokenType expectedType, Result<TokenType> result) {
         switch (result) {
             case CorrectResult<TokenType>(var type) -> assertEquals(expectedType, type);
-            case IncorrectResult<TokenType> failure -> fail("Se esperaba éxito pero falló: " + failure.error());
+            case IncorrectResult<TokenType> failure ->
+                    fail("Se esperaba éxito pero falló: " + failure.error());
         }
     }
 
     private void assertFailure(Result<TokenType> result) {
         switch (result) {
-            case CorrectResult<TokenType> success -> fail("Se esperaba fallo pero fue exitoso: " + success.value());
-            case IncorrectResult<TokenType> failure -> assertTrue(failure.error().contains("Sin coincidencia"));
+            case CorrectResult<TokenType> success ->
+                    fail("Se esperaba fallo pero fue exitoso: " + success.value());
+            case IncorrectResult<TokenType> failure ->
+                    assertTrue(failure.error().contains("Sin coincidencia"));
         }
     }
 }

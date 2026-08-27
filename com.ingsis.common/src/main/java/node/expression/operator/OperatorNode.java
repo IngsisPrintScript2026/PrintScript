@@ -1,15 +1,19 @@
+/*
+ * My Project
+ */
+
 package node.expression.operator;
 
-import node.expression.ExpressionNode;
-
 import java.util.List;
+import node.expression.ExpressionNode;
 
 public record OperatorNode(
         OperatorType operatorType,
         ExpressionNode left,
         ExpressionNode right,
         Integer line,
-        Integer column) implements ExpressionNode {
+        Integer column)
+        implements ExpressionNode {
 
     @Override
     public String symbol() {
@@ -20,5 +24,4 @@ public record OperatorNode(
     public List<ExpressionNode> children() {
         return List.of(left, right);
     }
-
 }

@@ -1,3 +1,7 @@
+/*
+ * My Project
+ */
+
 package evaluator;
 
 import builtin.BuiltInFunction;
@@ -5,6 +9,10 @@ import builtin.FunctionRegistry;
 import builtin.ReadEnvFunction;
 import builtin.ReadInputFunction;
 import environment.Environment;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
 import node.expression.ExpressionNode;
 import node.expression.Identifier.IdentifierNode;
 import node.expression.function.CallFunctionNode;
@@ -15,19 +23,14 @@ import node.expression.literal.StringLiteralNode;
 import node.expression.nullObject.NilExpressionNode;
 import node.expression.operator.OperatorNode;
 import result.CorrectResult;
-import result.IncorrectResult;
 import result.Result;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Consumer;
 
 public class DefaultExpressionEvaluator implements ExpressionEvaluator {
     private final FunctionRegistry functionRegistry;
     private final Consumer<String> outputEmitter;
 
-    public DefaultExpressionEvaluator(FunctionRegistry functionRegistry, Consumer<String> outputEmitter) {
+    public DefaultExpressionEvaluator(
+            FunctionRegistry functionRegistry, Consumer<String> outputEmitter) {
         this.functionRegistry = functionRegistry;
         this.outputEmitter = outputEmitter;
     }
@@ -63,7 +66,8 @@ public class DefaultExpressionEvaluator implements ExpressionEvaluator {
         }
     }
 
-    private Result<Object> evaluateCallFunction(CallFunctionNode call, Environment env, DataType targetType) {
+    private Result<Object> evaluateCallFunction(
+            CallFunctionNode call, Environment env, DataType targetType) {
         String fnName = call.identifierNode().name();
         List<Object> args = new ArrayList<>();
         for (ExpressionNode argNode : call.argumentNodes()) {

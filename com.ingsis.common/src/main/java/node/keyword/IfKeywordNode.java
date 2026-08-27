@@ -1,18 +1,22 @@
-package node.keyword;
+/*
+ * My Project
+ */
 
-import node.Node;
-import node.expression.ExpressionNode;
-import node.visitor.NodeVisitor;
+package node.keyword;
 
 import java.util.ArrayList;
 import java.util.List;
+import node.Node;
+import node.expression.ExpressionNode;
+import node.visitor.NodeVisitor;
 
 public record IfKeywordNode(
         ExpressionNode condition,
         List<Node> thenBody,
         List<Node> elseBody,
         Integer line,
-        Integer column) implements Node {
+        Integer column)
+        implements Node {
 
     public IfKeywordNode {
         thenBody = List.copyOf(thenBody);

@@ -1,3 +1,7 @@
+/*
+ * My Project
+ */
+
 package token.matcher;
 
 import result.CorrectResult;

@@ -1,18 +1,20 @@
+/*
+ * My Project
+ */
+
 package lexer;
 
 import iterator.IterationStep;
 import iterator.SafeIterator;
-import metaChar.MetaCharacter;
+import java.util.List;
 import metaChar.MetaCharStringBuilder;
+import metaChar.MetaCharacter;
 import result.CorrectResult;
 import result.IncorrectResult;
 import result.Result;
 import token.Token;
-import token.tokenizer.Tokenizer;
 import token.tokenize.TokenizeResult;
-
-import java.util.ArrayList;
-import java.util.List;
+import token.tokenizer.Tokenizer;
 
 public class Lexer implements SafeIterator<Token> {
     private final SafeIterator<MetaCharacter> charIterator;
@@ -39,8 +41,9 @@ public class Lexer implements SafeIterator<Token> {
         boolean skippingWhitespace = true;
         while (skippingWhitespace) {
             switch (result) {
-                case CorrectResult<IterationStep<MetaCharacter>>(IterationStep<MetaCharacter> value)
-                        when Character.isWhitespace(value.value().character()) -> {
+                case CorrectResult<IterationStep<MetaCharacter>>(
+                        IterationStep<MetaCharacter> value) when Character.isWhitespace(
+                        value.value().character()) -> {
                     curr = (SafeIterator<MetaCharacter>) value.next();
                     result = curr.next();
                 }
@@ -50,13 +53,13 @@ public class Lexer implements SafeIterator<Token> {
 
         return switch (result) {
             case IncorrectResult<IterationStep<MetaCharacter>> failure -> Result.failure("EOF");
-            case CorrectResult<IterationStep<MetaCharacter>> success -> runMaximalMunchLoop(curr, result);
+            case CorrectResult<IterationStep<MetaCharacter>> success ->
+                    runMaximalMunchLoop(curr, result);
         };
     }
 
     private Result<IterationStep<Token>> runMaximalMunchLoop(
-            SafeIterator<MetaCharacter> curr,
-            Result<IterationStep<MetaCharacter>> initialResult) {
+            SafeIterator<MetaCharacter> curr, Result<IterationStep<MetaCharacter>> initialResult) {
 
         MunchState state = executeMunch(initialResult);
         unreadLookaheadBuffer(curr, state.lookaheadBuffer);
@@ -71,7 +74,8 @@ public class Lexer implements SafeIterator<Token> {
         boolean processing = true;
         while (processing) {
             switch (result) {
-                case CorrectResult<IterationStep<MetaCharacter>>(IterationStep<MetaCharacter> step) -> {
+                case CorrectResult<IterationStep<MetaCharacter>>(
+                        IterationStep<MetaCharacter> step) -> {
                     sb.append(step.value());
                     TokenizeResult tr = tokenizer.tokenize(sb);
 
@@ -88,9 +92,7 @@ public class Lexer implements SafeIterator<Token> {
     }
 
     private boolean processTokenizeStep(
-            TokenizeResult tr,
-            IterationStep<MetaCharacter> step,
-            MunchState state) {
+            TokenizeResult tr, IterationStep<MetaCharacter> step, MunchState state) {
 
         return switch (tr) {
             case TokenizeResult.Complete(Token token) -> {
@@ -110,15 +112,15 @@ public class Lexer implements SafeIterator<Token> {
         };
     }
 
-    private void unreadLookaheadBuffer(SafeIterator<MetaCharacter> stream, List<MetaCharacter> buffer) {
+    private void unreadLookaheadBuffer(
+            SafeIterator<MetaCharacter> stream, List<MetaCharacter> buffer) {
         for (int i = buffer.size() - 1; i >= 0; i--) {
             stream.unread(buffer.get(i));
         }
     }
 
     private Result<IterationStep<Token>> buildResult(
-            Token token,
-            SafeIterator<MetaCharacter> nextStream) {
+            Token token, SafeIterator<MetaCharacter> nextStream) {
         if (token == null) {
             return Result.failure("Error léxico: Imposible reconocer un token válido");
         }

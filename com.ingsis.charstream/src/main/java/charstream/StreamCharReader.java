@@ -1,3 +1,7 @@
+/*
+ * My Project
+ */
+
 package charstream;
 
 import java.io.BufferedReader;
@@ -9,8 +13,10 @@ public class StreamCharReader implements CharReader {
     private final PushbackReader reader;
 
     public StreamCharReader(Reader reader) {
-        Reader buffered = (reader instanceof BufferedReader) ? reader : new BufferedReader(reader, 8192);
-        this.reader = (buffered instanceof PushbackReader p) ? p : new PushbackReader(buffered, 1024);
+        Reader buffered =
+                (reader instanceof BufferedReader) ? reader : new BufferedReader(reader, 8192);
+        this.reader =
+                (buffered instanceof PushbackReader p) ? p : new PushbackReader(buffered, 1024);
     }
 
     @Override

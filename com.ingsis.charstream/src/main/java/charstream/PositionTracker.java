@@ -1,3 +1,7 @@
+/*
+ * My Project
+ */
+
 package charstream;
 
 public final class PositionTracker {

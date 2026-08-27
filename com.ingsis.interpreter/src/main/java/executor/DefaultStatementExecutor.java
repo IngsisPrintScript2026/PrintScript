@@ -1,3 +1,7 @@
+/*
+ * My Project
+ */
+
 package executor;
 
 import builtin.BuiltInFunction;
@@ -6,6 +10,9 @@ import builtin.FunctionRegistry;
 import environment.Environment;
 import evaluator.DefaultExpressionEvaluator;
 import evaluator.ExpressionEvaluator;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
 import node.Node;
 import node.expression.ExpressionNode;
 import node.expression.function.CallFunctionNode;
@@ -15,10 +22,6 @@ import node.keyword.IfKeywordNode;
 import result.CorrectResult;
 import result.IncorrectResult;
 import result.Result;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Consumer;
 
 public class DefaultStatementExecutor implements StatementExecutor {
     private final ExpressionEvaluator expressionEvaluator;
@@ -38,8 +41,12 @@ public class DefaultStatementExecutor implements StatementExecutor {
         this(outputEmitter, new DefaultFunctionRegistry());
     }
 
-    public DefaultStatementExecutor(Consumer<String> outputEmitter, FunctionRegistry functionRegistry) {
-        this(new DefaultExpressionEvaluator(functionRegistry, outputEmitter), functionRegistry, outputEmitter);
+    public DefaultStatementExecutor(
+            Consumer<String> outputEmitter, FunctionRegistry functionRegistry) {
+        this(
+                new DefaultExpressionEvaluator(functionRegistry, outputEmitter),
+                functionRegistry,
+                outputEmitter);
     }
 
     @Override
@@ -57,7 +64,8 @@ public class DefaultStatementExecutor implements StatementExecutor {
         Object value = null;
         if (decl.expressionNode() != null) {
             Result<Object> valRes = expressionEvaluator.evaluate(decl.expressionNode(), env);
-            if (!valRes.isCorrect()) return Result.failure(((IncorrectResult<Object>) valRes).error());
+            if (!valRes.isCorrect())
+                return Result.failure(((IncorrectResult<Object>) valRes).error());
             value = ((CorrectResult<Object>) valRes).value();
         }
         try {
@@ -81,7 +89,8 @@ public class DefaultStatementExecutor implements StatementExecutor {
 
     private Result<Void> executeIf(IfKeywordNode ifNode, Environment env) {
         Result<Object> condRes = expressionEvaluator.evaluate(ifNode.condition(), env);
-        if (!condRes.isCorrect()) return Result.failure(((IncorrectResult<Object>) condRes).error());
+        if (!condRes.isCorrect())
+            return Result.failure(((IncorrectResult<Object>) condRes).error());
 
         Object conditionValue = ((CorrectResult<Object>) condRes).value();
         if (!(conditionValue instanceof Boolean boolCond)) {
@@ -107,7 +116,8 @@ public class DefaultStatementExecutor implements StatementExecutor {
         List<Object> argValues = new ArrayList<>();
         for (ExpressionNode argNode : call.argumentNodes()) {
             Result<Object> argRes = expressionEvaluator.evaluate(argNode, env);
-            if (!argRes.isCorrect()) return Result.failure(((IncorrectResult<Object>) argRes).error());
+            if (!argRes.isCorrect())
+                return Result.failure(((IncorrectResult<Object>) argRes).error());
             argValues.add(((CorrectResult<Object>) argRes).value());
         }
 

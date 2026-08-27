@@ -1,9 +1,12 @@
-package node.expression.nullObject;
+/*
+ * My Project
+ */
 
-import node.expression.ExpressionNode;
+package node.expression.nullObject;
 
 import java.util.Collections;
 import java.util.List;
+import node.expression.ExpressionNode;
 
 public record NilExpressionNode() implements ExpressionNode {
 
@@ -26,5 +29,4 @@ public record NilExpressionNode() implements ExpressionNode {
     public Integer column() {
         return -1;
     }
-
 }

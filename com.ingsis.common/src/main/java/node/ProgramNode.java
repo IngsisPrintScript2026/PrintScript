@@ -1,9 +1,11 @@
+/*
+ * My Project
+ */
+
 package node;
 
-
-import node.visitor.NodeVisitor;
-
 import java.util.List;
+import node.visitor.NodeVisitor;
 
 public record ProgramNode(List<Node> statements, Integer line, Integer column) implements Node {
 
@@ -25,5 +27,4 @@ public record ProgramNode(List<Node> statements, Integer line, Integer column) i
     public <R, C> R accept(NodeVisitor<R, C> visitor, C context) {
         return visitor.visit(this, context);
     }
-
 }

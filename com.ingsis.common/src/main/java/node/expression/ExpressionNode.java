@@ -1,8 +1,11 @@
+/*
+ * My Project
+ */
+
 package node.expression;
 
-import node.Node;
-
 import java.util.List;
+import node.Node;
 
 public interface ExpressionNode extends Node {
 
@@ -10,4 +13,3 @@ public interface ExpressionNode extends Node {
 
     String symbol();
 }
-

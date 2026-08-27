@@ -1,3 +1,7 @@
+/*
+ * My Project
+ */
+
 package iterator;
 
 public record IterationStep<T>(T value, SafeIterator<?> next) {
@@ -6,5 +10,3 @@ public record IterationStep<T>(T value, SafeIterator<?> next) {
         return (S) next;
     }
 }
-
-

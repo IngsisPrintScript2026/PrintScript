@@ -1,8 +1,12 @@
+/*
+ * My Project
+ */
+
 package token.matcher;
 
+import java.util.regex.Pattern;
 import result.Result;
 import token.TokenType;
-import java.util.regex.Pattern;
 
 public class NumberMatcher extends AbstractTokenTypeMatcher {
     private static final Pattern PATTERN = Pattern.compile("^\\d+(\\.\\d+)?$");

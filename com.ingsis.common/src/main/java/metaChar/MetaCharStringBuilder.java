@@ -1,13 +1,16 @@
+/*
+ * My Project
+ */
+
 package metaChar;
 
 import position.Position;
 
-import java.util.List;
-
-public final class MetaCharStringBuilder implements MetaCharacterStringBuilder{
+public final class MetaCharStringBuilder implements MetaCharacterStringBuilder {
     private final StringBuilder builder = new StringBuilder();
-    //Se utilizan valores negativos para representar que esta inicializado vacio y para no utilizar null como Position
-    private Position position = new Position(-1,-1);
+    // Se utilizan valores negativos para representar que esta inicializado vacio y para no utilizar
+    // null como Position
+    private Position position = new Position(-1, -1);
 
     @Override
     public MetaCharacterStringBuilder append(MetaCharacter metaCharacter) {
@@ -21,6 +24,7 @@ public final class MetaCharStringBuilder implements MetaCharacterStringBuilder{
     public String buildString() {
         return this.builder.toString();
     }
+
     public Position getStartPosition() {
         return this.position;
     }
@@ -28,5 +32,4 @@ public final class MetaCharStringBuilder implements MetaCharacterStringBuilder{
     public boolean isEmpty() {
         return builder.isEmpty();
     }
-
 }

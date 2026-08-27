@@ -1,11 +1,18 @@
+/*
+ * My Project
+ */
+
 package token;
 
 import position.Position;
 
 public interface TokenInterface {
     TokenType type();
+
     Position startPosition();
+
     Position endPosition();
+
     String value();
 
     default Integer line() {

@@ -1,11 +1,15 @@
+/*
+ * My Project
+ */
+
 package interpreter;
 
 import environment.Environment;
-import evaluator.DefaultExpressionEvaluator;
 import evaluator.ExpressionEvaluator;
 import executor.DefaultStatementExecutor;
 import executor.StatementExecutor;
 import iterator.IterationStep;
+import java.util.function.Consumer;
 import node.Node;
 import node.ProgramNode;
 import result.CorrectResult;
@@ -14,9 +18,6 @@ import result.Result;
 import semantic.SemanticChecker;
 import semantic.environment.SemanticEnvironment;
 import tokenstream.TokenStream;
-
-import java.util.List;
-import java.util.function.Consumer;
 
 public class DefaultInterpreter implements Interpreter {
     private final syntactic.Parser<Node> statementParser;
@@ -38,25 +39,31 @@ public class DefaultInterpreter implements Interpreter {
             Consumer<String> outputEmitter,
             builtin.provider.InputProvider inputProvider,
             builtin.provider.EnvProvider envProvider) {
-        this(statementParser, semanticChecker, new DefaultStatementExecutor(
-                outputEmitter,
-                new builtin.DefaultFunctionRegistry(inputProvider, envProvider)));
+        this(
+                statementParser,
+                semanticChecker,
+                new DefaultStatementExecutor(
+                        outputEmitter,
+                        new builtin.DefaultFunctionRegistry(inputProvider, envProvider)));
     }
 
     public DefaultInterpreter(
-            SemanticChecker semanticChecker,
-            StatementExecutor statementExecutor) {
-        this(syntactic.parser.ParserFactory.createParser(version.Version.V_1_0), semanticChecker, statementExecutor);
+            SemanticChecker semanticChecker, StatementExecutor statementExecutor) {
+        this(
+                syntactic.parser.ParserFactory.createParser(version.Version.V_1_0),
+                semanticChecker,
+                statementExecutor);
     }
 
     public DefaultInterpreter(
             SemanticChecker semanticChecker,
             ExpressionEvaluator expressionEvaluator,
             Consumer<String> outputEmitter) {
-        this(syntactic.parser.ParserFactory.createParser(version.Version.V_1_0), semanticChecker, new DefaultStatementExecutor(
-                expressionEvaluator,
-                new builtin.DefaultFunctionRegistry(),
-                outputEmitter));
+        this(
+                syntactic.parser.ParserFactory.createParser(version.Version.V_1_0),
+                semanticChecker,
+                new DefaultStatementExecutor(
+                        expressionEvaluator, new builtin.DefaultFunctionRegistry(), outputEmitter));
     }
 
     public DefaultInterpreter(
@@ -64,12 +71,15 @@ public class DefaultInterpreter implements Interpreter {
             Consumer<String> outputEmitter,
             builtin.provider.InputProvider inputProvider,
             builtin.provider.EnvProvider envProvider) {
-        this(syntactic.parser.ParserFactory.createParser(version.Version.V_1_0), semanticChecker, outputEmitter, inputProvider, envProvider);
+        this(
+                syntactic.parser.ParserFactory.createParser(version.Version.V_1_0),
+                semanticChecker,
+                outputEmitter,
+                inputProvider,
+                envProvider);
     }
 
-    public DefaultInterpreter(
-            SemanticChecker semanticChecker,
-            Consumer<String> outputEmitter) {
+    public DefaultInterpreter(SemanticChecker semanticChecker, Consumer<String> outputEmitter) {
         this(semanticChecker, outputEmitter, prompt -> "", System::getenv);
     }
 
@@ -83,9 +93,7 @@ public class DefaultInterpreter implements Interpreter {
 
     @Override
     public Result<SemanticEnvironment> interpret(
-            TokenStream tokenStream,
-            SemanticEnvironment semanticEnv,
-            Environment runtimeEnv) {
+            TokenStream tokenStream, SemanticEnvironment semanticEnv, Environment runtimeEnv) {
         if (statementParser == null) {
             return Result.failure("Syntactic parser dependency must be injected into Interpreter.");
         }
@@ -101,7 +109,8 @@ public class DefaultInterpreter implements Interpreter {
                 if ("EOF".equalsIgnoreCase(err) || err.contains("EOF")) {
                     break;
                 }
-                return Result.failure(err.startsWith("Syntactic error:") ? err : "Syntactic error: " + err);
+                return Result.failure(
+                        err.startsWith("Syntactic error:") ? err : "Syntactic error: " + err);
             }
 
             IterationStep<Node> step = ((CorrectResult<IterationStep<Node>>) parseResult).value();
@@ -109,10 +118,12 @@ public class DefaultInterpreter implements Interpreter {
             currentStream = (TokenStream) step.next();
 
             if (semanticChecker != null) {
-                Result<SemanticEnvironment> semResult = semanticChecker.checkNode(statement, currentSemEnv);
+                Result<SemanticEnvironment> semResult =
+                        semanticChecker.checkNode(statement, currentSemEnv);
                 if (!semResult.isCorrect()) {
                     String err = ((IncorrectResult<SemanticEnvironment>) semResult).error();
-                    return Result.failure(err.startsWith("Semantic error:") ? err : "Semantic error: " + err);
+                    return Result.failure(
+                            err.startsWith("Semantic error:") ? err : "Semantic error: " + err);
                 }
                 currentSemEnv = ((CorrectResult<SemanticEnvironment>) semResult).value();
             }
@@ -120,7 +131,8 @@ public class DefaultInterpreter implements Interpreter {
             Result<Void> execRes = statementExecutor.execute(statement, runtimeEnv);
             if (!execRes.isCorrect()) {
                 String err = ((IncorrectResult<Void>) execRes).error();
-                return Result.failure(err.startsWith("Runtime error:") ? err : "Runtime error: " + err);
+                return Result.failure(
+                        err.startsWith("Runtime error:") ? err : "Runtime error: " + err);
             }
         }
 
@@ -138,7 +150,8 @@ public class DefaultInterpreter implements Interpreter {
             Result<Void> execRes = statementExecutor.execute(statement, globalEnv);
             if (!execRes.isCorrect()) {
                 String err = ((IncorrectResult<Void>) execRes).error();
-                return Result.failure(err.startsWith("Runtime error:") ? err : "Runtime error: " + err);
+                return Result.failure(
+                        err.startsWith("Runtime error:") ? err : "Runtime error: " + err);
             }
         }
         return Result.success(null);

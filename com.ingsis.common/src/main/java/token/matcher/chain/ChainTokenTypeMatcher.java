@@ -1,3 +1,7 @@
+/*
+ * My Project
+ */
+
 package token.matcher.chain;
 
 import token.matcher.BooleanMatcher;
@@ -14,9 +18,9 @@ public final class ChainTokenTypeMatcher {
     public static TokenTypeMatcher defaultChain() {
         LexemeMatcher lexemes = new LexemeMatcher();
         lexemes.linkWith(new NumberMatcher())
-               .linkWith(new BooleanMatcher())
-               .linkWith(new StringMatcher())
-               .linkWith(new IdentifierMatcher());
+                .linkWith(new BooleanMatcher())
+                .linkWith(new StringMatcher())
+                .linkWith(new IdentifierMatcher());
         return lexemes;
     }
 }

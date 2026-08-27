@@ -1,12 +1,15 @@
+/*
+ * My Project
+ */
+
 package charstream;
 
 import iterator.IterationStep;
 import iterator.SafeIterator;
+import java.io.IOException;
 import metaChar.MetaCharacter;
 import position.Position;
 import result.Result;
-
-import java.io.IOException;
 
 public final class CharStream implements SafeIterator<MetaCharacter> {
     private final CharReader reader;
@@ -26,7 +29,8 @@ public final class CharStream implements SafeIterator<MetaCharacter> {
         if (item != null && item.character() != null) {
             try {
                 reader.unread(item.character());
-            } catch (IOException ignored) {}
+            } catch (IOException ignored) {
+            }
         }
     }
 
@@ -40,7 +44,8 @@ public final class CharStream implements SafeIterator<MetaCharacter> {
             }
 
             char c = (char) raw;
-            Position position = new Position(positionTracker.getLine(), positionTracker.getColumn());
+            Position position =
+                    new Position(positionTracker.getLine(), positionTracker.getColumn());
             MetaCharacter metaChar = new MetaCharacter(c, position);
 
             PositionTracker nextPosition = positionTracker.advance(c);

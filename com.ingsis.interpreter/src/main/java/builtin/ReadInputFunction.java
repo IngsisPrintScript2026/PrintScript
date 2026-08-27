@@ -1,11 +1,14 @@
+/*
+ * My Project
+ */
+
 package builtin;
 
 import builtin.provider.InputProvider;
-import node.expression.literal.DataType;
-
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.function.Consumer;
+import node.expression.literal.DataType;
 
 public class ReadInputFunction implements BuiltInFunction {
     private final InputProvider inputProvider;
@@ -34,7 +37,8 @@ public class ReadInputFunction implements BuiltInFunction {
         }
     }
 
-    public Object evaluate(List<Object> arguments, DataType targetType, Consumer<String> outputEmitter) {
+    public Object evaluate(
+            List<Object> arguments, DataType targetType, Consumer<String> outputEmitter) {
         String prompt = arguments.isEmpty() ? "" : String.valueOf(arguments.get(0));
         if (outputEmitter != null && !prompt.isEmpty()) {
             outputEmitter.accept(prompt);
@@ -55,14 +59,16 @@ public class ReadInputFunction implements BuiltInFunction {
                 try {
                     yield new BigDecimal(raw.trim());
                 } catch (Exception e) {
-                    throw new RuntimeException("Runtime error: Cannot parse input '" + raw + "' as number");
+                    throw new RuntimeException(
+                            "Runtime error: Cannot parse input '" + raw + "' as number");
                 }
             }
             case BOOLEAN -> {
                 String clean = raw.trim().toLowerCase();
                 if (clean.equals("true")) yield Boolean.TRUE;
                 if (clean.equals("false")) yield Boolean.FALSE;
-                throw new RuntimeException("Runtime error: Cannot parse input '" + raw + "' as boolean");
+                throw new RuntimeException(
+                        "Runtime error: Cannot parse input '" + raw + "' as boolean");
             }
         };
     }

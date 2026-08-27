@@ -1,3 +1,7 @@
+/*
+ * My Project
+ */
+
 package position;
 
 public record Position(Integer line, Integer column) {
@@ -5,5 +9,4 @@ public record Position(Integer line, Integer column) {
     public String toString() {
         return "[" + line + ":" + column + "]";
     }
-
 }

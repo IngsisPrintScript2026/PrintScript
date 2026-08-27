@@ -1,11 +1,16 @@
+/*
+ * My Project
+ */
+
 package token.matcher;
 
+import java.util.regex.Pattern;
 import result.Result;
 import token.TokenType;
-import java.util.regex.Pattern;
 
 public class StringMatcher extends AbstractTokenTypeMatcher {
-    private static final Pattern PATTERN = Pattern.compile("^\"(?:\\\\.|[^\\\\\"])*\"|'(?:\\\\.|[^\\\\'])*'$");
+    private static final Pattern PATTERN =
+            Pattern.compile("^\"(?:\\\\.|[^\\\\\"])*\"|'(?:\\\\.|[^\\\\'])*'$");
 
     @Override
     protected Result<TokenType> doMatch(String input) {

@@ -1,11 +1,14 @@
-package node.expression.literal;
+/*
+ * My Project
+ */
 
-import node.expression.ExpressionNode;
-import node.expression.LiteralNode;
-import result.Result;
+package node.expression.literal;
 
 import java.util.Collections;
 import java.util.List;
+import node.expression.ExpressionNode;
+import node.expression.LiteralNode;
+import result.Result;
 
 public final record StringLiteralNode(String rawValue, Integer line, Integer column)
         implements LiteralNode<String> {
@@ -24,6 +27,4 @@ public final record StringLiteralNode(String rawValue, Integer line, Integer col
     public String symbol() {
         return rawValue;
     }
-
 }
-

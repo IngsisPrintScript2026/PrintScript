@@ -1,11 +1,14 @@
+/*
+ * My Project
+ */
+
 package lexer;
 
 import iterator.SafeIterator;
-import metaChar.MetaCharacter;
-import token.Token;
-
 import java.util.ArrayList;
 import java.util.List;
+import metaChar.MetaCharacter;
+import token.Token;
 
 public class MunchState {
     public Token lastValidToken;

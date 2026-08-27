@@ -1,3 +1,7 @@
+/*
+ * My Project
+ */
+
 package state;
 
 public enum State {

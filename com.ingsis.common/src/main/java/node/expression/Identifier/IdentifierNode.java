@@ -1,12 +1,14 @@
-package node.expression.Identifier;
+/*
+ * My Project
+ */
 
-import node.expression.ExpressionNode;
+package node.expression.Identifier;
 
 import java.util.Collections;
 import java.util.List;
+import node.expression.ExpressionNode;
 
-public record IdentifierNode(String name, Integer line, Integer column)
-        implements ExpressionNode {
+public record IdentifierNode(String name, Integer line, Integer column) implements ExpressionNode {
 
     @Override
     public List<ExpressionNode> children() {
@@ -17,6 +19,4 @@ public record IdentifierNode(String name, Integer line, Integer column)
     public String symbol() {
         return name;
     }
-
-
 }

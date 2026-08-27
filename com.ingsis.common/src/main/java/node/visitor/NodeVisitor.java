@@ -1,3 +1,7 @@
+/*
+ * My Project
+ */
+
 package node.visitor;
 
 import node.Node;
@@ -9,9 +13,14 @@ import node.keyword.IfKeywordNode;
 
 public interface NodeVisitor<R, C> {
     R visit(DeclarationKeywordNode decl, C context);
+
     R visit(AssignNode assign, C context);
+
     R visit(IfKeywordNode ifNode, C context);
+
     R visit(CallFunctionNode call, C context);
+
     R visit(ProgramNode program, C context);
+
     R visitDefault(Node node, C context);
 }

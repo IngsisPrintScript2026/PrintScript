@@ -1,3 +1,7 @@
+/*
+ * My Project
+ */
+
 package result;
 
 public sealed interface Result<T> permits CorrectResult, IncorrectResult {

@@ -1,10 +1,13 @@
-package environment;
+/*
+ * My Project
+ */
 
-import node.expression.literal.DataType;
+package environment;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import node.expression.literal.DataType;
 
 public class Environment {
     private final Environment parent;
@@ -22,7 +25,8 @@ public class Environment {
 
     public void declare(String name, Object value, DataType type, boolean isMutable) {
         if (variables.containsKey(name)) {
-            throw new RuntimeException("Variable '" + name + "' has already been declared in this scope.");
+            throw new RuntimeException(
+                    "Variable '" + name + "' has already been declared in this scope.");
         }
         variables.put(name, new VariableInfo(value, type, isMutable));
     }

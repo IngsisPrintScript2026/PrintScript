@@ -1,3 +1,7 @@
+/*
+ * My Project
+ */
+
 package version;
 
 public enum Version {

@@ -1,3 +1,7 @@
+/*
+ * My Project
+ */
+
 package lexer;
 
 import metaChar.MetaCharStringBuilder;
@@ -33,9 +37,7 @@ public class PrintScriptTokenizer implements Tokenizer {
     }
 
     private TokenizeResult evaluateMatch(
-            Result<TokenType> matchResult,
-            String text,
-            MetaCharStringBuilder sb) {
+            Result<TokenType> matchResult, String text, MetaCharStringBuilder sb) {
 
         return switch (matchResult) {
             case CorrectResult<TokenType>(TokenType value) -> {

@@ -1,3 +1,7 @@
+/*
+ * My Project
+ */
+
 package interpreter;
 
 import environment.Environment;
@@ -8,9 +12,7 @@ import tokenstream.TokenStream;
 
 public interface Interpreter {
     Result<SemanticEnvironment> interpret(
-            TokenStream tokenStream,
-            SemanticEnvironment semanticEnv,
-            Environment runtimeEnv);
+            TokenStream tokenStream, SemanticEnvironment semanticEnv, Environment runtimeEnv);
 
     Result<Void> interpret(ProgramNode program);
 

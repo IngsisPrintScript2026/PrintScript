@@ -1,3 +1,7 @@
+/*
+ * My Project
+ */
+
 package node.expression;
 
 import result.Result;

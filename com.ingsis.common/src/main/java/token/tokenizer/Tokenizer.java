@@ -1,3 +1,7 @@
+/*
+ * My Project
+ */
+
 package token.tokenizer;
 
 import metaChar.MetaCharStringBuilder;

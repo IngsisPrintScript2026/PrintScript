@@ -1,3 +1,7 @@
+/*
+ * My Project
+ */
+
 package result;
 
 public record IncorrectResult<T>(String error) implements Result<T> {

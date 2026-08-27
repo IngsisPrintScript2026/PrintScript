@@ -1,9 +1,18 @@
+/*
+ * My Project
+ */
+
 package lexer;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 import charstream.CharStream;
 import charstream.StreamCharReader;
 import iterator.IterationStep;
 import iterator.SafeIterator;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import result.CorrectResult;
 import result.IncorrectResult;
@@ -11,17 +20,12 @@ import result.Result;
 import token.Token;
 import token.TokenType;
 
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-
 public class LexerTest {
 
     @Test
     void testLexerTokenizesPrintScriptExampleFromPDF() {
-        String code = """
+        String code =
+                """
                 let a: number = 12;
                 let b: number = 4;
                 let c: number = a / b;
