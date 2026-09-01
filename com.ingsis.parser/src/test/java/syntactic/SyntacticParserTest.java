@@ -75,4 +75,22 @@ class SyntacticParserTest {
         ProgramNode programNode = ((CorrectResult<ProgramNode>) result).value();
         assertEquals(1, programNode.statements().size());
     }
+
+    @Test
+    void testSyntacticParserErrorHandling() {
+        SyntacticParser parser = new SyntacticParser(Version.V_1_0);
+
+        // Null and empty stream
+        assertFalse(parser.parseStatement(null).isCorrect());
+        assertFalse(parser.parseStatement(new TokenStreamAdapter(List.of(), 0)).isCorrect());
+
+        // Invalid statement in stream
+        Position pos = new Position(1, 1);
+        List<Token> invalidTokens =
+                List.of(
+                        new Token(TokenType.SEMICOLON, ";", pos, pos),
+                        new Token(TokenType.SEMICOLON, ";", pos, pos));
+        assertFalse(parser.parseProgram(new TokenStreamAdapter(invalidTokens, 0)).isCorrect());
+        assertFalse(parser.parse(new TokenStreamAdapter(invalidTokens, 0)).isCorrect());
+    }
 }

@@ -1,15 +1,8 @@
-package engine;
+/*
+ * My Project
+ */
 
-import picocli.CommandLine;
-import picocli.CommandLine.Command;
-import picocli.CommandLine.Option;
-import picocli.CommandLine.Parameters;
-import result.CorrectResult;
-import result.IncorrectResult;
-import result.Result;
-import service.ExecuteService;
-import service.ValidationService;
-import version.Version;
+package engine;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -22,6 +15,16 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.concurrent.Callable;
+import picocli.CommandLine;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
+import result.CorrectResult;
+import result.IncorrectResult;
+import result.Result;
+import service.ExecuteService;
+import service.ValidationService;
+import version.Version;
 
 @Command(
         name = "cli-engine",
@@ -33,7 +36,10 @@ public class CliEngine implements Callable<Integer>, Engine {
     private final ExecuteService executeService = new ExecuteService();
     private final ValidationService validationService = new ValidationService();
 
-    @Parameters(index = "0", arity = "0..1", description = "Operation: Validation, Execution, Formatting, Analyzing")
+    @Parameters(
+            index = "0",
+            arity = "0..1",
+            description = "Operation: Validation, Execution, Formatting, Analyzing")
     private String operation;
 
     @Option(
@@ -60,11 +66,11 @@ public class CliEngine implements Callable<Integer>, Engine {
     public Integer call() throws Exception {
         Version version = Version.fromString(versionString);
         try (InputStream in = inputFile != null ? new FileInputStream(inputFile) : System.in;
-             InputStream config = configFile != null ? new FileInputStream(configFile) : null;
-             Writer writer =
-                     outputFile != null
-                             ? new FileWriter(outputFile)
-                             : new OutputStreamWriter(System.out)) {
+                InputStream config = configFile != null ? new FileInputStream(configFile) : null;
+                Writer writer =
+                        outputFile != null
+                                ? new FileWriter(outputFile)
+                                : new OutputStreamWriter(System.out)) {
 
             OutputEmitter emitter = System.out::println;
 
@@ -83,16 +89,18 @@ public class CliEngine implements Callable<Integer>, Engine {
     }
 
     private boolean runRepl(Version version, Writer writer, OutputEmitter emitter) {
-        semantic.environment.SemanticEnvironment semanticEnv = new semantic.environment.SemanticEnvironment();
+        semantic.environment.SemanticEnvironment semanticEnv =
+                new semantic.environment.SemanticEnvironment();
         environment.Environment runtimeEnv = new environment.Environment();
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))) {
-            InputSupplier inputSupplier = prompt -> {
-                try {
-                    return reader.readLine();
-                } catch (IOException e) {
-                    return "";
-                }
-            };
+            InputSupplier inputSupplier =
+                    prompt -> {
+                        try {
+                            return reader.readLine();
+                        } catch (IOException e) {
+                            return "";
+                        }
+                    };
 
             System.out.println(
                     "Entering CLI Engine REPL. Type empty line to execute and 'exit' to quit.");
@@ -113,10 +121,16 @@ public class CliEngine implements Callable<Integer>, Engine {
                                         semanticEnv,
                                         runtimeEnv);
                         if (result.isCorrect()) {
-                            semanticEnv = ((CorrectResult<semantic.environment.SemanticEnvironment>) result).value();
+                            semanticEnv =
+                                    ((CorrectResult<semantic.environment.SemanticEnvironment>)
+                                                    result)
+                                            .value();
                             System.out.println("Program executed successfully");
                         } else {
-                            String error = ((IncorrectResult<semantic.environment.SemanticEnvironment>) result).error();
+                            String error =
+                                    ((IncorrectResult<semantic.environment.SemanticEnvironment>)
+                                                    result)
+                                            .error();
                             System.out.println("Error: " + error);
                             System.out.flush();
                         }
@@ -139,21 +153,31 @@ public class CliEngine implements Callable<Integer>, Engine {
             InputStream config,
             Writer writer,
             OutputEmitter emitter) {
-        if (operation == null || operation.equalsIgnoreCase("Execution") || operation.equalsIgnoreCase("interpret") || operation.equalsIgnoreCase("exec")) {
-            InputSupplier inputSupplier = prompt -> {
-                try {
-                    BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-                    return br.readLine();
-                } catch (IOException e) {
-                    return "";
-                }
-            };
+        if (operation == null
+                || operation.equalsIgnoreCase("Execution")
+                || operation.equalsIgnoreCase("interpret")
+                || operation.equalsIgnoreCase("exec")) {
+            InputSupplier inputSupplier =
+                    prompt -> {
+                        try {
+                            BufferedReader br =
+                                    new BufferedReader(new InputStreamReader(System.in));
+                            return br.readLine();
+                        } catch (IOException e) {
+                            return "";
+                        }
+                    };
             return interpret(version, emitter, inputSupplier, in);
-        } else if (operation.equalsIgnoreCase("Validation") || operation.equalsIgnoreCase("validate")) {
+        } else if (operation.equalsIgnoreCase("Validation")
+                || operation.equalsIgnoreCase("validate")) {
             return validate(version, in);
-        } else if (operation.equalsIgnoreCase("Formatting") || operation.equalsIgnoreCase("format") || operation.equalsIgnoreCase("fmt")) {
+        } else if (operation.equalsIgnoreCase("Formatting")
+                || operation.equalsIgnoreCase("format")
+                || operation.equalsIgnoreCase("fmt")) {
             return format(version, in, config, writer);
-        } else if (operation.equalsIgnoreCase("Analyzing") || operation.equalsIgnoreCase("analyze") || operation.equalsIgnoreCase("lint")) {
+        } else if (operation.equalsIgnoreCase("Analyzing")
+                || operation.equalsIgnoreCase("analyze")
+                || operation.equalsIgnoreCase("lint")) {
             return analyze(version, in, config);
         }
         return new IncorrectResult<>("Unknown operation: " + operation);
@@ -194,7 +218,8 @@ public class CliEngine implements Callable<Integer>, Engine {
     }
 
     @Override
-    public Result<String> format(Version version, InputStream in, InputStream config, Writer writer) {
+    public Result<String> format(
+            Version version, InputStream in, InputStream config, Writer writer) {
         return executeService.format(version, in, config, writer);
     }
 

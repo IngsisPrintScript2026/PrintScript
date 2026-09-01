@@ -1,29 +1,34 @@
+/*
+ * My Project
+ */
+
 package engine;
 
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.io.ByteArrayInputStream;
+import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Test;
 import result.Result;
 import service.ExecuteService;
 import service.FormatService;
 import version.Version;
 
-import java.io.ByteArrayInputStream;
-import java.io.StringWriter;
-import java.nio.charset.StandardCharsets;
-
-import static org.junit.jupiter.api.Assertions.*;
-
 public class FormatServiceTest {
 
     @Test
     void testFormatServicePipelineV1_0() {
-        String inputCode = """
+        String inputCode =
+                """
                 let a: number = 12;
                 let b: number = 4;
                 println(a + b);
                 """;
 
         FormatService formatService = new FormatService();
-        ByteArrayInputStream in = new ByteArrayInputStream(inputCode.getBytes(StandardCharsets.UTF_8));
+        ByteArrayInputStream in =
+                new ByteArrayInputStream(inputCode.getBytes(StandardCharsets.UTF_8));
         StringWriter writer = new StringWriter();
 
         Result<String> result = formatService.format(Version.V_1_0, in, writer);
@@ -40,7 +45,8 @@ public class FormatServiceTest {
         String inputCode = "let x: string = \"hello\";\nprintln(x);\n";
 
         Engine engine = new CliEngine();
-        ByteArrayInputStream in = new ByteArrayInputStream(inputCode.getBytes(StandardCharsets.UTF_8));
+        ByteArrayInputStream in =
+                new ByteArrayInputStream(inputCode.getBytes(StandardCharsets.UTF_8));
         StringWriter writer = new StringWriter();
 
         Result<String> result = engine.format(Version.V_1_0, in, null, writer);
@@ -53,14 +59,16 @@ public class FormatServiceTest {
 
     @Test
     void testYamlFormattingRulesIntegration() {
-        String yamlConfig = """
+        String yamlConfig =
+                """
                 space-before-colon: true
                 space-after-colon: true
                 space-around-equals: false
                 indent-inside-if: 2
                 """;
 
-        String inputCode = """
+        String inputCode =
+                """
                 const flag: boolean = true;
                 if (flag) {
                     println("OK");
@@ -68,8 +76,10 @@ public class FormatServiceTest {
                 """;
 
         FormatService formatService = new FormatService();
-        ByteArrayInputStream in = new ByteArrayInputStream(inputCode.getBytes(StandardCharsets.UTF_8));
-        ByteArrayInputStream config = new ByteArrayInputStream(yamlConfig.getBytes(StandardCharsets.UTF_8));
+        ByteArrayInputStream in =
+                new ByteArrayInputStream(inputCode.getBytes(StandardCharsets.UTF_8));
+        ByteArrayInputStream config =
+                new ByteArrayInputStream(yamlConfig.getBytes(StandardCharsets.UTF_8));
         StringWriter writer = new StringWriter();
 
         Result<String> result = formatService.format(Version.V_1_1, in, config, writer);
@@ -83,26 +93,33 @@ public class FormatServiceTest {
     @Test
     void testFormatCodeWithSemanticErrorShouldFormatButFailOnExecute() {
         // Syntactically valid code, but semantically invalid (reassigning a const variable)
-        String inputCode = """
+        String inputCode =
+                """
                 const x: number = 5;
                 x = 10;
                 """;
 
         FormatService formatService = new FormatService();
-        ByteArrayInputStream inFormat = new ByteArrayInputStream(inputCode.getBytes(StandardCharsets.UTF_8));
+        ByteArrayInputStream inFormat =
+                new ByteArrayInputStream(inputCode.getBytes(StandardCharsets.UTF_8));
         StringWriter writer = new StringWriter();
 
         Result<String> formatResult = formatService.format(Version.V_1_1, inFormat, writer);
 
-        assertTrue(formatResult.isCorrect(), "Formatting syntactically valid code should succeed even if semantic checks fail");
+        assertTrue(
+                formatResult.isCorrect(),
+                "Formatting syntactically valid code should succeed even if semantic checks fail");
         String formatted = writer.toString();
         assertTrue(formatted.contains("const x: number = 5;"));
         assertTrue(formatted.contains("x = 10;"));
 
         ExecuteService executeService = new ExecuteService();
-        ByteArrayInputStream inExec = new ByteArrayInputStream(inputCode.getBytes(StandardCharsets.UTF_8));
+        ByteArrayInputStream inExec =
+                new ByteArrayInputStream(inputCode.getBytes(StandardCharsets.UTF_8));
         Result<String> execResult = executeService.execute(Version.V_1_1, null, null, inExec);
 
-        assertFalse(execResult.isCorrect(), "Execution should fail during semantic checks due to constant re-assignment");
+        assertFalse(
+                execResult.isCorrect(),
+                "Execution should fail during semantic checks due to constant re-assignment");
     }
 }

@@ -1,9 +1,18 @@
+/*
+ * My Project
+ */
+
 package service;
 
 import charstream.CharStream;
 import charstream.StreamCharReader;
 import iterator.IterationStep;
 import iterator.SafeIterator;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import lexer.Lexer;
 import node.Node;
 import node.ProgramNode;
@@ -19,12 +28,6 @@ import tokenstream.LazyTokenStream;
 import tokenstream.TokenStream;
 import version.Version;
 
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-
 public class LintService {
 
     public Result<String> analyze(Version version, InputStream in, InputStream config) {
@@ -38,12 +41,14 @@ public class LintService {
 
     public Result<String> analyzeWithSca(Version version, InputStream in, Sca scaAnalyzer) {
         try {
-            StreamCharReader reader = new StreamCharReader(new InputStreamReader(in, StandardCharsets.UTF_8));
+            StreamCharReader reader =
+                    new StreamCharReader(new InputStreamReader(in, StandardCharsets.UTF_8));
             CharStream charStream = new CharStream(reader);
             SafeIterator<Token> lexer = new Lexer(charStream);
             TokenStream currentStream = new LazyTokenStream(lexer);
 
-            syntactic.Parser<Node> statementParser = syntactic.parser.ParserFactory.createParser(version);
+            syntactic.Parser<Node> statementParser =
+                    syntactic.parser.ParserFactory.createParser(version);
             SemanticChecker semanticChecker = new SemanticChecker();
 
             List<Node> statements = new ArrayList<>();
@@ -56,17 +61,21 @@ public class LintService {
                     if ("EOF".equalsIgnoreCase(err) || err.contains("EOF")) {
                         break;
                     }
-                    return Result.failure(err.startsWith("Syntactic error:") ? err : "Syntactic error: " + err);
+                    return Result.failure(
+                            err.startsWith("Syntactic error:") ? err : "Syntactic error: " + err);
                 }
 
-                IterationStep<Node> step = ((CorrectResult<IterationStep<Node>>) parseResult).value();
+                IterationStep<Node> step =
+                        ((CorrectResult<IterationStep<Node>>) parseResult).value();
                 Node statement = step.value();
                 currentStream = (TokenStream) step.next();
 
-                Result<SemanticEnvironment> semResult = semanticChecker.checkNode(statement, currentSemEnv);
+                Result<SemanticEnvironment> semResult =
+                        semanticChecker.checkNode(statement, currentSemEnv);
                 if (!semResult.isCorrect()) {
                     String err = ((IncorrectResult<SemanticEnvironment>) semResult).error();
-                    return Result.failure(err.startsWith("Semantic error:") ? err : "Semantic error: " + err);
+                    return Result.failure(
+                            err.startsWith("Semantic error:") ? err : "Semantic error: " + err);
                 }
                 currentSemEnv = ((CorrectResult<SemanticEnvironment>) semResult).value();
                 statements.add(statement);

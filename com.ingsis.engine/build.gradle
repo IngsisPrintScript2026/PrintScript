@@ -1,7 +1,5 @@
 plugins {
-    id 'java'
-    id 'application'
-    id 'publishing-convention'
+    id 'buildlogic.java-application-conventions'
 }
 
 application {
@@ -12,13 +10,6 @@ run {
     standardInput = System.in
 }
 
-group = 'org.example'
-version = '1.0-SNAPSHOT'
-
-repositories {
-    mavenCentral()
-}
-
 dependencies {
     implementation project(':com.ingsis.common')
     implementation project(':com.ingsis.charstream')
@@ -27,13 +18,4 @@ dependencies {
     implementation project(':com.ingsis.interpreter')
     implementation project(':com.ingsis.formatter')
     implementation project(':com.ingsis.sca')
-    implementation 'info.picocli:picocli:4.7.5'
-
-    testImplementation platform('org.junit:junit-bom:6.0.0')
-    testImplementation 'org.junit.jupiter:junit-jupiter'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-}
-
-test {
-    useJUnitPlatform()
 }

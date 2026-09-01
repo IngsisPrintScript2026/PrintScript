@@ -36,6 +36,17 @@ public class TokenMatcherTest {
         assertSuccess(TokenType.IDENTIFIER, TokenMatcher.match("myVariable"));
 
         assertFailure(TokenMatcher.match("123abcinvalid!!!"));
+        assertNullOrEmptyFailure(TokenMatcher.match(null));
+        assertNullOrEmptyFailure(TokenMatcher.match(""));
+    }
+
+    private void assertNullOrEmptyFailure(Result<TokenType> result) {
+        switch (result) {
+            case CorrectResult<TokenType> success ->
+                    fail("Se esperaba fallo pero fue exitoso: " + success.value());
+            case IncorrectResult<TokenType> failure ->
+                    assertTrue(failure.error().contains("No se permite un input null o vacio"));
+        }
     }
 
     private void assertSuccess(TokenType expectedType, Result<TokenType> result) {
