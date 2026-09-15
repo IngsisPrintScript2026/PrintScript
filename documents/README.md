@@ -46,6 +46,9 @@ Código Fuente (.ps)
 | `com.ingsis.interpreter` | Motor de ejecución, evaluación de expresiones, scopes y built-ins | [📄 Ver documentación](./interpreter/README.md) |
 | `com.ingsis.formatter` | Formateador de código fuente por AST y flujo de tokens | [📄 Ver documentación](./formatter/README.md) |
 | `com.ingsis.sca` | Analizador estático de código (linter de convenciones y buenas prácticas) | [📄 Ver documentación](./sca/README.md) |
+| `com.ingsis.engine` | CLI (Picocli) y orquestador de servicios (ejecución, validación, linting, formateo, REPL) | [📄 Ver documentación](./engine/README.md) |
+| `buildSrc` | Plugins de convención Gradle y suite de calidad (Spotless, Checkstyle, PMD, SpotBugs, JaCoCo) | [📄 Ver documentación](../buildSrc/README.md) |
+| `samples` | Programas de muestra (`.ps`) y configuraciones de reglas YAML (`format`, `sca`) | [📄 Ver documentación](../samples/README.md) |
 
 ### 📖 Guías de Arquitectura y Runtimes
 - [🌳 Construcción de Árboles Sintácticos (AST), Nodos Cabeza y Runtimes (readEnv, readInput, if)](file:///home/elchurro274/Faculty/ingsis/PrintScript/documents/CONSTRUCCION_ARBOLES_Y_RUNTIMES.md)
@@ -68,12 +71,28 @@ com.ingsis.charstream      com.ingsis.parser
        └────────┐                 │
                 ▼                 │
          com.ingsis.lexer ◄───────┘
+                │
+                ├─────────────────────────────────────┐
+                ▼                                     ▼
+        com.ingsis.interpreter               com.ingsis.formatter
+                ▲                                     ▲
+                │                                     │
+                └───────────────┬─────────────────────┘
+                                │
+                        com.ingsis.sca
+                                │
+                                ▼
+                        com.ingsis.engine (CLI / Orquestador)
 ```
 
 - **`common`** → No depende de ningún otro módulo. Es la base de todo el sistema.
 - **`charstream`** → Depende de `common` (usa `SafeIterator`, `MetaCharacter`, `Position`, `Result`).
 - **`lexer`** → Depende de `common` y `charstream` (consume `SafeIterator<MetaCharacter>`).
 - **`parser`** → Depende de `common` (usa `Token`, `TokenType`, `SafeIterator`, `Result`, nodos AST).
+- **`interpreter`** → Depende de `common` y `parser` (ejecuta el AST y gestiona entornos).
+- **`formatter`** → Depende de `common`, `charstream`, `lexer` y `parser` (reconstruye código formateado).
+- **`sca`** → Depende de `common`, `parser` e `interpreter` (analiza AST y reglas sintácticas/semánticas).
+- **`engine`** → Fachada que integra todos los módulos y expone la interfaz de línea de comandos (CLI) y servicios públicos.
 
 ---
 
@@ -99,24 +118,34 @@ Uso extensivo de Records de Java para garantizar inmutabilidad en modelos de dat
 
 ## Tecnologías
 
-- **Lenguaje**: Java
-- **Build System**: Gradle (multi-módulo)
+- **Lenguaje**: Java 21 (Records, Sealed Types, Pattern Matching)
+- **Build System**: Gradle (multi-módulo con convención Kotlin DSL en `buildSrc`)
+- **CLI**: Picocli
 - **Testing**: JUnit 6.0.0 (Jupiter)
 
 ---
 
-## Ejecución de Tests
+## Ejecución de Tests y Control de Calidad
 
 ```bash
+# Compilación y ejecución de tests
 ./gradlew test
+
+# Verificación completa de calidad (Spotless, Checkstyle, SpotBugs, PMD, JaCoCo)
+./gradlew check
 ```
 
-Salida esperada:
-```
+Salida esperada de tests:
+```text
 > Task :com.ingsis.common:test PASSED
 > Task :com.ingsis.charstream:test PASSED
 > Task :com.ingsis.lexer:test PASSED
-> Task :com.ingsis.parser:test PASSED
+> Task :com.ingsis.syntactic:test PASSED
+> Task :com.ingsis.semantic:test PASSED
+> Task :com.ingsis.formatter:test PASSED
+> Task :com.ingsis.sca:test PASSED
+> Task :com.ingsis.interpreter:test PASSED
+> Task :com.ingsis.engine:test PASSED
 
 BUILD SUCCESSFUL
 ```
