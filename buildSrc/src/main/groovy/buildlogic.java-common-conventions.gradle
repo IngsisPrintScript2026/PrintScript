@@ -122,10 +122,6 @@ spotless {
         licenseHeader '/*\n * My Project\n */\n\n'
         endWithNewline()
     }
-    kotlinGradle {
-        target '*.gradle.kts'
-        ktlint()
-    }
     format 'misc', {
         target '*.md', '.gitignore'
         trimTrailingWhitespace()

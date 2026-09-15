@@ -6,5 +6,17 @@
     <property name="severity" value="warning"/>
     <module name="TreeWalker">
         <module name="OuterTypeFilename"/>
+
+        <!-- Regla 1: Máximo 15 líneas por método -->
+        <module name="MethodLength">
+            <property name="max" value="15"/>
+            <property name="countEmpty" value="false"/>
+        </module>
+
+        <!-- Regla 2: Prohibir tipos calificados/imports dentro del código (usar imports al inicio) -->
+        <module name="MatchXpath">
+            <property name="query" value="//TYPE[./DOT]"/>
+            <message key="matchxpath.match" value="No se permiten tipos totalmente calificados dentro del código (ej. org.common...); declare el import correspondiente."/>
+        </module>
     </module>
 </module>

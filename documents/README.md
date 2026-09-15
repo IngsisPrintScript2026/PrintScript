@@ -43,6 +43,13 @@ Código Fuente (.ps)
 | `com.ingsis.charstream` | Streaming de caracteres con posición y soporte de pushback | [📄 Ver documentación](./charstream/README.md) |
 | `com.ingsis.lexer` | Analizador léxico con algoritmo Maximal Munch | [📄 Ver documentación](./lexer/README.md) |
 | `com.ingsis.parser` | Analizador sintáctico con Pratt Parsing y construcción de AST | [📄 Ver documentación](./parser/README.md) |
+| `com.ingsis.interpreter` | Motor de ejecución, evaluación de expresiones, scopes y built-ins | [📄 Ver documentación](./interpreter/README.md) |
+
+### 📖 Guías de Arquitectura y Runtimes
+- [🌳 Construcción de Árboles Sintácticos (AST), Nodos Cabeza y Runtimes (readEnv, readInput, if)](file:///home/elchurro274/Faculty/ingsis/PrintScript/documents/CONSTRUCCION_ARBOLES_Y_RUNTIMES.md)
+- [⚙️ Arquitectura y Funcionamiento de Interpreter y Formatter](file:///home/elchurro274/Faculty/ingsis/PrintScript/documents/INTERPRETER_AND_FORMATTER.md)
+- [🔍 Handlers del Formatter y Funcionamiento del Linter SCA](file:///home/elchurro274/Faculty/ingsis/PrintScript/documents/FORMATTER_HANDLERS_AND_SCA.md)
+- [📦 Sistema y Decisiones de Diseño de com.ingsis.common](file:///home/elchurro274/Faculty/ingsis/PrintScript/documents/common/SISTEMA_COMMON.md)
 
 ---
 

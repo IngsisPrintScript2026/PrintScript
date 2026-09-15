@@ -2,7 +2,9 @@
 
 ## Descripción General
 
-El módulo `com.ingsis.common` es el **módulo fundacional** de PrintScript. Define los modelos de dominio, abstracciones y utilidades compartidas que son utilizados por todos los demás módulos (`charstream`, `lexer`, `parser`).
+El módulo `com.ingsis.common` es el **módulo fundacional** de PrintScript. Define los modelos de dominio, abstracciones y utilidades compartidas que son utilizados por todos los demás módulos (`charstream`, `lexer`, `parser`, `interpreter`, `formatter`, `sca`).
+
+> 📘 Para un análisis en profundidad de la arquitectura, justificación técnica de cada decisión de diseño y ciclo de vida de los componentes, consulta el [Documento de Diseño y Funcionamiento de Common](file:///home/elchurro274/Faculty/ingsis/PrintScript/documents/common/SISTEMA_COMMON.md).
 
 Actúa como la **capa de tipos y contratos** del sistema, proporcionando:
 
