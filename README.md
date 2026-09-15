@@ -4,7 +4,7 @@ Este repositorio contiene la arquitectura completa para el interprete, formatead
 
 ---
 
-## 🚀 Uso de la Interfaz de Línea de Comandos (`run.sh`)
+## Uso de la Interfaz de Línea de Comandos (`run.sh`)
 
 El script `./run.sh` permite ejecutar de manera sencilla las distintas operaciones de PrintScript (intérprete/ejecución, formateador de código y analizador estático SCA).
 
