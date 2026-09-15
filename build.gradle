@@ -4,12 +4,12 @@ plugins {
 
 allprojects {
     group = 'org.example'
-    version = '1.0-SNAPSHOT'
+    version = project.findProperty('version') ?: System.getenv('RELEASE_VERSION') ?: '1.0.0'
 }
 
 subprojects {
     group = 'org.example'
-    version = '1.0-SNAPSHOT'
+    version = rootProject.version
 }
 
 repositories {
@@ -24,4 +24,13 @@ dependencies {
 
 test {
     useJUnitPlatform()
+}
+
+tasks.register('installGitHooks', Exec) {
+    description = 'Configura los githooks versionados del repositorio'
+    group = 'git'
+    commandLine 'git', 'config', 'core.hooksPath', '.githooks'
+    doLast {
+        println 'Githooks instalados correctamente (core.hooksPath configurado a .githooks)'
+    }
 }

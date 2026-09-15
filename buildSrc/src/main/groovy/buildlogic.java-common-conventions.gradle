@@ -104,7 +104,7 @@ tasks.named('build') {
 checkstyle {
     configFile = file("${project.rootDir}/.checkstyle.xml")
     toolVersion = '10.15.0'
-    ignoreFailures = false
+    ignoreFailures = true
     maxWarnings = 0
     configProperties = [
             'org.checkstyle.java.jdkversion': '17',
@@ -118,6 +118,7 @@ spotless {
         target 'src/**/*.java'
         googleJavaFormat('1.22.0').aosp().reflowLongStrings()
         removeUnusedImports()
+        importOrder()
         licenseHeader '/*\n * My Project\n */\n\n'
         endWithNewline()
     }

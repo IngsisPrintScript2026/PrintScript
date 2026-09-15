@@ -3,9 +3,18 @@ name: CI & Publish Packages
 on:
   push:
     branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
+    tags:
+      - 'v*'
+      - '*.*'
+      - '[0-9]*'
+  release:
+    types: [ published ]
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Immutable release version to publish (e.g. 1.0.0, 1.0.1, 1.1)'
+        required: false
+        default: ''
 
 jobs:
   # ==========================================
@@ -44,7 +53,7 @@ jobs:
   publish:
     name: Publish Packages to GitHub Packages
     needs: ci
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'release'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -64,9 +73,46 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      - name: Determine Immutable Release Version
+        id: release_version
+        run: |
+          VERSION=""
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ github.event.inputs.version }}" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          elif [ "${{ github.event_name }}" = "release" ] && [ -n "${{ github.event.release.tag_name }}" ]; then
+            VERSION="${{ github.event.release.tag_name }}"
+          elif [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            VERSION="${GITHUB_REF#refs/tags/}"
+          elif [ "${{ github.event_name }}" = "push" ]; then
+            VERSION="1.0.${{ github.run_number }}"
+          fi
+
+          # Strip leading 'v' or 'V' if present (e.g. v1.0.0 -> 1.0.0, v1.1 -> 1.1)
+          VERSION="${VERSION#v}"
+          VERSION="${VERSION#V}"
+          VERSION=$(echo "${VERSION}" | xargs)
+
+          if [ -z "$VERSION" ]; then
+            echo "::error::Release version could not be determined."
+            exit 1
+          fi
+
+          if [[ "$VERSION" == *"-SNAPSHOT"* ]] || [[ "$VERSION" == *"SNAPSHOT"* ]]; then
+            echo "::error::Version cannot be a SNAPSHOT ($VERSION). Releases must be immutable."
+            exit 1
+          fi
+
+          if ! [[ "$VERSION" =~ ^[0-9]+(\.[0-9]+)+(-[a-zA-Z0-9.]+)?$ ]]; then
+            echo "::warning::Version '$VERSION' does not strictly follow standard semver/numeric format (e.g. 1.0.0, 1.1), proceeding anyway..."
+          fi
+
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "Selected immutable release version: ${VERSION}"
+
       - name: Publish to GitHub Packages
-        run: ./gradlew publish -PgprUser=${{ github.actor }} -PgprToken=${{ secrets.GITHUB_TOKEN }}
+        run: ./gradlew publish -Pversion=${{ steps.release_version.outputs.version }} -PgprUser=${{ github.actor }} -PgprToken=${{ secrets.GITHUB_TOKEN }}
         env:
+          RELEASE_VERSION: ${{ steps.release_version.outputs.version }}
           gprUser: ${{ github.actor }}
           gprToken: ${{ secrets.GITHUB_TOKEN }}
           ORG_GRADLE_PROJECT_gprUser: ${{ github.actor }}

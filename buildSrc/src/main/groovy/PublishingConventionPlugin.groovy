@@ -8,10 +8,15 @@ class PublishingConventionPlugin implements Plugin<Project> {
         project.plugins.apply('java')
         project.plugins.apply('maven-publish')
 
-        // Ensure project.version is set (from -Pversion if provided)
-        if (!project.hasProperty('version') || project.version == 'unspecified') {
-            project.version = '0.0.0-SNAPSHOT'
+        // Ensure project.version is set to an immutable release version (never SNAPSHOT)
+        String resolvedVersion = (project.findProperty('version')
+                ?: System.getenv('RELEASE_VERSION')
+                ?: project.rootProject.version) as String
+
+        if (resolvedVersion == null || resolvedVersion == 'unspecified' || resolvedVersion.endsWith('-SNAPSHOT')) {
+            resolvedVersion = '1.0.0'
         }
+        project.version = resolvedVersion
 
         project.publishing {
             publications {
