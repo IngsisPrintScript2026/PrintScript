@@ -32,6 +32,7 @@ import token.Token;
 import token.TokenType;
 
 public class ASTScaTest {
+    private static final String PRINTLN = "println";
 
     @Test
     void testCamelCaseIdentifierFormatViolation() {
@@ -117,9 +118,9 @@ public class ASTScaTest {
 
         CallFunctionNode badCall =
                 NodeFactory.createCall(
-                        "println",
+                        PRINTLN,
                         List.of(expr),
-                        new Token(TokenType.IDENTIFIER, "println", new Position(1, 1)));
+                        new Token(TokenType.IDENTIFIER, PRINTLN, new Position(1, 1)));
 
         ProgramNode program = NodeFactory.createProgram(List.of(badCall));
         Result<List<String>> result = sca.analyze(program, new SemanticEnvironment());
@@ -185,9 +186,9 @@ public class ASTScaTest {
 
         CallFunctionNode badCall =
                 NodeFactory.createCall(
-                        "println",
+                        PRINTLN,
                         List.of(expr),
-                        new Token(TokenType.IDENTIFIER, "println", new Position(1, 1)));
+                        new Token(TokenType.IDENTIFIER, PRINTLN, new Position(1, 1)));
 
         IfKeywordNode ifNode =
                 NodeFactory.createIf(

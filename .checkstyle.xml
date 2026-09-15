@@ -4,6 +4,10 @@
         "https://checkstyle.org/dtds/configuration_1_3.dtd">
 <module name="Checker">
     <property name="severity" value="warning"/>
+    <module name="SuppressionFilter">
+        <property name="file" value="${suppressionFile}"/>
+        <property name="optional" value="true"/>
+    </module>
     <module name="TreeWalker">
         <module name="OuterTypeFilename"/>
 

@@ -18,7 +18,11 @@ import node.keyword.IfKeywordNode;
 import node.visitor.NodeVisitor;
 import result.Result;
 import sca.config.YamlScaRulesLoader;
-import sca.handler.*;
+import sca.handler.CallFunctionScaHandler;
+import sca.handler.DeclarationScaHandler;
+import sca.handler.IfScaHandler;
+import sca.handler.ProgramScaHandler;
+import sca.handler.ScaNodeHandler;
 import semantic.environment.SemanticEnvironment;
 
 public class ASTSca implements NodeVisitor<List<String>, ScaContext>, Sca {

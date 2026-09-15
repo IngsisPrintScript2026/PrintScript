@@ -18,29 +18,33 @@ public class YamlScaRulesLoader {
         try {
             Yaml yaml = new Yaml();
             Map<String, Object> data = yaml.load(yamlStream);
-            if (data == null) {
-                return new ScaContext();
-            }
-
-            String identifierFormat =
-                    getString(data, "identifier_format", "identifier-format", null);
-            boolean mandatoryPrintln =
-                    getBoolean(
-                            data,
-                            "mandatory-variable-or-literal-in-println",
-                            "mandatory-variable-or-literal-in-println",
-                            false);
-            boolean mandatoryReadInput =
-                    getBoolean(
-                            data,
-                            "mandatory-variable-or-literal-in-readInput",
-                            "mandatory-variable-or-literal-in-readinput",
-                            false);
-
-            return new ScaContext(identifierFormat, mandatoryPrintln, mandatoryReadInput);
+            return data != null ? parseContext(data) : new ScaContext();
         } catch (Exception e) {
             return new ScaContext();
         }
+    }
+
+    private static ScaContext parseContext(Map<String, Object> data) {
+        String identifierFormat = getString(data, "identifier_format", "identifier-format", null);
+        boolean mandatoryPrintln = hasMandatoryPrintln(data);
+        boolean mandatoryReadInput = hasMandatoryReadInput(data);
+        return new ScaContext(identifierFormat, mandatoryPrintln, mandatoryReadInput);
+    }
+
+    private static boolean hasMandatoryPrintln(Map<String, Object> data) {
+        return getBoolean(
+                data,
+                "mandatory-variable-or-literal-in-println",
+                "mandatory-variable-or-literal-in-println",
+                false);
+    }
+
+    private static boolean hasMandatoryReadInput(Map<String, Object> data) {
+        return getBoolean(
+                data,
+                "mandatory-variable-or-literal-in-readInput",
+                "mandatory-variable-or-literal-in-readinput",
+                false);
     }
 
     private static String getString(
