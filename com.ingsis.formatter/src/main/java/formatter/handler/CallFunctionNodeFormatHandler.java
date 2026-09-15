@@ -18,21 +18,20 @@ public class CallFunctionNodeFormatHandler implements FormatNodeHandler<CallFunc
     @Override
     public String format(CallFunctionNode call, FormatContext context, ASTFormatter formatter) {
         StringBuilder sb = new StringBuilder();
-        sb.append(context.getIndent());
-        sb.append(call.identifierNode().name());
-        sb.append("(");
+        sb.append(context.getIndent()).append(call.identifierNode().name()).append("(");
         String args =
                 call.argumentNodes().stream()
                         .map(arg -> formatter.formatExpression(arg, context))
                         .collect(Collectors.joining(", "));
-        sb.append(args);
-        sb.append(");");
+        sb.append(args).append(");");
+        appendTrailingPrintlnBreaks(sb, call.identifierNode().name(), context);
+        return sb.toString();
+    }
 
-        if ("println".equalsIgnoreCase(call.identifierNode().name())
-                && context.getLineBreaksAfterPrintln() > 1) {
+    private void appendTrailingPrintlnBreaks(
+            StringBuilder sb, String funcName, FormatContext context) {
+        if ("println".equalsIgnoreCase(funcName) && context.getLineBreaksAfterPrintln() > 1) {
             sb.append("\n".repeat(context.getLineBreaksAfterPrintln() - 1));
         }
-
-        return sb.toString();
     }
 }

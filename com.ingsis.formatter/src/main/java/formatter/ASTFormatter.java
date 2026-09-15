@@ -90,27 +90,49 @@ public class ASTFormatter implements NodeVisitor<String, FormatContext>, Formatt
 
     public String formatExpression(ExpressionNode expr, FormatContext context) {
         if (expr instanceof OperatorNode op) {
-            String opSymbol =
-                    context.isSpaceAroundOperators() ? (" " + op.symbol() + " ") : op.symbol();
-            return formatExpression(op.left(), context)
-                    + opSymbol
-                    + formatExpression(op.right(), context);
-        } else if (expr instanceof IdentifierNode id) {
+            return formatOperator(op, context);
+        }
+        if (expr instanceof CallFunctionNode call) {
+            return formatCall(call, context);
+        }
+        if (expr instanceof IdentifierNode id) {
             return id.name();
-        } else if (expr instanceof StringLiteralNode str) {
+        }
+        return formatLiteralOrSymbol(expr);
+    }
+
+    private String formatOperator(OperatorNode op, FormatContext context) {
+        String symbol = context.isSpaceAroundOperators() ? (" " + op.symbol() + " ") : op.symbol();
+        return formatExpression(op.left(), context)
+                + symbol
+                + formatExpression(op.right(), context);
+    }
+
+    private String formatCall(CallFunctionNode call, FormatContext context) {
+        String args =
+                call.argumentNodes().stream()
+                        .map(arg -> formatExpression(arg, context))
+                        .collect(Collectors.joining(", "));
+        return call.identifierNode().name() + "(" + args + ")";
+    }
+
+    private String formatLiteralOrSymbol(ExpressionNode expr) {
+        if (expr instanceof StringLiteralNode str) {
             return "\"" + str.rawValue() + "\"";
-        } else if (expr instanceof NumberLiteralNode num) {
-            if (num.rawValue() == null) return "0";
-            return num.rawValue().stripTrailingZeros().toPlainString();
-        } else if (expr instanceof BooleanLiteralNode bool) {
+        }
+        if (expr instanceof NumberLiteralNode num) {
+            return num.rawValue() == null
+                    ? "0"
+                    : num.rawValue().stripTrailingZeros().toPlainString();
+        }
+        if (expr instanceof BooleanLiteralNode bool) {
             return String.valueOf(bool.rawValue());
-        } else if (expr instanceof CallFunctionNode call) {
-            String args =
-                    call.argumentNodes().stream()
-                            .map(arg -> formatExpression(arg, context))
-                            .collect(Collectors.joining(", "));
-            return call.identifierNode().name() + "(" + args + ")";
-        } else if (expr instanceof LiteralNode<?> lit) {
+        }
+        return formatGenericLiteral(expr);
+    }
+
+    private String formatGenericLiteral(ExpressionNode expr) {
+        if (expr instanceof LiteralNode<?> lit) {
             return lit.symbol();
         }
         return expr != null ? expr.symbol() : "";

@@ -18,66 +18,93 @@ public class YamlFormatRulesLoader {
         try {
             Yaml yaml = new Yaml();
             Map<String, Object> data = yaml.load(yamlStream);
-            if (data == null) {
-                return new FormatContext();
-            }
-
-            Boolean spaceBeforeColon =
-                    getOptionalBoolean(
-                            data,
-                            "space-before-colon",
-                            "enforce-spacing-before-colon-in-declaration");
-            Boolean spaceAfterColon =
-                    getOptionalBoolean(
-                            data,
-                            "space-after-colon",
-                            "enforce-spacing-after-colon-in-declaration");
-
-            Boolean spaceAroundEquals = null;
-            if (hasKey(data, "enforce-no-spacing-around-equals")) {
-                spaceAroundEquals =
-                        !getBoolean(data, "enforce-no-spacing-around-equals", "", false);
-            } else if (hasKey(data, "enforce-spacing-around-equals", "space-around-equals")) {
-                spaceAroundEquals =
-                        getBoolean(
-                                data, "enforce-spacing-around-equals", "space-around-equals", true);
-            }
-
-            Boolean spaceAroundOperators =
-                    getOptionalBoolean(
-                            data,
-                            "space-around-operators",
-                            "mandatory-space-surrounding-operations");
-            Boolean lineBreakAfterStatement =
-                    getOptionalBoolean(
-                            data,
-                            "line-break-after-statement",
-                            "mandatory-line-break-after-statement");
-            Integer lineBreaksAfterPrintln =
-                    getOptionalInt(data, "line-breaks-after-println", "line-breaks-before-println");
-            Boolean singleSpaceSeparation =
-                    getOptionalBoolean(
-                            data, "mandatory-single-space-separation", "single-space-separation");
-            Integer indentSpaces = getOptionalInt(data, "indent-inside-if", "indent-spaces");
-
-            Boolean ifBraceSameLine = getOptionalBoolean(data, "if-brace-same-line", "");
-            Boolean ifBraceBelowLine = getOptionalBoolean(data, "if-brace-below-line", "");
-
-            return new FormatContext(
-                    0,
-                    indentSpaces,
-                    spaceBeforeColon,
-                    spaceAfterColon,
-                    spaceAroundEquals,
-                    spaceAroundOperators,
-                    lineBreakAfterStatement,
-                    lineBreaksAfterPrintln,
-                    singleSpaceSeparation,
-                    ifBraceSameLine,
-                    ifBraceBelowLine);
+            return data != null ? parseContext(data) : new FormatContext();
         } catch (Exception e) {
             return new FormatContext();
         }
+    }
+
+    private static FormatContext parseContext(Map<String, Object> data) {
+        Boolean spaceBeforeColon =
+                getOptionalBoolean(
+                        data, "space-before-colon", "enforce-spacing-before-colon-in-declaration");
+        Boolean spaceAfterColon =
+                getOptionalBoolean(
+                        data, "space-after-colon", "enforce-spacing-after-colon-in-declaration");
+        Boolean spaceAroundEquals = parseSpaceAroundEquals(data);
+        Boolean spaceAroundOps =
+                getOptionalBoolean(
+                        data, "space-around-operators", "mandatory-space-surrounding-operations");
+        return createLoadedContext(
+                data, spaceBeforeColon, spaceAfterColon, spaceAroundEquals, spaceAroundOps);
+    }
+
+    private static Boolean parseSpaceAroundEquals(Map<String, Object> data) {
+        if (hasKey(data, "enforce-no-spacing-around-equals")) {
+            return !getBoolean(data, "enforce-no-spacing-around-equals", "", false);
+        }
+        if (hasKey(data, "enforce-spacing-around-equals", "space-around-equals")) {
+            return getBoolean(data, "enforce-spacing-around-equals", "space-around-equals", true);
+        }
+        return null;
+    }
+
+    private static FormatContext createLoadedContext(
+            Map<String, Object> data,
+            Boolean beforeColon,
+            Boolean afterColon,
+            Boolean aroundEquals,
+            Boolean aroundOps) {
+        FormattingRulesData r = extractRulesData(data);
+        return assembleContext(beforeColon, afterColon, aroundEquals, aroundOps, r);
+    }
+
+    private record FormattingRulesData(
+            Integer indent,
+            Boolean lineBreak,
+            Integer printlnBreaks,
+            Boolean singleSpace,
+            Boolean sameLine,
+            Boolean belowLine) {}
+
+    private static FormattingRulesData extractRulesData(Map<String, Object> data) {
+        return new FormattingRulesData(
+                getOptionalInt(data, "indent-inside-if", "indent-spaces"),
+                getLineBreak(data),
+                getPrintlnBreaks(data),
+                getSingleSpace(data),
+                getOptionalBoolean(data, "if-brace-same-line", ""),
+                getOptionalBoolean(data, "if-brace-below-line", ""));
+    }
+
+    private static FormatContext assembleContext(
+            Boolean before, Boolean after, Boolean equals, Boolean ops, FormattingRulesData r) {
+        return new FormatContext(
+                0,
+                r.indent(),
+                before,
+                after,
+                equals,
+                ops,
+                r.lineBreak(),
+                r.printlnBreaks(),
+                r.singleSpace(),
+                r.sameLine(),
+                r.belowLine());
+    }
+
+    private static Boolean getLineBreak(Map<String, Object> data) {
+        return getOptionalBoolean(
+                data, "line-break-after-statement", "mandatory-line-break-after-statement");
+    }
+
+    private static Integer getPrintlnBreaks(Map<String, Object> data) {
+        return getOptionalInt(data, "line-breaks-after-println", "line-breaks-before-println");
+    }
+
+    private static Boolean getSingleSpace(Map<String, Object> data) {
+        return getOptionalBoolean(
+                data, "mandatory-single-space-separation", "single-space-separation");
     }
 
     private static boolean hasKey(Map<String, Object> map, String... keys) {

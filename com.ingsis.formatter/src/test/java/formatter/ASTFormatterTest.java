@@ -32,6 +32,7 @@ import token.Token;
 import token.TokenType;
 
 public class ASTFormatterTest {
+    private static final String PRINTLN = "println";
 
     @Test
     void testFormatDeclarationAndAssignDefault() {
@@ -83,15 +84,15 @@ public class ASTFormatterTest {
 
         CallFunctionNode callThen =
                 NodeFactory.createCall(
-                        "println",
+                        PRINTLN,
                         List.of(new StringLiteralNode("Yes", 2, 5)),
-                        new Token(TokenType.IDENTIFIER, "println", new Position(2, 5)));
+                        new Token(TokenType.IDENTIFIER, PRINTLN, new Position(2, 5)));
 
         CallFunctionNode callElse =
                 NodeFactory.createCall(
-                        "println",
+                        PRINTLN,
                         List.of(new StringLiteralNode("No", 3, 5)),
-                        new Token(TokenType.IDENTIFIER, "println", new Position(3, 5)));
+                        new Token(TokenType.IDENTIFIER, PRINTLN, new Position(3, 5)));
 
         IfKeywordNode ifNode =
                 NodeFactory.createIf(
@@ -143,15 +144,15 @@ public class ASTFormatterTest {
 
         CallFunctionNode callThen =
                 NodeFactory.createCall(
-                        "println",
+                        PRINTLN,
                         List.of(new StringLiteralNode("Yes", 1, 1)),
-                        new Token(TokenType.IDENTIFIER, "println", new Position(1, 1)));
+                        new Token(TokenType.IDENTIFIER, PRINTLN, new Position(1, 1)));
 
         CallFunctionNode callElse =
                 NodeFactory.createCall(
-                        "println",
+                        PRINTLN,
                         List.of(new StringLiteralNode("No", 1, 1)),
-                        new Token(TokenType.IDENTIFIER, "println", new Position(1, 1)));
+                        new Token(TokenType.IDENTIFIER, PRINTLN, new Position(1, 1)));
 
         IfKeywordNode ifNode =
                 NodeFactory.createIf(

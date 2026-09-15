@@ -13,6 +13,7 @@ import token.Token;
 import token.TokenType;
 
 class FormattingRulesTest {
+    private static final String LET = "let";
 
     @Test
     void testSpaceAroundOperatorsRule() {
@@ -38,7 +39,7 @@ class FormattingRulesTest {
     @Test
     void testSingleSpaceSeparationRule() {
         SingleSpaceSeparationRule rule = new SingleSpaceSeparationRule();
-        Token let = new Token(TokenType.LET, "let", new Position(1, 1));
+        Token let = new Token(TokenType.LET, LET, new Position(1, 1));
         Token id = new Token(TokenType.IDENTIFIER, "x", new Position(1, 5));
         Token semi = new Token(TokenType.SEMICOLON, ";", new Position(1, 6));
         FormatContext ctx =
@@ -114,7 +115,7 @@ class FormattingRulesTest {
     void testLinesAfterPrintlnRule() {
         LinesAfterPrintlnRule rule = new LinesAfterPrintlnRule();
         Token semi = new Token(TokenType.SEMICOLON, ";", new Position(1, 1));
-        Token let = new Token(TokenType.LET, "let", new Position(1, 2));
+        Token let = new Token(TokenType.LET, LET, new Position(1, 2));
         FormatContext ctx =
                 new FormatContext(0, 4, null, null, null, null, null, 2, null, null, null);
 
@@ -129,7 +130,7 @@ class FormattingRulesTest {
     void testLineBreakAfterStatementRule() {
         LineBreakAfterStatementRule rule = new LineBreakAfterStatementRule();
         Token semi = new Token(TokenType.SEMICOLON, ";", new Position(1, 1));
-        Token let = new Token(TokenType.LET, "let", new Position(1, 2));
+        Token let = new Token(TokenType.LET, LET, new Position(1, 2));
         FormatContext ctx =
                 new FormatContext(0, 4, null, null, null, null, true, null, null, null, null);
 
@@ -146,7 +147,7 @@ class FormattingRulesTest {
         FormatContext ctx =
                 new FormatContext(0, 4, null, null, null, null, null, null, null, null, null);
         Token prev = new Token(TokenType.LBRACE, "{", new Position(1, 1));
-        Token curr = new Token(TokenType.LET, "let", new Position(2, 1));
+        Token curr = new Token(TokenType.LET, LET, new Position(2, 1));
         Token rbrace = new Token(TokenType.RBRACE, "}", new Position(3, 1));
 
         assertTrue(rule.applies(prev, curr, ctx));

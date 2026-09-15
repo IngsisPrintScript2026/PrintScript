@@ -6,8 +6,8 @@ package formatter.handler;
 
 import formatter.ASTFormatter;
 import formatter.FormatContext;
+import java.util.Locale;
 import node.expression.literal.BooleanLiteralNode;
-import node.expression.literal.NumberLiteralNode;
 import node.expression.literal.StringLiteralNode;
 import node.expression.nullObject.NilExpressionNode;
 import node.keyword.DeclarationKeywordNode;
@@ -22,11 +22,18 @@ public class DeclarationNodeFormatHandler implements FormatNodeHandler<Declarati
     public String format(
             DeclarationKeywordNode decl, FormatContext context, ASTFormatter formatter) {
         StringBuilder sb = new StringBuilder();
-        sb.append(context.getIndent());
-        sb.append(decl.declarationType().keyword());
-        sb.append(" ");
-        sb.append(decl.identifierNode().name());
+        sb.append(context.getIndent())
+                .append(decl.declarationType().keyword())
+                .append(" ")
+                .append(decl.identifierNode().name());
+        appendColonAndType(sb, decl, context);
+        appendInitialization(sb, decl, context, formatter);
+        sb.append(";");
+        return sb.toString();
+    }
 
+    private void appendColonAndType(
+            StringBuilder sb, DeclarationKeywordNode decl, FormatContext context) {
         if (context.isSpaceBeforeColon()) {
             sb.append(" ");
         }
@@ -34,30 +41,31 @@ public class DeclarationNodeFormatHandler implements FormatNodeHandler<Declarati
         if (context.isSpaceAfterColon()) {
             sb.append(" ");
         }
+        sb.append(resolveType(decl));
+    }
 
-        String typeStr = "number";
+    private String resolveType(DeclarationKeywordNode decl) {
         if (decl.declaredType() != null) {
-            typeStr = decl.declaredType().toString().toLowerCase();
-        } else if (decl.expressionNode() instanceof StringLiteralNode) {
-            typeStr = "string";
-        } else if (decl.expressionNode() instanceof BooleanLiteralNode) {
-            typeStr = "boolean";
-        } else if (decl.expressionNode() instanceof NumberLiteralNode) {
-            typeStr = "number";
+            return decl.declaredType().toString().toLowerCase(Locale.ROOT);
         }
-        sb.append(typeStr);
+        if (decl.expressionNode() instanceof StringLiteralNode) {
+            return "string";
+        }
+        if (decl.expressionNode() instanceof BooleanLiteralNode) {
+            return "boolean";
+        }
+        return "number";
+    }
 
+    private void appendInitialization(
+            StringBuilder sb,
+            DeclarationKeywordNode decl,
+            FormatContext context,
+            ASTFormatter formatter) {
         if (decl.expressionNode() != null
                 && !(decl.expressionNode() instanceof NilExpressionNode)) {
-            if (context.isSpaceAroundEquals()) {
-                sb.append(" = ");
-            } else {
-                sb.append("=");
-            }
+            sb.append(context.isSpaceAroundEquals() ? " = " : "=");
             sb.append(formatter.formatExpression(decl.expressionNode(), context));
         }
-
-        sb.append(";");
-        return sb.toString();
     }
 }

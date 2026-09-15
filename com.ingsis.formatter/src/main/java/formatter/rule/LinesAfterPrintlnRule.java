@@ -9,21 +9,21 @@ import token.Token;
 import token.TokenType;
 
 public class LinesAfterPrintlnRule implements FormattingRule {
-    private boolean isAfterPrintln = false;
+    private boolean afterPrintln = false;
 
     public void setAfterPrintln(boolean afterPrintln) {
-        this.isAfterPrintln = afterPrintln;
+        this.afterPrintln = afterPrintln;
     }
 
     public boolean isAfterPrintln() {
-        return isAfterPrintln;
+        return afterPrintln;
     }
 
     @Override
     public boolean applies(Token prev, Token current, FormatContext context) {
         return prev != null
                 && prev.type() == TokenType.SEMICOLON
-                && isAfterPrintln
+                && afterPrintln
                 && context.lineBreaksAfterPrintln() != null;
     }
 
@@ -31,7 +31,7 @@ public class LinesAfterPrintlnRule implements FormattingRule {
     public String formatSeparator(
             Token prev, Token current, String originalSeparator, FormatContext context) {
         int breaks = context.lineBreaksAfterPrintln();
-        isAfterPrintln = false;
+        afterPrintln = false;
         return "\n".repeat(breaks + 1);
     }
 }

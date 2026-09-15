@@ -44,6 +44,8 @@ Código Fuente (.ps)
 | `com.ingsis.lexer` | Analizador léxico con algoritmo Maximal Munch | [📄 Ver documentación](./lexer/README.md) |
 | `com.ingsis.parser` | Analizador sintáctico con Pratt Parsing y construcción de AST | [📄 Ver documentación](./parser/README.md) |
 | `com.ingsis.interpreter` | Motor de ejecución, evaluación de expresiones, scopes y built-ins | [📄 Ver documentación](./interpreter/README.md) |
+| `com.ingsis.formatter` | Formateador de código fuente por AST y flujo de tokens | [📄 Ver documentación](./formatter/README.md) |
+| `com.ingsis.sca` | Analizador estático de código (linter de convenciones y buenas prácticas) | [📄 Ver documentación](./sca/README.md) |
 
 ### 📖 Guías de Arquitectura y Runtimes
 - [🌳 Construcción de Árboles Sintácticos (AST), Nodos Cabeza y Runtimes (readEnv, readInput, if)](file:///home/elchurro274/Faculty/ingsis/PrintScript/documents/CONSTRUCCION_ARBOLES_Y_RUNTIMES.md)
