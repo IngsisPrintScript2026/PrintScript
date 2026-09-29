@@ -19,10 +19,11 @@ public class CallFunctionNodeFormatHandler implements FormatNodeHandler<CallFunc
     public String format(CallFunctionNode call, FormatContext context, ASTFormatter formatter) {
         StringBuilder sb = new StringBuilder();
         sb.append(context.getIndent()).append(call.identifierNode().name()).append("(");
+        String delimiter = context.isSpaceAfterComma() ? ", " : ",";
         String args =
                 call.argumentNodes().stream()
                         .map(arg -> formatter.formatExpression(arg, context))
-                        .collect(Collectors.joining(", "));
+                        .collect(Collectors.joining(delimiter));
         sb.append(args).append(");");
         appendTrailingPrintlnBreaks(sb, call.identifierNode().name(), context);
         return sb.toString();

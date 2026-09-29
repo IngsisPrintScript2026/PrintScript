@@ -109,10 +109,11 @@ public class ASTFormatter implements NodeVisitor<String, FormatContext>, Formatt
     }
 
     private String formatCall(CallFunctionNode call, FormatContext context) {
+        String delimiter = context.isSpaceAfterComma() ? ", " : ",";
         String args =
                 call.argumentNodes().stream()
                         .map(arg -> formatExpression(arg, context))
-                        .collect(Collectors.joining(", "));
+                        .collect(Collectors.joining(delimiter));
         return call.identifierNode().name() + "(" + args + ")";
     }
 

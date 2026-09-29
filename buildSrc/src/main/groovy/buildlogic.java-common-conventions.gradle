@@ -18,6 +18,7 @@ dependencies {
     }
 
     implementation "com.github.spotbugs:spotbugs-annotations:4.8.6"
+
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
 
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
@@ -28,6 +29,7 @@ java {
         languageVersion = JavaLanguageVersion.of(21)
     }
 }
+
 tasks.named('test') {
     useJUnitPlatform()
     finalizedBy jacocoTestReport
@@ -146,6 +148,7 @@ tasks.withType(Pmd).configureEach { task ->
         html.outputLocation.set(layout.buildDirectory.file("custom-reports/pmd/${task.name}.html"))
     }
 }
+
 tasks.withType(com.github.spotbugs.snom.SpotBugsTask).configureEach { task ->
     reports {
         html.required.set(true)
@@ -164,10 +167,16 @@ tasks.withType(com.github.spotbugs.snom.SpotBugsTask).configureEach { task ->
 
 jacocoTestReport {
     reports {
-        xml.required.set(true)
+        xml.required = true
         xml.outputLocation.set(layout.buildDirectory.file("custom-reports/jacoco/jacoco.xml"))
         html.required.set(true)
         html.outputLocation.set(layout.buildDirectory.dir("custom-reports/jacoco/html"))
         csv.required.set(false)
+    }
+    doLast {
+        copy {
+            from layout.buildDirectory.dir("custom-reports/jacoco")
+            into layout.buildDirectory.dir("reports/jacoco")
+        }
     }
 }

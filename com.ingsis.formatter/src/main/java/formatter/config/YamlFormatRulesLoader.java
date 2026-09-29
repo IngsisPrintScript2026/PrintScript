@@ -25,28 +25,56 @@ public class YamlFormatRulesLoader {
     }
 
     private static FormatContext parseContext(Map<String, Object> data) {
-        Boolean spaceBeforeColon =
-                getOptionalBoolean(
-                        data, "space-before-colon", "enforce-spacing-before-colon-in-declaration");
-        Boolean spaceAfterColon =
-                getOptionalBoolean(
-                        data, "space-after-colon", "enforce-spacing-after-colon-in-declaration");
+        Boolean spaceBeforeColon = parseSpaceBeforeColon(data);
+        Boolean spaceAfterColon = parseSpaceAfterColon(data);
         Boolean spaceAroundEquals = parseSpaceAroundEquals(data);
-        Boolean spaceAroundOps =
-                getOptionalBoolean(
-                        data, "space-around-operators", "mandatory-space-surrounding-operations");
+        Boolean spaceAroundOps = parseSpaceAroundOps(data);
         return createLoadedContext(
                 data, spaceBeforeColon, spaceAfterColon, spaceAroundEquals, spaceAroundOps);
     }
 
+    private static Boolean parseSpaceBeforeColon(Map<String, Object> data) {
+        return getOptionalBoolean(
+                data,
+                "space-before-colon",
+                "spaceBeforeColon",
+                "enforce-spacing-before-colon-in-declaration",
+                "enforceSpacingBeforeColonInDeclaration");
+    }
+
+    private static Boolean parseSpaceAfterColon(Map<String, Object> data) {
+        return getOptionalBoolean(
+                data,
+                "space-after-colon",
+                "spaceAfterColon",
+                "enforce-spacing-after-colon-in-declaration",
+                "enforceSpacingAfterColonInDeclaration");
+    }
+
+    private static Boolean parseSpaceAroundOps(Map<String, Object> data) {
+        return getOptionalBoolean(
+                data,
+                "space-around-operators",
+                "spaceAroundOperators",
+                "mandatory-space-surrounding-operations",
+                "mandatorySpaceSurroundingOperations");
+    }
+
     private static Boolean parseSpaceAroundEquals(Map<String, Object> data) {
-        if (hasKey(data, "enforce-no-spacing-around-equals")) {
-            return !getBoolean(data, "enforce-no-spacing-around-equals", "", false);
+        if (hasKey(data, "enforce-no-spacing-around-equals", "enforceNoSpacingAroundEquals")) {
+            return !getBoolean(
+                    data,
+                    false,
+                    "enforce-no-spacing-around-equals",
+                    "enforceNoSpacingAroundEquals");
         }
-        if (hasKey(data, "enforce-spacing-around-equals", "space-around-equals")) {
-            return getBoolean(data, "enforce-spacing-around-equals", "space-around-equals", true);
-        }
-        return null;
+        String[] keys = {
+            "enforce-spacing-around-equals",
+            "enforceSpacingAroundEquals",
+            "space-around-equals",
+            "spaceAroundEquals"
+        };
+        return hasKey(data, keys) ? getBoolean(data, true, keys) : null;
     }
 
     private static FormatContext createLoadedContext(
@@ -65,16 +93,25 @@ public class YamlFormatRulesLoader {
             Integer printlnBreaks,
             Boolean singleSpace,
             Boolean sameLine,
-            Boolean belowLine) {}
+            Boolean belowLine,
+            Boolean spaceAfterComma) {}
 
     private static FormattingRulesData extractRulesData(Map<String, Object> data) {
         return new FormattingRulesData(
-                getOptionalInt(data, "indent-inside-if", "indent-spaces"),
+                getOptionalInt(
+                        data,
+                        "indent-inside-if",
+                        "indentInsideIf",
+                        "indent-spaces",
+                        "indentSpaces",
+                        "indent-size",
+                        "indentSize"),
                 getLineBreak(data),
                 getPrintlnBreaks(data),
                 getSingleSpace(data),
-                getOptionalBoolean(data, "if-brace-same-line", ""),
-                getOptionalBoolean(data, "if-brace-below-line", ""));
+                getOptionalBoolean(data, "if-brace-same-line", "ifBraceSameLine"),
+                getOptionalBoolean(data, "if-brace-below-line", "ifBraceBelowLine"),
+                getSpaceAfterComma(data));
     }
 
     private static FormatContext assembleContext(
@@ -90,21 +127,44 @@ public class YamlFormatRulesLoader {
                 r.printlnBreaks(),
                 r.singleSpace(),
                 r.sameLine(),
-                r.belowLine());
+                r.belowLine(),
+                r.spaceAfterComma());
+    }
+
+    private static Boolean getSpaceAfterComma(Map<String, Object> data) {
+        return getOptionalBoolean(
+                data,
+                "space-after-comma",
+                "spaceAfterComma",
+                "enforce-spacing-after-comma-in-arguments",
+                "enforceSpacingAfterCommaInArguments");
     }
 
     private static Boolean getLineBreak(Map<String, Object> data) {
         return getOptionalBoolean(
-                data, "line-break-after-statement", "mandatory-line-break-after-statement");
+                data,
+                "line-break-after-statement",
+                "lineBreakAfterStatement",
+                "mandatory-line-break-after-statement",
+                "mandatoryLineBreakAfterStatement");
     }
 
     private static Integer getPrintlnBreaks(Map<String, Object> data) {
-        return getOptionalInt(data, "line-breaks-after-println", "line-breaks-before-println");
+        return getOptionalInt(
+                data,
+                "line-breaks-after-println",
+                "lineBreaksAfterPrintln",
+                "line-breaks-before-println",
+                "lineBreaksBeforePrintln");
     }
 
     private static Boolean getSingleSpace(Map<String, Object> data) {
         return getOptionalBoolean(
-                data, "mandatory-single-space-separation", "single-space-separation");
+                data,
+                "mandatory-single-space-separation",
+                "mandatorySingleSpaceSeparation",
+                "single-space-separation",
+                "singleSpaceSeparation");
     }
 
     private static boolean hasKey(Map<String, Object> map, String... keys) {
@@ -114,23 +174,27 @@ public class YamlFormatRulesLoader {
         return false;
     }
 
-    private static Boolean getOptionalBoolean(Map<String, Object> map, String key1, String key2) {
-        if (map.containsKey(key1)) return parseBoolean(map.get(key1), false);
-        if (key2 != null && !key2.isEmpty() && map.containsKey(key2))
-            return parseBoolean(map.get(key2), false);
+    private static Boolean getOptionalBoolean(Map<String, Object> map, String... keys) {
+        for (String k : keys) {
+            if (k != null && !k.isEmpty() && map.containsKey(k)) {
+                return parseBoolean(map.get(k), false);
+            }
+        }
         return null;
     }
 
-    private static Integer getOptionalInt(Map<String, Object> map, String key1, String key2) {
-        if (map.containsKey(key1)) return parseInt(map.get(key1), 0);
-        if (key2 != null && !key2.isEmpty() && map.containsKey(key2))
-            return parseInt(map.get(key2), 0);
+    private static Integer getOptionalInt(Map<String, Object> map, String... keys) {
+        for (String k : keys) {
+            if (k != null && !k.isEmpty() && map.containsKey(k)) {
+                return parseInt(map.get(k), 0);
+            }
+        }
         return null;
     }
 
     private static boolean getBoolean(
-            Map<String, Object> map, String key1, String key2, boolean defaultValue) {
-        Boolean b = getOptionalBoolean(map, key1, key2);
+            Map<String, Object> map, boolean defaultValue, String... keys) {
+        Boolean b = getOptionalBoolean(map, keys);
         return b != null ? b : defaultValue;
     }
 

@@ -1,4 +1,4 @@
-spaceBeforeColon: false
+spaceBeforeColon: true
 spaceAfterColon: true
 spaceAroundOperators: true
 indentSize: 4

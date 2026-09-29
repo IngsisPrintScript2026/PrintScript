@@ -12,6 +12,7 @@ import formatter.rule.IndentationRule;
 import formatter.rule.LineBreakAfterStatementRule;
 import formatter.rule.SingleSpaceSeparationRule;
 import formatter.rule.SpaceAfterColonRule;
+import formatter.rule.SpaceAfterCommaRule;
 import formatter.rule.SpaceAroundEqualsRule;
 import formatter.rule.SpaceAroundOperatorsRule;
 import formatter.rule.SpaceBeforeColonRule;
@@ -50,6 +51,7 @@ public class TokenStreamFormatter implements Formatter {
                         new SpaceBeforeColonRule(),
                         new SpaceAroundEqualsRule(),
                         new SpaceAroundOperatorsRule(),
+                        new SpaceAfterCommaRule(),
                         new LineBreakAfterStatementRule(),
                         new SingleSpaceSeparationRule(),
                         new BracePositionRule()));

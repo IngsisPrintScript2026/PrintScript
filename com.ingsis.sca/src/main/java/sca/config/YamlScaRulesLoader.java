@@ -25,7 +25,8 @@ public class YamlScaRulesLoader {
     }
 
     private static ScaContext parseContext(Map<String, Object> data) {
-        String identifierFormat = getString(data, "identifier_format", "identifier-format", null);
+        String identifierFormat =
+                getString(data, null, "identifier_format", "identifier-format", "identifierFormat");
         boolean mandatoryPrintln = hasMandatoryPrintln(data);
         boolean mandatoryReadInput = hasMandatoryReadInput(data);
         return new ScaContext(identifierFormat, mandatoryPrintln, mandatoryReadInput);
@@ -34,37 +35,37 @@ public class YamlScaRulesLoader {
     private static boolean hasMandatoryPrintln(Map<String, Object> data) {
         return getBoolean(
                 data,
+                false,
                 "mandatory-variable-or-literal-in-println",
-                "mandatory-variable-or-literal-in-println",
-                false);
+                "mandatoryVariableOrLiteralInPrintln",
+                "mandatory_variable_or_literal_in_println");
     }
 
     private static boolean hasMandatoryReadInput(Map<String, Object> data) {
         return getBoolean(
                 data,
+                false,
                 "mandatory-variable-or-literal-in-readInput",
                 "mandatory-variable-or-literal-in-readinput",
-                false);
+                "mandatoryVariableOrLiteralInReadInput",
+                "mandatory_variable_or_literal_in_read_input");
     }
 
-    private static String getString(
-            Map<String, Object> map, String key1, String key2, String defaultValue) {
-        if (map.containsKey(key1) && map.get(key1) != null) {
-            return map.get(key1).toString();
-        }
-        if (key2 != null && map.containsKey(key2) && map.get(key2) != null) {
-            return map.get(key2).toString();
+    private static String getString(Map<String, Object> map, String defaultValue, String... keys) {
+        for (String k : keys) {
+            if (map.containsKey(k) && map.get(k) != null) {
+                return map.get(k).toString();
+            }
         }
         return defaultValue;
     }
 
     private static boolean getBoolean(
-            Map<String, Object> map, String key1, String key2, boolean defaultValue) {
-        if (map.containsKey(key1)) {
-            return parseBoolean(map.get(key1), defaultValue);
-        }
-        if (key2 != null && map.containsKey(key2)) {
-            return parseBoolean(map.get(key2), defaultValue);
+            Map<String, Object> map, boolean defaultValue, String... keys) {
+        for (String k : keys) {
+            if (map.containsKey(k)) {
+                return parseBoolean(map.get(k), defaultValue);
+            }
         }
         return defaultValue;
     }

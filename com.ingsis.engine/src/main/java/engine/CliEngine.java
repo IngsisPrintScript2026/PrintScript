@@ -186,6 +186,9 @@ public class CliEngine implements Callable<Integer>, Engine {
     private boolean handleResult(Result<String> result, Writer writer) {
         try {
             if (result.isCorrect()) {
+                if (isFormattingOperation()) {
+                    return true;
+                }
                 String value = ((CorrectResult<String>) result).value();
                 if (value != null) {
                     writer.write(value);
@@ -203,6 +206,13 @@ public class CliEngine implements Callable<Integer>, Engine {
             e.printStackTrace();
             return false;
         }
+    }
+
+    private boolean isFormattingOperation() {
+        return operation != null
+                && (operation.equalsIgnoreCase("Formatting")
+                        || operation.equalsIgnoreCase("format")
+                        || operation.equalsIgnoreCase("fmt"));
     }
 
     @Override

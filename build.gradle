@@ -1,5 +1,10 @@
 plugins {
     id 'java'
+    id 'jacoco'
+}
+
+jacoco {
+    toolVersion = "0.8.11"
 }
 
 allprojects {
@@ -24,6 +29,55 @@ dependencies {
 
 test {
     useJUnitPlatform()
+    dependsOn(subprojects.collect { it.tasks.matching { it.name == 'test' } })
+    finalizedBy(tasks.named('jacocoTestReport'))
+}
+
+gradle.projectsEvaluated {
+    tasks.named('jacocoTestReport') {
+        description = 'Generates aggregated JaCoCo coverage report for all subprojects'
+        group = 'verification'
+
+        dependsOn(subprojects.collect { it.tasks.matching { it.name == 'test' } })
+        dependsOn(subprojects.collect { it.tasks.matching { it.name == 'jacocoTestReport' } })
+
+        sourceDirectories.setFrom(files(subprojects.collect { it.sourceSets.main.allSource.srcDirs }))
+
+        classDirectories.setFrom(files(subprojects.collect { sub ->
+            sub.fileTree(dir: "${sub.layout.buildDirectory.get().asFile}/classes/java/main", excludes: [
+                    '**/generated/**',
+                    '**/config/**',
+                    '**/*Application*',
+                    '**/*Test*',
+                    '**/*$*'
+            ])
+        }))
+
+        executionData.setFrom(files(subprojects.collect { sub ->
+            sub.fileTree(dir: "${sub.layout.buildDirectory.get().asFile}/jacoco", include: "*.exec")
+        }))
+
+        reports {
+            xml.required = true
+            xml.outputLocation.set(layout.buildDirectory.file("custom-reports/jacoco/jacoco.xml"))
+            html.required = true
+            html.outputLocation.set(layout.buildDirectory.dir("custom-reports/jacoco/html"))
+            csv.required = false
+        }
+
+        doLast {
+            copy {
+                from layout.buildDirectory.dir("custom-reports/jacoco")
+                into layout.buildDirectory.dir("reports/jacoco")
+            }
+        }
+    }
+}
+
+tasks.register('jacocoRootReport') {
+    description = 'Alias for root jacocoTestReport (generates aggregate JaCoCo coverage report)'
+    group = 'verification'
+    dependsOn tasks.named('jacocoTestReport')
 }
 
 tasks.register('installGitHooks', Exec) {
