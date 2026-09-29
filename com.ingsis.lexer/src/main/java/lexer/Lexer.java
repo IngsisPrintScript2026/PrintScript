@@ -38,17 +38,10 @@ public class Lexer implements SafeIterator<Token> {
         SafeIterator<MetaCharacter> curr = stream;
         Result<IterationStep<MetaCharacter>> result = curr.next();
 
-        boolean skippingWhitespace = true;
-        while (skippingWhitespace) {
-            switch (result) {
-                case CorrectResult<IterationStep<MetaCharacter>>(
-                        IterationStep<MetaCharacter> value) when Character.isWhitespace(
-                        value.value().character()) -> {
-                    curr = (SafeIterator<MetaCharacter>) value.next();
-                    result = curr.next();
-                }
-                default -> skippingWhitespace = false;
-            }
+        while (result instanceof CorrectResult<IterationStep<MetaCharacter>>(var step)
+                && Character.isWhitespace(step.value().character())) {
+            curr = (SafeIterator<MetaCharacter>) step.next();
+            result = curr.next();
         }
 
         return switch (result) {
@@ -71,22 +64,12 @@ public class Lexer implements SafeIterator<Token> {
         MetaCharStringBuilder sb = new MetaCharStringBuilder();
         Result<IterationStep<MetaCharacter>> result = initialResult;
 
-        boolean processing = true;
-        while (processing) {
-            switch (result) {
-                case CorrectResult<IterationStep<MetaCharacter>>(
-                        IterationStep<MetaCharacter> step) -> {
-                    sb.append(step.value());
-                    TokenizeResult tr = tokenizer.tokenize(sb);
-
-                    if (processTokenizeStep(tr, step, state)) {
-                        processing = false;
-                    } else {
-                        result = ((SafeIterator<MetaCharacter>) step.next()).next();
-                    }
-                }
-                case IncorrectResult<IterationStep<MetaCharacter>> failure -> processing = false;
+        while (result instanceof CorrectResult<IterationStep<MetaCharacter>>(var step)) {
+            sb.append(step.value());
+            if (processTokenizeStep(tokenizer.tokenize(sb), step, state)) {
+                break;
             }
+            result = ((SafeIterator<MetaCharacter>) step.next()).next();
         }
         return state;
     }

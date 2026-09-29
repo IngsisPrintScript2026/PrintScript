@@ -7,7 +7,6 @@ package service;
 import charstream.CharStream;
 import charstream.StreamCharReader;
 import iterator.IterationStep;
-import iterator.SafeIterator;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
@@ -27,52 +26,56 @@ public class ValidationService {
 
     public Result<String> validate(Version version, InputStream in) {
         try {
-            StreamCharReader reader =
-                    new StreamCharReader(new InputStreamReader(in, StandardCharsets.UTF_8));
-            CharStream charStream = new CharStream(reader);
-            SafeIterator<Token> lexer = new Lexer(charStream);
-            TokenStream currentStream = new LazyTokenStream(lexer);
-
-            syntactic.Parser<Node> statementParser =
-                    syntactic.parser.ParserFactory.createParser(version);
-            SemanticChecker semanticChecker = new SemanticChecker();
-
-            SemanticEnvironment currentSemEnv = new SemanticEnvironment();
-            int statementCount = 0;
-
-            while (!currentStream.isEmpty()) {
-                statementCount++;
-                Result<IterationStep<Node>> parseResult = statementParser.parse(currentStream);
-                if (!parseResult.isCorrect()) {
-                    String err = ((IncorrectResult<IterationStep<Node>>) parseResult).error();
-                    if ("EOF".equalsIgnoreCase(err) || err.contains("EOF")) {
-                        break;
-                    }
-                    return Result.failure(formatSyntacticError(err, currentStream));
-                }
-
-                IterationStep<Node> step =
-                        ((CorrectResult<IterationStep<Node>>) parseResult).value();
-                Node statement = step.value();
-                currentStream = (TokenStream) step.next();
-
-                System.out.printf(
-                        "[Progress] Parsing statement %d at line %d, column %d...%n",
-                        statementCount, statement.line(), statement.column());
-
-                Result<SemanticEnvironment> semResult =
-                        semanticChecker.checkNode(statement, currentSemEnv);
-                if (!semResult.isCorrect()) {
-                    String err = ((IncorrectResult<SemanticEnvironment>) semResult).error();
-                    return Result.failure(formatSemanticError(err, statement));
-                }
-                currentSemEnv = ((CorrectResult<SemanticEnvironment>) semResult).value();
-            }
-
-            return new CorrectResult<>("Validation successful: Syntax and semantics are valid.");
+            CharStream charStream =
+                    new CharStream(
+                            new StreamCharReader(
+                                    new InputStreamReader(in, StandardCharsets.UTF_8)));
+            TokenStream currentStream = new LazyTokenStream(new Lexer(charStream));
+            syntactic.Parser<Node> parser = syntactic.parser.ParserFactory.createParser(version);
+            return validateStatements(currentStream, parser, new SemanticChecker());
         } catch (Exception e) {
             return Result.failure("Validation error: " + e.getMessage());
         }
+    }
+
+    private Result<String> validateStatements(
+            TokenStream stream, syntactic.Parser<Node> parser, SemanticChecker checker) {
+        TokenStream currentStream = stream;
+        SemanticEnvironment currentSemEnv = new SemanticEnvironment();
+        while (!currentStream.isEmpty()) {
+            Result<IterationStep<Node>> parseResult = parser.parse(currentStream);
+            if (!parseResult.isCorrect()) {
+                return handleParseError(parseResult, currentStream);
+            }
+            IterationStep<Node> step = ((CorrectResult<IterationStep<Node>>) parseResult).value();
+            currentStream = (TokenStream) step.next();
+            Result<SemanticEnvironment> semRes =
+                    checkStatement(checker, step.value(), currentSemEnv);
+            if (!semRes.isCorrect()) {
+                return Result.failure(((IncorrectResult<SemanticEnvironment>) semRes).error());
+            }
+            currentSemEnv = ((CorrectResult<SemanticEnvironment>) semRes).value();
+        }
+        return new CorrectResult<>("Validation successful: Syntax and semantics are valid.");
+    }
+
+    private Result<String> handleParseError(
+            Result<IterationStep<Node>> parseResult, TokenStream stream) {
+        String err = ((IncorrectResult<IterationStep<Node>>) parseResult).error();
+        if ("EOF".equalsIgnoreCase(err) || err.contains("EOF")) {
+            return new CorrectResult<>("Validation successful: Syntax and semantics are valid.");
+        }
+        return Result.failure(formatSyntacticError(err, stream));
+    }
+
+    private Result<SemanticEnvironment> checkStatement(
+            SemanticChecker checker, Node statement, SemanticEnvironment env) {
+        Result<SemanticEnvironment> res = checker.checkNode(statement, env);
+        if (!res.isCorrect()) {
+            String err = ((IncorrectResult<SemanticEnvironment>) res).error();
+            return Result.failure(formatSemanticError(err, statement));
+        }
+        return res;
     }
 
     private String formatSyntacticError(String rawError, TokenStream stream) {

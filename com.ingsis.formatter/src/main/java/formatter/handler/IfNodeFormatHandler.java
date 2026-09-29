@@ -20,10 +20,9 @@ public class IfNodeFormatHandler implements FormatNodeHandler<IfKeywordNode> {
     public String format(IfKeywordNode ifNode, FormatContext context, ASTFormatter formatter) {
         StringBuilder sb = new StringBuilder();
         appendIfHeader(sb, ifNode, context, formatter);
-        FormatContext innerContext = context.incrementIndent();
-        appendBlock(sb, ifNode.thenBody(), context, innerContext, formatter);
+        appendBlock(sb, ifNode.thenBody(), context, formatter);
         if (ifNode.elseBody() != null && !ifNode.elseBody().isEmpty()) {
-            appendElseClause(sb, ifNode, context, innerContext, formatter);
+            appendElseClause(sb, ifNode, context, formatter);
         }
         return sb.toString();
     }
@@ -46,11 +45,8 @@ public class IfNodeFormatHandler implements FormatNodeHandler<IfKeywordNode> {
     }
 
     private void appendBlock(
-            StringBuilder sb,
-            List<Node> body,
-            FormatContext context,
-            FormatContext innerContext,
-            ASTFormatter formatter) {
+            StringBuilder sb, List<Node> body, FormatContext context, ASTFormatter formatter) {
+        FormatContext innerContext = context.incrementIndent();
         for (Node stmt : body) {
             sb.append(formatter.formatStatement(stmt, innerContext)).append("\n");
         }
@@ -58,17 +54,13 @@ public class IfNodeFormatHandler implements FormatNodeHandler<IfKeywordNode> {
     }
 
     private void appendElseClause(
-            StringBuilder sb,
-            IfKeywordNode ifNode,
-            FormatContext context,
-            FormatContext innerContext,
-            ASTFormatter formatter) {
+            StringBuilder sb, IfKeywordNode ifNode, FormatContext context, ASTFormatter formatter) {
         if (context.isIfBraceSameLine()) {
             sb.append(" else {\n");
         } else {
             sb.append("\n").append(context.getIndent()).append("else\n");
             sb.append(context.getIndent()).append("{\n");
         }
-        appendBlock(sb, ifNode.elseBody(), context, innerContext, formatter);
+        appendBlock(sb, ifNode.elseBody(), context, formatter);
     }
 }

@@ -51,25 +51,30 @@ public class ReadInputFunction implements BuiltInFunction {
         if (raw == null) {
             throw new RuntimeException("Runtime error: Input is null");
         }
-        if (targetType == null) targetType = DataType.STRING;
-
-        return switch (targetType) {
+        DataType type = (targetType == null) ? DataType.STRING : targetType;
+        return switch (type) {
             case STRING -> raw;
-            case NUMBER -> {
-                try {
-                    yield new BigDecimal(raw.trim());
-                } catch (Exception e) {
-                    throw new RuntimeException(
-                            "Runtime error: Cannot parse input '" + raw + "' as number");
-                }
-            }
-            case BOOLEAN -> {
-                String clean = raw.trim().toLowerCase();
-                if (clean.equals("true")) yield Boolean.TRUE;
-                if (clean.equals("false")) yield Boolean.FALSE;
-                throw new RuntimeException(
-                        "Runtime error: Cannot parse input '" + raw + "' as boolean");
-            }
+            case NUMBER -> parseNumber(raw);
+            case BOOLEAN -> parseBoolean(raw);
         };
+    }
+
+    private BigDecimal parseNumber(String raw) {
+        try {
+            return new BigDecimal(raw.trim());
+        } catch (Exception e) {
+            throw new RuntimeException("Runtime error: Cannot parse input '" + raw + "' as number");
+        }
+    }
+
+    private Boolean parseBoolean(String raw) {
+        String clean = raw.trim().toLowerCase();
+        if (clean.equals("true")) {
+            return Boolean.TRUE;
+        }
+        if (clean.equals("false")) {
+            return Boolean.FALSE;
+        }
+        throw new RuntimeException("Runtime error: Cannot parse input '" + raw + "' as boolean");
     }
 }

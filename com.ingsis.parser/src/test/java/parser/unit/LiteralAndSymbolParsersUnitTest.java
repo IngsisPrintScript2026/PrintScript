@@ -18,6 +18,7 @@ import node.expression.literal.BooleanLiteralNode;
 import node.expression.literal.DataType;
 import node.expression.literal.StringLiteralNode;
 import node.keyword.DeclarationKeywordNode;
+import node.keyword.declaration.DeclarationInfo;
 import node.keyword.declaration.DeclarationType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -149,10 +150,8 @@ class LiteralAndSymbolParsersUnitTest {
         // When: parsing empty declaration
         Result<IterationStep<DeclarationKeywordNode>> res =
                 emptyStrategy.parse(
-                        keyTok,
-                        DeclarationType.LET,
+                        new DeclarationInfo(DeclarationType.LET, DataType.NUMBER, keyTok),
                         idNode,
-                        DataType.NUMBER,
                         stream,
                         asExprParser(new NumberLiteralParser()));
 
@@ -205,9 +204,8 @@ class LiteralAndSymbolParsersUnitTest {
                 ArgumentsParserUtils.parseSeparatedList(
                         new TokenStreamAdapter(emptyArgs, 0),
                         strParser,
-                        SymbolType.LPAREN,
-                        SymbolType.RPAREN,
-                        SymbolType.COMMA);
+                        new ArgumentsParserUtils.Delimiters(
+                                SymbolType.LPAREN, SymbolType.RPAREN, SymbolType.COMMA));
 
         // Then: returns empty list
         assertTrue(emptyRes.isCorrect());
@@ -231,9 +229,8 @@ class LiteralAndSymbolParsersUnitTest {
                 ArgumentsParserUtils.parseSeparatedList(
                         new TokenStreamAdapter(multiArgs, 0),
                         strParser,
-                        SymbolType.LPAREN,
-                        SymbolType.RPAREN,
-                        SymbolType.COMMA);
+                        new ArgumentsParserUtils.Delimiters(
+                                SymbolType.LPAREN, SymbolType.RPAREN, SymbolType.COMMA));
 
         // Then: returns 2 arguments
         assertTrue(multiRes.isCorrect());

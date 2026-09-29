@@ -49,9 +49,8 @@ public class FunctionParser implements Parser<CallFunctionNode> {
                 ArgumentsParserUtils.parseSeparatedList(
                         stream,
                         expressionParser,
-                        SymbolType.LPAREN,
-                        SymbolType.RPAREN,
-                        SymbolType.COMMA);
+                        new ArgumentsParserUtils.Delimiters(
+                                SymbolType.LPAREN, SymbolType.RPAREN, SymbolType.COMMA));
 
         if (!argsResult.isCorrect()) {
             return Result.failure(

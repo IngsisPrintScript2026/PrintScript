@@ -23,6 +23,7 @@ import result.CorrectResult;
 import result.IncorrectResult;
 import result.Result;
 import service.ExecuteService;
+import service.ExecutionContext;
 import service.ValidationService;
 import version.Version;
 
@@ -71,141 +72,143 @@ public class CliEngine implements Callable<Integer>, Engine {
                         outputFile != null
                                 ? new FileWriter(outputFile)
                                 : new OutputStreamWriter(System.out)) {
-
             OutputEmitter emitter = System.out::println;
-
-            if (inputFile == null) {
-                if (System.in.available() == 0) {
-                    return runRepl(version, writer, emitter) ? 0 : 1;
-                } else {
-                    Result<String> result = executeOperation(version, in, config, writer, emitter);
-                    return handleResult(result, writer) ? 0 : 1;
-                }
+            CliStreams streams = new CliStreams(in, config, writer);
+            if (inputFile == null && System.in.available() == 0) {
+                return runRepl(version, emitter) ? 0 : 1;
             }
-
-            Result<String> result = executeOperation(version, in, config, writer, emitter);
+            Result<String> result = executeOperation(streams, version, emitter);
             return handleResult(result, writer) ? 0 : 1;
         }
     }
 
-    private boolean runRepl(Version version, Writer writer, OutputEmitter emitter) {
-        semantic.environment.SemanticEnvironment semanticEnv =
-                new semantic.environment.SemanticEnvironment();
-        environment.Environment runtimeEnv = new environment.Environment();
+    private boolean runRepl(Version version, OutputEmitter emitter) {
+        System.out.println(
+                "Entering CLI Engine REPL. Type empty line to execute and 'exit' to quit.");
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))) {
-            InputSupplier inputSupplier =
-                    prompt -> {
-                        try {
-                            return reader.readLine();
-                        } catch (IOException e) {
-                            return "";
-                        }
-                    };
-
-            System.out.println(
-                    "Entering CLI Engine REPL. Type empty line to execute and 'exit' to quit.");
-            String line;
-            StringBuilder buffer = new StringBuilder();
-            while (true) {
-                System.out.print("> ");
-                line = reader.readLine();
-                if (line == null || line.equalsIgnoreCase("exit")) break;
-                if (line.trim().isEmpty()) {
-                    if (!buffer.isEmpty()) {
-                        Result<semantic.environment.SemanticEnvironment> result =
-                                executeService.execute(
-                                        version,
-                                        emitter,
-                                        inputSupplier,
-                                        new ByteArrayInputStream(buffer.toString().getBytes()),
-                                        semanticEnv,
-                                        runtimeEnv);
-                        if (result.isCorrect()) {
-                            semanticEnv =
-                                    ((CorrectResult<semantic.environment.SemanticEnvironment>)
-                                                    result)
-                                            .value();
-                            System.out.println("Program executed successfully");
-                        } else {
-                            String error =
-                                    ((IncorrectResult<semantic.environment.SemanticEnvironment>)
-                                                    result)
-                                            .error();
-                            System.out.println("Error: " + error);
-                            System.out.flush();
-                        }
-                        buffer.setLength(0);
-                    }
-                    continue;
-                }
-                buffer.append(line).append("\n");
-            }
+            runReplLoop(version, emitter, reader);
+            return true;
         } catch (IOException e) {
             e.printStackTrace();
             return false;
         }
-        return true;
+    }
+
+    private void runReplLoop(Version version, OutputEmitter emitter, BufferedReader reader)
+            throws IOException {
+        ReplState state =
+                new ReplState(
+                        new semantic.environment.SemanticEnvironment(),
+                        new environment.Environment());
+        StringBuilder buffer = new StringBuilder();
+        String line;
+        while (true) {
+            System.out.print("> ");
+            line = reader.readLine();
+            if (line == null || line.equalsIgnoreCase("exit")) break;
+            if (line.trim().isEmpty()) {
+                state = processReplCommand(buffer.toString(), version, emitter, state);
+                buffer.setLength(0);
+            } else {
+                buffer.append(line).append("\n");
+            }
+        }
+    }
+
+    private ReplState processReplCommand(
+            String code, Version version, OutputEmitter emitter, ReplState state) {
+        if (code.isBlank()) {
+            return state;
+        }
+        ExecutionContext ctx =
+                new ExecutionContext(
+                        version, emitter, prompt -> "", new ByteArrayInputStream(code.getBytes()));
+        Result<semantic.environment.SemanticEnvironment> res =
+                executeService.execute(ctx, state.semEnv(), state.runEnv());
+        if (res.isCorrect()) {
+            System.out.println("Program executed successfully");
+            var ok = (CorrectResult<semantic.environment.SemanticEnvironment>) res;
+            return new ReplState(ok.value(), state.runEnv());
+        }
+        String err = ((IncorrectResult<semantic.environment.SemanticEnvironment>) res).error();
+        System.out.println("Error: " + err);
+        System.out.flush();
+        return state;
     }
 
     private Result<String> executeOperation(
-            Version version,
-            InputStream in,
-            InputStream config,
-            Writer writer,
-            OutputEmitter emitter) {
-        if (operation == null
-                || operation.equalsIgnoreCase("Execution")
-                || operation.equalsIgnoreCase("interpret")
-                || operation.equalsIgnoreCase("exec")) {
-            InputSupplier inputSupplier =
-                    prompt -> {
-                        try {
-                            BufferedReader br =
-                                    new BufferedReader(new InputStreamReader(System.in));
-                            return br.readLine();
-                        } catch (IOException e) {
-                            return "";
-                        }
-                    };
-            return interpret(version, emitter, inputSupplier, in);
-        } else if (operation.equalsIgnoreCase("Validation")
-                || operation.equalsIgnoreCase("validate")) {
-            return validate(version, in);
-        } else if (operation.equalsIgnoreCase("Formatting")
-                || operation.equalsIgnoreCase("format")
-                || operation.equalsIgnoreCase("fmt")) {
-            return format(version, in, config, writer);
-        } else if (operation.equalsIgnoreCase("Analyzing")
-                || operation.equalsIgnoreCase("analyze")
-                || operation.equalsIgnoreCase("lint")) {
-            return analyze(version, in, config);
+            CliStreams streams, Version version, OutputEmitter emitter) {
+        if (isExecutionOp()) {
+            InputSupplier inputSupplier = prompt -> readLineFromStdin();
+            return interpret(version, emitter, inputSupplier, streams.in());
+        } else if (isValidationOp()) {
+            return validate(version, streams.in());
+        } else if (isFormattingOperation()) {
+            return format(version, streams.in(), streams.config(), streams.writer());
+        } else if (isAnalyzingOp()) {
+            return analyze(version, streams.in(), streams.config());
         }
         return new IncorrectResult<>("Unknown operation: " + operation);
+    }
+
+    private String readLineFromStdin() {
+        try {
+            return new BufferedReader(new InputStreamReader(System.in)).readLine();
+        } catch (IOException e) {
+            return "";
+        }
+    }
+
+    private boolean isExecutionOp() {
+        return operation == null
+                || operation.equalsIgnoreCase("Execution")
+                || operation.equalsIgnoreCase("interpret")
+                || operation.equalsIgnoreCase("exec");
+    }
+
+    private boolean isValidationOp() {
+        return operation != null
+                && (operation.equalsIgnoreCase("Validation")
+                        || operation.equalsIgnoreCase("validate"));
+    }
+
+    private boolean isAnalyzingOp() {
+        return operation != null
+                && (operation.equalsIgnoreCase("Analyzing")
+                        || operation.equalsIgnoreCase("analyze")
+                        || operation.equalsIgnoreCase("lint"));
     }
 
     private boolean handleResult(Result<String> result, Writer writer) {
         try {
             if (result.isCorrect()) {
-                if (isFormattingOperation()) {
-                    return true;
-                }
-                String value = ((CorrectResult<String>) result).value();
-                if (value != null) {
-                    writer.write(value);
-                    writer.write("\n");
-                    writer.flush();
-                }
+                writeSuccessResult(result, writer);
                 return true;
-            } else {
-                String error = ((IncorrectResult<String>) result).error();
-                System.out.println("Error: " + error);
-                System.out.flush();
-                return false;
             }
+            writeErrorResult(result);
+            return false;
         } catch (IOException e) {
             e.printStackTrace();
             return false;
         }
+    }
+
+    private void writeSuccessResult(Result<String> result, Writer writer) throws IOException {
+        if (isFormattingOperation()) {
+            return;
+        }
+        String value = ((CorrectResult<String>) result).value();
+        if (value != null) {
+            writer.write(value);
+            writer.write("\n");
+            writer.flush();
+        }
+    }
+
+    private void writeErrorResult(Result<String> result) {
+        String error = ((IncorrectResult<String>) result).error();
+        System.out.println("Error: " + error);
+        System.out.flush();
     }
 
     private boolean isFormattingOperation() {
@@ -214,6 +217,11 @@ public class CliEngine implements Callable<Integer>, Engine {
                         || operation.equalsIgnoreCase("format")
                         || operation.equalsIgnoreCase("fmt"));
     }
+
+    private record CliStreams(InputStream in, InputStream config, Writer writer) {}
+
+    private record ReplState(
+            semantic.environment.SemanticEnvironment semEnv, environment.Environment runEnv) {}
 
     @Override
     public Result<String> validate(Version version, InputStream in) {

@@ -10,7 +10,6 @@ import node.expression.Identifier.IdentifierNode;
 import node.expression.nullObject.NilExpressionNode;
 import node.factory.NodeFactory;
 import node.keyword.DeclarationKeywordNode;
-import node.keyword.declaration.DeclarationType;
 import result.CorrectResult;
 import result.IncorrectResult;
 import result.Result;
@@ -28,10 +27,8 @@ public class EmptyDeclarationSymbolStrategy implements DeclarationSymbolStrategy
 
     @Override
     public Result<IterationStep<DeclarationKeywordNode>> parse(
-            Token keywordToken,
-            DeclarationType declType,
+            node.keyword.declaration.DeclarationInfo info,
             IdentifierNode identifier,
-            node.expression.literal.DataType declaredType,
             TokenStream stream,
             Parser<ExpressionNode> expressionParser) {
 
@@ -42,8 +39,7 @@ public class EmptyDeclarationSymbolStrategy implements DeclarationSymbolStrategy
 
         IterationStep<Token> semiStep = ((CorrectResult<IterationStep<Token>>) semiResult).value();
         DeclarationKeywordNode node =
-                NodeFactory.createDeclaration(
-                        declType, identifier, new NilExpressionNode(), declaredType, keywordToken);
+                NodeFactory.createDeclaration(info, identifier, new NilExpressionNode());
 
         return Result.success(new IterationStep<>(node, (TokenStream) semiStep.next()));
     }

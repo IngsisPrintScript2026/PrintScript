@@ -23,6 +23,7 @@ import node.expression.literal.StringLiteralNode;
 import node.expression.nullObject.NilExpressionNode;
 import node.expression.operator.OperatorNode;
 import result.CorrectResult;
+import result.IncorrectResult;
 import result.Result;
 
 public class DefaultExpressionEvaluator implements ExpressionEvaluator {
@@ -69,45 +70,65 @@ public class DefaultExpressionEvaluator implements ExpressionEvaluator {
     private Result<Object> evaluateCallFunction(
             CallFunctionNode call, Environment env, DataType targetType) {
         String fnName = call.identifierNode().name();
-        List<Object> args = new ArrayList<>();
-        for (ExpressionNode argNode : call.argumentNodes()) {
-            Result<Object> argRes = evaluate(argNode, env);
-            if (!argRes.isCorrect()) return argRes;
-            args.add(((CorrectResult<Object>) argRes).value());
+        Result<List<Object>> argsRes = evaluateArgs(call.argumentNodes(), env);
+        if (!argsRes.isCorrect()) {
+            return Result.failure(((IncorrectResult<List<Object>>) argsRes).error());
         }
-
+        List<Object> args = ((CorrectResult<List<Object>>) argsRes).value();
         if (functionRegistry != null && functionRegistry.contains(fnName)) {
-            BuiltInFunction fn = functionRegistry.get(fnName);
-            try {
-                if (fn instanceof ReadInputFunction readInput) {
-                    return Result.success(readInput.evaluate(args, targetType, outputEmitter));
-                } else if (fn instanceof ReadEnvFunction readEnv) {
-                    return Result.success(readEnv.evaluate(args, targetType));
-                }
-            } catch (Exception e) {
-                return Result.failure("Function execution error: " + e.getMessage());
-            }
+            return executeBuiltIn(functionRegistry.get(fnName), args, targetType, fnName);
         }
         return Result.failure("Unsupported function call: " + fnName);
     }
 
+    private Result<List<Object>> evaluateArgs(List<ExpressionNode> argNodes, Environment env) {
+        List<Object> args = new ArrayList<>();
+        for (ExpressionNode argNode : argNodes) {
+            Result<Object> argRes = evaluate(argNode, env);
+            if (!argRes.isCorrect()) {
+                return Result.failure(((IncorrectResult<Object>) argRes).error());
+            }
+            args.add(((CorrectResult<Object>) argRes).value());
+        }
+        return Result.success(args);
+    }
+
+    private Result<Object> executeBuiltIn(
+            BuiltInFunction fn, List<Object> args, DataType targetType, String fnName) {
+        try {
+            if (fn instanceof ReadInputFunction readInput) {
+                return Result.success(readInput.evaluate(args, targetType, outputEmitter));
+            } else if (fn instanceof ReadEnvFunction readEnv) {
+                return Result.success(readEnv.evaluate(args, targetType));
+            }
+            return Result.failure("Unsupported function call: " + fnName);
+        } catch (Exception e) {
+            return Result.failure("Function execution error: " + e.getMessage());
+        }
+    }
+
     private Result<Object> evaluateOperator(OperatorNode op, Environment env) {
         Result<Object> leftRes = evaluate(op.left(), env);
-        if (!leftRes.isCorrect()) return leftRes;
+        if (!leftRes.isCorrect()) {
+            return leftRes;
+        }
         Result<Object> rightRes = evaluate(op.right(), env);
-        if (!rightRes.isCorrect()) return rightRes;
-
+        if (!rightRes.isCorrect()) {
+            return rightRes;
+        }
         Object left = ((CorrectResult<Object>) leftRes).value();
         Object right = ((CorrectResult<Object>) rightRes).value();
+        return applyOperator(op.operatorType(), left, right);
+    }
 
+    private Result<Object> applyOperator(
+            node.expression.operator.OperatorType type, Object left, Object right) {
         try {
-            return switch (op.operatorType()) {
-                case PLUS -> {
-                    if (left instanceof String || right instanceof String) {
-                        yield Result.success(String.valueOf(left) + String.valueOf(right));
-                    }
-                    yield Result.success(((BigDecimal) left).add((BigDecimal) right));
-                }
+            return switch (type) {
+                case PLUS ->
+                        (left instanceof String || right instanceof String)
+                                ? Result.success(String.valueOf(left) + String.valueOf(right))
+                                : Result.success(((BigDecimal) left).add((BigDecimal) right));
                 case MINUS -> Result.success(((BigDecimal) left).subtract((BigDecimal) right));
                 case STAR -> Result.success(((BigDecimal) left).multiply((BigDecimal) right));
                 case SLASH -> Result.success(((BigDecimal) left).divide((BigDecimal) right));

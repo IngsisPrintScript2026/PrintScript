@@ -27,6 +27,7 @@ import syntactic.parser.literal.NumberLiteralParser;
 import syntactic.parser.literal.StringLiteralParser;
 import syntactic.parser.root.FunctionParser;
 import syntactic.strategy.WithoutElseStrategy;
+import syntactic.version.LiteralParsers;
 import syntactic.version.Version10Strategy;
 import syntactic.version.Version11Strategy;
 import syntactic.version.VersionStrategyRegistry;
@@ -72,11 +73,14 @@ class VersionStrategyUnitTest {
         assertEquals(Version.V_1_0, v10.version());
         assertNotNull(v10.declarationKeywords());
         assertNotNull(v10.supportedDataTypes());
-        assertNotNull(
-                v10.primaryParsers(
+        LiteralParsers literalParsers =
+                new LiteralParsers(
                         new NumberLiteralParser(),
                         new StringLiteralParser(),
-                        new BooleanLiteralParser(),
+                        new BooleanLiteralParser());
+        assertNotNull(
+                v10.primaryParsers(
+                        literalParsers,
                         new FunctionParser(
                                 new IdentifierParser(), asExprParser(new NumberLiteralParser())),
                         new IdentifierParser()));
@@ -88,9 +92,7 @@ class VersionStrategyUnitTest {
         assertNotNull(v11.supportedDataTypes());
         assertNotNull(
                 v11.primaryParsers(
-                        new NumberLiteralParser(),
-                        new StringLiteralParser(),
-                        new BooleanLiteralParser(),
+                        literalParsers,
                         new FunctionParser(
                                 new IdentifierParser(), asExprParser(new NumberLiteralParser())),
                         new IdentifierParser()));

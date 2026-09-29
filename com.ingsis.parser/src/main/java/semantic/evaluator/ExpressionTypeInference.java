@@ -43,23 +43,22 @@ public class ExpressionTypeInference {
 
     private Result<DataType> inferOperatorType(OperatorNode op, SemanticEnvironment env) {
         Result<DataType> leftTypeRes = inferType(op.left(), env);
-        if (!leftTypeRes.isCorrect()) return leftTypeRes;
-
+        if (!leftTypeRes.isCorrect()) {
+            return leftTypeRes;
+        }
         Result<DataType> rightTypeRes = inferType(op.right(), env);
-        if (!rightTypeRes.isCorrect()) return rightTypeRes;
-
+        if (!rightTypeRes.isCorrect()) {
+            return rightTypeRes;
+        }
         DataType left = ((result.CorrectResult<DataType>) leftTypeRes).value();
         DataType right = ((result.CorrectResult<DataType>) rightTypeRes).value();
+        return resolveOperatorResultType(op, left, right);
+    }
 
+    private Result<DataType> resolveOperatorResultType(
+            OperatorNode op, DataType left, DataType right) {
         return switch (op.operatorType()) {
-            case PLUS ->
-                    (left == DataType.STRING || right == DataType.STRING)
-                            ? Result.success(DataType.STRING)
-                            : (left == DataType.NUMBER && right == DataType.NUMBER)
-                                    ? Result.success(DataType.NUMBER)
-                                    : Result.failure(
-                                            "Incompatible operands for '+' operator at line "
-                                                    + op.line());
+            case PLUS -> resolvePlusType(op, left, right);
             case MINUS, STAR, SLASH ->
                     (left == DataType.NUMBER && right == DataType.NUMBER)
                             ? Result.success(DataType.NUMBER)
@@ -68,6 +67,16 @@ public class ExpressionTypeInference {
                                             + op.line());
             case ASSIGNATION -> Result.success(right);
         };
+    }
+
+    private Result<DataType> resolvePlusType(OperatorNode op, DataType left, DataType right) {
+        if (left == DataType.STRING || right == DataType.STRING) {
+            return Result.success(DataType.STRING);
+        }
+        if (left == DataType.NUMBER && right == DataType.NUMBER) {
+            return Result.success(DataType.NUMBER);
+        }
+        return Result.failure("Incompatible operands for '+' operator at line " + op.line());
     }
 
     private Result<DataType> inferFunctionType(CallFunctionNode call, SemanticEnvironment env) {

@@ -123,33 +123,28 @@ public class TokenStreamFormatter implements Formatter {
         return new int[][] {starts, ends};
     }
 
+    private record SourceLayout(String source, List<Token> tokens, int[] starts, int[] ends) {}
+
     private String applyFormatting(String sourceCode, List<Token> tokens) {
         int[][] offsets = computeOffsets(tokens, sourceCode);
-        int[] starts = offsets[0];
-        int[] ends = offsets[1];
+        SourceLayout layout = new SourceLayout(sourceCode, tokens, offsets[0], offsets[1]);
         StringBuilder sb = new StringBuilder();
-        sb.append(sourceCode, 0, starts[0]);
+        sb.append(sourceCode, 0, layout.starts()[0]);
 
         FormattingState state = new FormattingState();
         for (int i = 0; i < tokens.size(); i++) {
-            formatTokenStep(sb, sourceCode, tokens, i, starts, ends, state);
+            formatTokenStep(sb, layout, i, state);
         }
-        appendTrailingSource(sb, sourceCode, ends[tokens.size() - 1]);
+        appendTrailingSource(sb, sourceCode, layout.ends()[tokens.size() - 1]);
         return sb.toString();
     }
 
     private void formatTokenStep(
-            StringBuilder sb,
-            String source,
-            List<Token> tokens,
-            int i,
-            int[] starts,
-            int[] ends,
-            FormattingState state) {
-        Token current = tokens.get(i);
+            StringBuilder sb, SourceLayout layout, int i, FormattingState state) {
+        Token current = layout.tokens().get(i);
         if (i > 0) {
-            Token prev = tokens.get(i - 1);
-            String sep = source.substring(ends[i - 1], starts[i]);
+            Token prev = layout.tokens().get(i - 1);
+            String sep = layout.source().substring(layout.ends()[i - 1], layout.starts()[i]);
             sb.append(computeSeparator(prev, current, sep, state));
         }
         updateStateForToken(current, state);

@@ -13,6 +13,7 @@ import result.CorrectResult;
 import result.IncorrectResult;
 import result.Result;
 import syntactic.Parser;
+import syntactic.strategy.ConditionalBlock;
 import syntactic.strategy.ConditionalElseStrategy;
 import syntactic.strategy.WithElseStrategy;
 import syntactic.strategy.WithoutElseStrategy;
@@ -97,14 +98,15 @@ public class ConditionalParser implements Parser<IfKeywordNode> {
 
         IterationStep<List<Node>> blockStep =
                 ((CorrectResult<IterationStep<List<Node>>>) blockResult).value();
-        return parseElse(ifToken, condition, blockStep.value(), (TokenStream) blockStep.next());
+        ConditionalBlock block = new ConditionalBlock(ifToken, condition, blockStep.value());
+        return parseElse(block, (TokenStream) blockStep.next());
     }
 
     private Result<IterationStep<IfKeywordNode>> parseElse(
-            Token ifToken, ExpressionNode condition, List<Node> thenBody, TokenStream stream) {
+            ConditionalBlock block, TokenStream stream) {
         for (ConditionalElseStrategy strategy : elseStrategies) {
             if (strategy.matches(stream)) {
-                return strategy.parseElse(ifToken, condition, thenBody, stream, statementParser);
+                return strategy.parseElse(block, stream, statementParser);
             }
         }
         return Result.failure("Unexpected error resolving else strategy");

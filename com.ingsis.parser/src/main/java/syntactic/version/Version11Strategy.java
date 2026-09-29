@@ -9,9 +9,6 @@ import java.util.function.Predicate;
 import node.Node;
 import node.expression.ExpressionNode;
 import node.expression.Identifier.IdentifierNode;
-import node.expression.literal.BooleanLiteralNode;
-import node.expression.literal.NumberLiteralNode;
-import node.expression.literal.StringLiteralNode;
 import node.keyword.IfKeywordNode;
 import syntactic.Parser;
 import syntactic.parser.root.AssignParser;
@@ -41,15 +38,13 @@ public class Version11Strategy implements VersionStrategy {
 
     @Override
     public List<Parser<? extends ExpressionNode>> primaryParsers(
-            Parser<NumberLiteralNode> numberLiteralParser,
-            Parser<StringLiteralNode> stringLiteralParser,
-            Parser<BooleanLiteralNode> booleanLiteralParser,
+            LiteralParsers literalParsers,
             Parser<? extends ExpressionNode> functionParser,
             Parser<IdentifierNode> identifierParser) {
         return List.of(
-                numberLiteralParser,
-                stringLiteralParser,
-                booleanLiteralParser,
+                literalParsers.number(),
+                literalParsers.string(),
+                literalParsers.bool(),
                 functionParser,
                 identifierParser);
     }

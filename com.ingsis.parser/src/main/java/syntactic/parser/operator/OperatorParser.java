@@ -5,6 +5,7 @@
 package syntactic.parser.operator;
 
 import iterator.IterationStep;
+import java.util.Optional;
 import java.util.function.Supplier;
 import node.expression.ExpressionNode;
 import node.expression.operator.OperatorNode;
@@ -42,38 +43,42 @@ public final class OperatorParser implements Parser<ExpressionNode> {
 
     private Result<IterationStep<ExpressionNode>> parseTail(
             ExpressionNode left, TokenStream stream, int rightBindingPower) {
+        Optional<OperatorType> opOpt = getValidOperator(stream, rightBindingPower);
+        if (opOpt.isEmpty()) {
+            return Result.success(new IterationStep<>(left, stream));
+        }
+        return parseRightAndContinue(left, stream, opOpt.get(), rightBindingPower);
+    }
+
+    private Optional<OperatorType> getValidOperator(TokenStream stream, int rightBindingPower) {
         if (stream.isEmpty()) {
-            return Result.success(new IterationStep<>(left, stream));
+            return Optional.empty();
         }
-        int peekStart = 0;
-        Result<Token> peekResult = stream.peek(peekStart);
-        if (!peekResult.isCorrect()) {
-            return Result.success(new IterationStep<>(left, stream));
+        Result<Token> peek = stream.peek(0);
+        if (!peek.isCorrect()) {
+            return Optional.empty();
         }
+        Result<OperatorType> opRes =
+                OperatorType.fromSymbol(((CorrectResult<Token>) peek).value().value());
+        if (!opRes.isCorrect()) {
+            return Optional.empty();
+        }
+        OperatorType op = ((CorrectResult<OperatorType>) opRes).value();
+        return (op.lBindingPower() > rightBindingPower) ? Optional.of(op) : Optional.empty();
+    }
 
-        Token currentToken = ((CorrectResult<Token>) peekResult).value();
-        Result<OperatorType> opTypeResult = OperatorType.fromSymbol(currentToken.value());
-        if (!opTypeResult.isCorrect()) {
-            return Result.success(new IterationStep<>(left, stream));
-        }
-
-        OperatorType operatorType = ((CorrectResult<OperatorType>) opTypeResult).value();
-        if (operatorType.lBindingPower() <= rightBindingPower) {
-            return Result.success(new IterationStep<>(left, stream));
-        }
-
-        // Consume operator token
+    private Result<IterationStep<ExpressionNode>> parseRightAndContinue(
+            ExpressionNode left, TokenStream stream, OperatorType opType, int rightBindingPower) {
         return switch (stream.consume()) {
             case CorrectResult<IterationStep<Token>>(IterationStep<Token> opStep) -> {
                 Token opToken = opStep.value();
                 TokenStream nextStream = (TokenStream) opStep.next();
-
-                yield switch (parseExpression(nextStream, operatorType.rBindingPower())) {
+                yield switch (parseExpression(nextStream, opType.rBindingPower())) {
                     case CorrectResult<IterationStep<ExpressionNode>>(
                             IterationStep<ExpressionNode> rightStep) -> {
                         OperatorNode opNode =
                                 NodeFactory.createOperator(
-                                        operatorType, left, rightStep.value(), opToken);
+                                        opType, left, rightStep.value(), opToken);
                         yield parseTail(opNode, (TokenStream) rightStep.next(), rightBindingPower);
                     }
                     case IncorrectResult<IterationStep<ExpressionNode>>(String err) ->

@@ -24,7 +24,9 @@ public class DeclarationScaHandler implements ScaNodeHandler<DeclarationKeywordN
             DeclarationKeywordNode decl, SemanticEnvironment env, ScaContext context, ASTSca sca) {
         List<String> violations = new ArrayList<>();
         checkNamingConvention(decl.identifierNode(), context.identifierFormat(), violations);
-        checkExpression(decl, env, context, sca, violations);
+        if (decl.expressionNode() != null) {
+            violations.addAll(sca.analyzeStatement(decl.expressionNode(), env, context));
+        }
         return violations;
     }
 
@@ -48,16 +50,5 @@ public class DeclarationScaHandler implements ScaNodeHandler<DeclarationKeywordN
             case "snake case", "snake_case" -> name.matches("^[a-z]+(?:_[a-z0-9]+)*$");
             default -> true;
         };
-    }
-
-    private void checkExpression(
-            DeclarationKeywordNode decl,
-            SemanticEnvironment env,
-            ScaContext context,
-            ASTSca sca,
-            List<String> violations) {
-        if (decl.expressionNode() != null) {
-            violations.addAll(sca.analyzeStatement(decl.expressionNode(), env, context));
-        }
     }
 }

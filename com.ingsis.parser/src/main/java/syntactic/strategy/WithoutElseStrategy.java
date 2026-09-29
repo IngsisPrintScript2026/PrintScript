@@ -7,7 +7,6 @@ package syntactic.strategy;
 import iterator.IterationStep;
 import java.util.List;
 import node.Node;
-import node.expression.ExpressionNode;
 import node.factory.NodeFactory;
 import node.keyword.IfKeywordNode;
 import result.CorrectResult;
@@ -30,13 +29,10 @@ public class WithoutElseStrategy implements ConditionalElseStrategy {
 
     @Override
     public Result<IterationStep<IfKeywordNode>> parseElse(
-            Token ifToken,
-            ExpressionNode condition,
-            List<Node> thenBody,
-            TokenStream stream,
-            Parser<Node> statementParser) {
-
-        IfKeywordNode ifNode = NodeFactory.createIf(condition, thenBody, List.of(), ifToken);
+            ConditionalBlock block, TokenStream stream, Parser<Node> statementParser) {
+        IfKeywordNode ifNode =
+                NodeFactory.createIf(
+                        block.condition(), block.thenBody(), List.of(), block.ifToken());
         return Result.success(new IterationStep<>(ifNode, stream));
     }
 }

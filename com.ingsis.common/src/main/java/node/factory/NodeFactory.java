@@ -27,18 +27,14 @@ public final class NodeFactory {
     }
 
     public static DeclarationKeywordNode createDeclaration(
-            DeclarationType type,
-            IdentifierNode id,
-            ExpressionNode expr,
-            node.expression.literal.DataType declaredType,
-            Token keyword) {
+            node.keyword.declaration.DeclarationInfo info, IdentifierNode id, ExpressionNode expr) {
         return new DeclarationKeywordNode(
-                type,
+                info.type(),
                 id,
                 expr,
-                declaredType,
-                keyword.startPosition().line(),
-                keyword.startPosition().column());
+                info.declaredType(),
+                info.keyword().startPosition().line(),
+                info.keyword().startPosition().column());
     }
 
     public static DeclarationKeywordNode createDeclaration(

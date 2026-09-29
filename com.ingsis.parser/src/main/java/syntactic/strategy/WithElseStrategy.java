@@ -7,7 +7,6 @@ package syntactic.strategy;
 import iterator.IterationStep;
 import java.util.List;
 import node.Node;
-import node.expression.ExpressionNode;
 import node.factory.NodeFactory;
 import node.keyword.IfKeywordNode;
 import result.CorrectResult;
@@ -29,35 +28,33 @@ public class WithElseStrategy implements ConditionalElseStrategy {
 
     @Override
     public Result<IterationStep<IfKeywordNode>> parseElse(
-            Token ifToken,
-            ExpressionNode condition,
-            List<Node> thenBody,
-            TokenStream stream,
-            Parser<Node> statementParser) {
-
+            ConditionalBlock block, TokenStream stream, Parser<Node> statementParser) {
         Result<IterationStep<Token>> elseResult = stream.consume(TokenType.ELSE);
         if (!elseResult.isCorrect()) {
             return Result.failure(((IncorrectResult<IterationStep<Token>>) elseResult).error());
         }
+        TokenStream postElseStream =
+                (TokenStream) ((CorrectResult<IterationStep<Token>>) elseResult).value().next();
+        return parseElseBody(block, postElseStream, statementParser);
+    }
 
-        IterationStep<Token> elseStep = ((CorrectResult<IterationStep<Token>>) elseResult).value();
-        TokenStream postElseTokenStream = (TokenStream) elseStep.next();
-
+    private Result<IterationStep<IfKeywordNode>> parseElseBody(
+            ConditionalBlock block, TokenStream postElseStream, Parser<Node> statementParser) {
         Result<IterationStep<List<Node>>> elseBlockResult =
                 BlockParserUtils.parseBlock(
-                        postElseTokenStream, statementParser, SymbolType.LBRACE, SymbolType.RBRACE);
-
+                        postElseStream, statementParser, SymbolType.LBRACE, SymbolType.RBRACE);
         if (!elseBlockResult.isCorrect()) {
             return Result.failure(
                     ((IncorrectResult<IterationStep<List<Node>>>) elseBlockResult).error());
         }
-
         IterationStep<List<Node>> elseBlockStep =
                 ((CorrectResult<IterationStep<List<Node>>>) elseBlockResult).value();
-        List<Node> elseBody = elseBlockStep.value();
-        TokenStream postElseStream = (TokenStream) elseBlockStep.next();
-
-        IfKeywordNode ifNode = NodeFactory.createIf(condition, thenBody, elseBody, ifToken);
-        return Result.success(new IterationStep<>(ifNode, postElseStream));
+        IfKeywordNode ifNode =
+                NodeFactory.createIf(
+                        block.condition(),
+                        block.thenBody(),
+                        elseBlockStep.value(),
+                        block.ifToken());
+        return Result.success(new IterationStep<>(ifNode, (TokenStream) elseBlockStep.next()));
     }
 }

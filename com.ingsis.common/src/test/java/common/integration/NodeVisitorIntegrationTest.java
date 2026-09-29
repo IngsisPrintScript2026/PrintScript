@@ -38,7 +38,11 @@ class NodeVisitorIntegrationTest {
         IdentifierNode id = NodeFactory.createIdentifier(tok);
         NumberLiteralNode num = new NumberLiteralNode(BigDecimal.TEN, 1, 1);
         DeclarationKeywordNode decl =
-                NodeFactory.createDeclaration(DeclarationType.LET, id, num, DataType.NUMBER, tok);
+                NodeFactory.createDeclaration(
+                        new node.keyword.declaration.DeclarationInfo(
+                                DeclarationType.LET, DataType.NUMBER, tok),
+                        id,
+                        num);
         AssignNode assign = NodeFactory.createAssign(id, num, tok);
         CallFunctionNode call = NodeFactory.createCall("print", List.of(num), tok);
         IfKeywordNode ifNode = NodeFactory.createIf(num, List.of(), List.of(), tok);

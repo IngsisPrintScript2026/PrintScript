@@ -97,7 +97,7 @@ tasks.named('build') {
 checkstyle {
     configFile = file("${project.rootDir}/.checkstyle.xml")
     toolVersion = '10.15.0'
-    ignoreFailures = true
+    ignoreFailures = false
     maxWarnings = 0
     configProperties = [
             'org.checkstyle.java.jdkversion': '17',

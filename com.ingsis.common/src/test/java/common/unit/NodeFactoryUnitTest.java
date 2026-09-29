@@ -59,7 +59,10 @@ class NodeFactoryUnitTest {
 
         DeclarationKeywordNode decl1 =
                 NodeFactory.createDeclaration(
-                        DeclarationType.LET, idNode, numNode, DataType.NUMBER, letTok);
+                        new node.keyword.declaration.DeclarationInfo(
+                                DeclarationType.LET, DataType.NUMBER, letTok),
+                        idNode,
+                        numNode);
         DeclarationKeywordNode decl2 =
                 NodeFactory.createDeclaration(DeclarationType.CONST, idNode, numNode, letTok);
         AssignNode assign = NodeFactory.createAssign(idNode, numNode, assignTok);

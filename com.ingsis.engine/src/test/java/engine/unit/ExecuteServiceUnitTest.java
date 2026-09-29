@@ -71,7 +71,9 @@ class ExecuteServiceUnitTest {
                 new ByteArrayInputStream(declCode.getBytes(StandardCharsets.UTF_8));
         Result<SemanticEnvironment> res1 =
                 executeService.execute(
-                        Version.V_1_0, output::add, null, in1, semanticEnv, runtimeEnv);
+                        new service.ExecutionContext(Version.V_1_0, output::add, null, in1),
+                        semanticEnv,
+                        runtimeEnv);
 
         // Then: step 1 succeeds and returns updated semantic environment
         assertTrue(res1.isCorrect(), "Declaration step should succeed");
@@ -83,7 +85,9 @@ class ExecuteServiceUnitTest {
                 new ByteArrayInputStream(printCode.getBytes(StandardCharsets.UTF_8));
         Result<SemanticEnvironment> res2 =
                 executeService.execute(
-                        Version.V_1_0, output::add, null, in2, semanticEnv, runtimeEnv);
+                        new service.ExecutionContext(Version.V_1_0, output::add, null, in2),
+                        semanticEnv,
+                        runtimeEnv);
 
         // Then: step 2 succeeds using persistent state and prints "Hola"
         assertTrue(res2.isCorrect(), "Print step should succeed using persistent state");

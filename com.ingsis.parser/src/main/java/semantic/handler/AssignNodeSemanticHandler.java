@@ -24,7 +24,6 @@ public class AssignNodeSemanticHandler implements SemanticNodeHandler<AssignNode
     public Result<SemanticEnvironment> check(AssignNode assign, SemanticEnvironment env) {
         String varName = assign.identifierNode().name();
         Optional<SemanticEnvironment.VariableSymbol> symbolOpt = env.lookup(varName);
-
         if (symbolOpt.isEmpty()) {
             return Result.failure(
                     "Cannot assign to undeclared variable '"
@@ -32,18 +31,23 @@ public class AssignNodeSemanticHandler implements SemanticNodeHandler<AssignNode
                             + "' at line "
                             + assign.line());
         }
-
         SemanticEnvironment.VariableSymbol symbol = symbolOpt.get();
         if (!symbol.isMutable() && symbol.isInitialized()) {
             return Result.failure(
                     "Cannot reassign constant variable '" + varName + "' at line " + assign.line());
         }
+        return checkTypeAndDefine(assign, env, symbol, varName);
+    }
 
+    private Result<SemanticEnvironment> checkTypeAndDefine(
+            AssignNode assign,
+            SemanticEnvironment env,
+            SemanticEnvironment.VariableSymbol symbol,
+            String varName) {
         Result<DataType> exprTypeRes = typeInferencer.inferType(assign.expressionNode(), env);
         if (!exprTypeRes.isCorrect()) {
             return Result.failure(((result.IncorrectResult<DataType>) exprTypeRes).error());
         }
-
         DataType exprType = ((CorrectResult<DataType>) exprTypeRes).value();
         if (exprType != null && symbol.type() != null && symbol.type() != exprType) {
             return Result.failure(
@@ -52,7 +56,6 @@ public class AssignNodeSemanticHandler implements SemanticNodeHandler<AssignNode
                             + "' at line "
                             + assign.line());
         }
-
         DataType finalType = exprType != null ? exprType : symbol.type();
         return Result.success(env.define(varName, finalType, symbol.isMutable(), true));
     }

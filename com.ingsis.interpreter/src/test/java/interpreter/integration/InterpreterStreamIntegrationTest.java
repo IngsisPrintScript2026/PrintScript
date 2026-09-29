@@ -99,7 +99,10 @@ class InterpreterStreamIntegrationTest {
                         new SemanticChecker(), new DefaultStatementExecutor(System.out::println)));
         assertNotNull(
                 new DefaultInterpreter(
-                        null, new SemanticChecker(), System.out::println, prompt -> "", key -> ""));
+                        null,
+                        new SemanticChecker(),
+                        System.out::println,
+                        new builtin.DefaultFunctionRegistry(prompt -> "", key -> "")));
     }
 
     @Test

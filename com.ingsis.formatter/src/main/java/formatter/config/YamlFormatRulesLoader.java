@@ -24,13 +24,19 @@ public class YamlFormatRulesLoader {
         }
     }
 
+    private record SpacingRules(
+            Boolean beforeColon, Boolean afterColon, Boolean aroundEquals, Boolean aroundOps) {}
+
+    private static SpacingRules parseSpacingRules(Map<String, Object> data) {
+        return new SpacingRules(
+                parseSpaceBeforeColon(data),
+                parseSpaceAfterColon(data),
+                parseSpaceAroundEquals(data),
+                parseSpaceAroundOps(data));
+    }
+
     private static FormatContext parseContext(Map<String, Object> data) {
-        Boolean spaceBeforeColon = parseSpaceBeforeColon(data);
-        Boolean spaceAfterColon = parseSpaceAfterColon(data);
-        Boolean spaceAroundEquals = parseSpaceAroundEquals(data);
-        Boolean spaceAroundOps = parseSpaceAroundOps(data);
-        return createLoadedContext(
-                data, spaceBeforeColon, spaceAfterColon, spaceAroundEquals, spaceAroundOps);
+        return assembleContext(parseSpacingRules(data), extractRulesData(data));
     }
 
     private static Boolean parseSpaceBeforeColon(Map<String, Object> data) {
@@ -77,16 +83,6 @@ public class YamlFormatRulesLoader {
         return hasKey(data, keys) ? getBoolean(data, true, keys) : null;
     }
 
-    private static FormatContext createLoadedContext(
-            Map<String, Object> data,
-            Boolean beforeColon,
-            Boolean afterColon,
-            Boolean aroundEquals,
-            Boolean aroundOps) {
-        FormattingRulesData r = extractRulesData(data);
-        return assembleContext(beforeColon, afterColon, aroundEquals, aroundOps, r);
-    }
-
     private record FormattingRulesData(
             Integer indent,
             Boolean lineBreak,
@@ -114,15 +110,14 @@ public class YamlFormatRulesLoader {
                 getSpaceAfterComma(data));
     }
 
-    private static FormatContext assembleContext(
-            Boolean before, Boolean after, Boolean equals, Boolean ops, FormattingRulesData r) {
+    private static FormatContext assembleContext(SpacingRules s, FormattingRulesData r) {
         return new FormatContext(
                 0,
                 r.indent(),
-                before,
-                after,
-                equals,
-                ops,
+                s.beforeColon(),
+                s.afterColon(),
+                s.aroundEquals(),
+                s.aroundOps(),
                 r.lineBreak(),
                 r.printlnBreaks(),
                 r.singleSpace(),

@@ -19,24 +19,24 @@ import tokenstream.TokenStream;
 public final class ArgumentsParserUtils {
     private ArgumentsParserUtils() {}
 
+    public record Delimiters(
+            SymbolType openSymbol, SymbolType closeSymbol, SymbolType separatorSymbol) {}
+
     public static <T extends Node> Result<IterationStep<List<T>>> parseSeparatedList(
-            TokenStream stream,
-            Parser<T> itemParser,
-            SymbolType openSymbol,
-            SymbolType closeSymbol,
-            SymbolType separatorSymbol) {
-        Result<TokenStream> openRes = consumeSymbol(stream, openSymbol);
-        if (!openRes.isCorrect())
+            TokenStream stream, Parser<T> itemParser, Delimiters delimiters) {
+        Result<TokenStream> openRes = consumeSymbol(stream, delimiters.openSymbol());
+        if (!openRes.isCorrect()) {
             return Result.failure(((IncorrectResult<TokenStream>) openRes).error());
+        }
         TokenStream currentStream = ((CorrectResult<TokenStream>) openRes).value();
-        if (isNextSymbol(currentStream, closeSymbol))
-            return consumeClose(currentStream, closeSymbol, new ArrayList<>());
-        return parseItems(
-                currentStream, itemParser, closeSymbol, separatorSymbol, new ArrayList<>());
+        if (isNextSymbol(currentStream, delimiters.closeSymbol())) {
+            return consumeClose(currentStream, delimiters.closeSymbol(), new ArrayList<>());
+        }
+        return parseItems(currentStream, itemParser, delimiters, new ArrayList<>());
     }
 
     private static <T extends Node> Result<IterationStep<List<T>>> parseItems(
-            TokenStream stream, Parser<T> parser, SymbolType close, SymbolType sep, List<T> items) {
+            TokenStream stream, Parser<T> parser, Delimiters delims, List<T> items) {
         Result<IterationStep<T>> itemRes = parser.parse(stream);
         if (!itemRes.isCorrect()) {
             return Result.failure(((IncorrectResult<IterationStep<T>>) itemRes).error());
@@ -44,11 +44,15 @@ public final class ArgumentsParserUtils {
         IterationStep<T> step = ((CorrectResult<IterationStep<T>>) itemRes).value();
         items.add(step.value());
         TokenStream nextStream = (TokenStream) step.next();
-        if (isNextSymbol(nextStream, close)) {
-            return consumeClose(nextStream, close, items);
+        if (isNextSymbol(nextStream, delims.closeSymbol())) {
+            return consumeClose(nextStream, delims.closeSymbol(), items);
         }
-        if (isNextSymbol(nextStream, sep)) {
-            return parseItems(advanceAfterSeparator(nextStream, sep), parser, close, sep, items);
+        if (isNextSymbol(nextStream, delims.separatorSymbol())) {
+            return parseItems(
+                    advanceAfterSeparator(nextStream, delims.separatorSymbol()),
+                    parser,
+                    delims,
+                    items);
         }
         return Result.failure("Expected ',' or ')' in argument list");
     }

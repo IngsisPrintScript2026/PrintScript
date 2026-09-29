@@ -11,19 +11,16 @@ import engine.OutputEmitter;
 import environment.Environment;
 import interpreter.DefaultInterpreter;
 import interpreter.Interpreter;
-import iterator.SafeIterator;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import lexer.Lexer;
-import node.Node;
 import result.CorrectResult;
 import result.IncorrectResult;
 import result.Result;
 import semantic.SemanticChecker;
 import semantic.environment.SemanticEnvironment;
-import token.Token;
 import tokenstream.LazyTokenStream;
 import version.Version;
 
@@ -56,14 +53,9 @@ public class ExecuteService implements engine.Engine {
 
     public Result<String> execute(
             Version version, OutputEmitter emitter, InputSupplier supplier, InputStream in) {
+        ExecutionContext ctx = new ExecutionContext(version, emitter, supplier, in);
         Result<SemanticEnvironment> res =
-                execute(
-                        version,
-                        emitter,
-                        supplier,
-                        in,
-                        new SemanticEnvironment(),
-                        new Environment());
+                execute(ctx, new SemanticEnvironment(), new Environment());
         if (res.isCorrect()) {
             return new CorrectResult<>("Program executed successfully");
         }
@@ -71,39 +63,30 @@ public class ExecuteService implements engine.Engine {
     }
 
     public Result<SemanticEnvironment> execute(
-            Version version,
-            OutputEmitter emitter,
-            InputSupplier supplier,
-            InputStream in,
-            SemanticEnvironment semanticEnv,
-            Environment runtimeEnv) {
+            ExecutionContext ctx, SemanticEnvironment semanticEnv, Environment runtimeEnv) {
         try {
             StreamCharReader reader =
-                    new StreamCharReader(new InputStreamReader(in, StandardCharsets.UTF_8));
+                    new StreamCharReader(new InputStreamReader(ctx.in(), StandardCharsets.UTF_8));
             CharStream charStream = new CharStream(reader);
-            SafeIterator<Token> lexer = new Lexer(charStream);
-
-            syntactic.Parser<Node> statementParser =
-                    syntactic.parser.ParserFactory.createParser(version);
-            SemanticChecker semanticChecker = new SemanticChecker();
-
-            builtin.provider.InputProvider inputProvider =
-                    (supplier != null) ? supplier::readInput : prompt -> "";
-            Interpreter interpreter =
-                    new DefaultInterpreter(
-                            statementParser,
-                            semanticChecker,
-                            msg -> {
-                                if (emitter != null) {
-                                    emitter.emit(msg);
-                                }
-                            },
-                            inputProvider,
-                            System::getenv);
-
-            return interpreter.interpret(new LazyTokenStream(lexer), semanticEnv, runtimeEnv);
+            Interpreter interpreter = buildInterpreter(ctx);
+            return interpreter.interpret(
+                    new LazyTokenStream(new Lexer(charStream)), semanticEnv, runtimeEnv);
         } catch (Exception e) {
             return new IncorrectResult<>("Execution error: " + e.getMessage());
         }
+    }
+
+    private Interpreter buildInterpreter(ExecutionContext ctx) {
+        builtin.provider.InputProvider inputProvider =
+                (ctx.supplier() != null) ? ctx.supplier()::readInput : prompt -> "";
+        return new DefaultInterpreter(
+                syntactic.parser.ParserFactory.createParser(ctx.version()),
+                new SemanticChecker(),
+                msg -> {
+                    if (ctx.emitter() != null) {
+                        ctx.emitter().emit(msg);
+                    }
+                },
+                new builtin.DefaultFunctionRegistry(inputProvider, System::getenv));
     }
 }

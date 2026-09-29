@@ -109,25 +109,25 @@ public class TokenStreamSca {
                 || tokens.get(callIndex + 1).type() != TokenType.LPAREN) {
             return;
         }
-        int idx = callIndex + 2;
-        int argIndex = 0;
-        boolean hasOperator = false;
-        Token errorToken = null;
+        scanArguments(tokens, callIndex + 2, name, violations);
+    }
 
+    private void scanArguments(
+            List<Token> tokens, int startIdx, String name, List<String> violations) {
+        int idx = startIdx;
+        int argIndex = 0;
+        Token errorToken = null;
         while (idx < tokens.size() && tokens.get(idx).type() != TokenType.RPAREN) {
             Token t = tokens.get(idx);
             if (t.type() == TokenType.COMMA) {
-                recordViolationIfAny(hasOperator, name, argIndex, errorToken, violations);
-                argIndex++;
-                hasOperator = false;
+                recordViolationIfAny(name, argIndex++, errorToken, violations);
                 errorToken = null;
-            } else if (isOperatorToken(t)) {
-                hasOperator = true;
-                if (errorToken == null) errorToken = t;
+            } else if (isOperatorToken(t) && errorToken == null) {
+                errorToken = t;
             }
             idx++;
         }
-        recordViolationIfAny(hasOperator, name, argIndex, errorToken, violations);
+        recordViolationIfAny(name, argIndex, errorToken, violations);
     }
 
     private boolean isOperatorToken(Token t) {
@@ -139,8 +139,8 @@ public class TokenStreamSca {
     }
 
     private void recordViolationIfAny(
-            boolean hasOp, String name, int index, Token token, List<String> violations) {
-        if (hasOp && token != null) {
+            String name, int index, Token token, List<String> violations) {
+        if (token != null) {
             violations.add(
                     String.format(
                             "Function '%s' argument at index %d must be a literal or variable,"

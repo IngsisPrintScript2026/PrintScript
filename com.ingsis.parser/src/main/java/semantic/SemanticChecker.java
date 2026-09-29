@@ -68,28 +68,32 @@ public class SemanticChecker
     @Override
     public Result<SemanticEnvironment> visit(IfKeywordNode ifNode, SemanticEnvironment env) {
         SemanticNodeHandler<?> handler = handlers.get(IfKeywordNode.class);
-
         Result<SemanticEnvironment> condRes =
                 handler != null ? handler.checkUntyped(ifNode, env) : Result.success(env);
         if (!condRes.isCorrect()) {
             return condRes;
         }
-
-        SemanticEnvironment thenEnv = new SemanticEnvironment(env);
-        for (Node stmt : ifNode.thenBody()) {
-            Result<SemanticEnvironment> res = checkNode(stmt, thenEnv);
-            if (!res.isCorrect()) return res;
-            thenEnv = ((CorrectResult<SemanticEnvironment>) res).value();
+        Result<Void> thenRes = checkBlock(ifNode.thenBody(), env);
+        if (!thenRes.isCorrect()) {
+            return Result.failure(((result.IncorrectResult<Void>) thenRes).error());
         }
-
-        SemanticEnvironment elseEnv = new SemanticEnvironment(env);
-        for (Node stmt : ifNode.elseBody()) {
-            Result<SemanticEnvironment> res = checkNode(stmt, elseEnv);
-            if (!res.isCorrect()) return res;
-            elseEnv = ((CorrectResult<SemanticEnvironment>) res).value();
+        Result<Void> elseRes = checkBlock(ifNode.elseBody(), env);
+        if (!elseRes.isCorrect()) {
+            return Result.failure(((result.IncorrectResult<Void>) elseRes).error());
         }
-
         return Result.success(env);
+    }
+
+    private Result<Void> checkBlock(List<Node> stmts, SemanticEnvironment parentEnv) {
+        SemanticEnvironment blockEnv = new SemanticEnvironment(parentEnv);
+        for (Node stmt : stmts) {
+            Result<SemanticEnvironment> res = checkNode(stmt, blockEnv);
+            if (!res.isCorrect()) {
+                return Result.failure(((result.IncorrectResult<SemanticEnvironment>) res).error());
+            }
+            blockEnv = ((CorrectResult<SemanticEnvironment>) res).value();
+        }
+        return Result.success(null);
     }
 
     @Override

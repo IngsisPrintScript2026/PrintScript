@@ -9,7 +9,6 @@ import node.expression.ExpressionNode;
 import node.expression.Identifier.IdentifierNode;
 import node.factory.NodeFactory;
 import node.keyword.DeclarationKeywordNode;
-import node.keyword.declaration.DeclarationType;
 import result.CorrectResult;
 import result.IncorrectResult;
 import result.Result;
@@ -27,10 +26,8 @@ public class AssignmentSymbolStrategy implements DeclarationSymbolStrategy {
 
     @Override
     public Result<IterationStep<DeclarationKeywordNode>> parse(
-            Token keywordToken,
-            DeclarationType declType,
+            node.keyword.declaration.DeclarationInfo info,
             IdentifierNode identifier,
-            node.expression.literal.DataType declaredType,
             TokenStream stream,
             Parser<ExpressionNode> expressionParser) {
 
@@ -38,17 +35,21 @@ public class AssignmentSymbolStrategy implements DeclarationSymbolStrategy {
         if (!equalResult.isCorrect()) {
             return Result.failure(((IncorrectResult<IterationStep<Token>>) equalResult).error());
         }
+        IterationStep<Token> step = ((CorrectResult<IterationStep<Token>>) equalResult).value();
+        return parseAssignedExpression(
+                (TokenStream) step.next(), expressionParser, info, identifier);
+    }
 
-        IterationStep<Token> equalStep =
-                ((CorrectResult<IterationStep<Token>>) equalResult).value();
-        TokenStream postEqualStream = (TokenStream) equalStep.next();
-
-        Result<IterationStep<ExpressionNode>> exprResult = expressionParser.parse(postEqualStream);
+    private Result<IterationStep<DeclarationKeywordNode>> parseAssignedExpression(
+            TokenStream stream,
+            Parser<ExpressionNode> parser,
+            node.keyword.declaration.DeclarationInfo info,
+            IdentifierNode id) {
+        Result<IterationStep<ExpressionNode>> exprResult = parser.parse(stream);
         if (!exprResult.isCorrect()) {
             return Result.failure(
                     ((IncorrectResult<IterationStep<ExpressionNode>>) exprResult).error());
         }
-
         IterationStep<ExpressionNode> exprStep =
                 ((CorrectResult<IterationStep<ExpressionNode>>) exprResult).value();
         TokenStream postExprStream = (TokenStream) exprStep.next();
@@ -57,12 +58,8 @@ public class AssignmentSymbolStrategy implements DeclarationSymbolStrategy {
         if (!semiResult.isCorrect()) {
             return Result.failure(((IncorrectResult<IterationStep<Token>>) semiResult).error());
         }
-
         IterationStep<Token> semiStep = ((CorrectResult<IterationStep<Token>>) semiResult).value();
-        DeclarationKeywordNode node =
-                NodeFactory.createDeclaration(
-                        declType, identifier, exprStep.value(), declaredType, keywordToken);
-
+        DeclarationKeywordNode node = NodeFactory.createDeclaration(info, id, exprStep.value());
         return Result.success(new IterationStep<>(node, (TokenStream) semiStep.next()));
     }
 }
