@@ -1,0 +1,12 @@
+let nombre: string = readInput("¿Cómo te llamás?");
+let edad: number = readInput("¿Cuántos años tenés?");
+let socio: boolean = readInput("¿Sos socio? (true/false)");
+
+println("Hola " + nombre);
+let proximo: number = edad + 1;
+println("El año que viene tenés " + proximo);
+if (socio) {
+    println("Tenés descuento");
+} else {
+    println("Precio completo");
+}

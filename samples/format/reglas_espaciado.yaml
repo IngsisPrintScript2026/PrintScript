@@ -1,0 +1,4 @@
+enforce-spacing-before-colon-in-declaration: false
+enforce-spacing-after-colon-in-declaration: true
+enforce-spacing-around-equals: true
+line-breaks-before-println: 1

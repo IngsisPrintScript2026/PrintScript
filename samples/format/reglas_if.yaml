@@ -1,0 +1,3 @@
+enforce-spacing-after-colon-in-declaration: true
+enforce-spacing-around-equals: true
+indent-inside-if: 2
