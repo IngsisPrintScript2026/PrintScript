@@ -156,14 +156,136 @@ A continuación se detallan las tareas principales que se corren en el flujo dia
 
 ---
 
-## 5. Tags, Releases y Publicación de Paquetes
+## 5. Ejecución del Motor (PrintScript CLI Engine)
 
-### 5.1. ¿Cómo funcionan las Tags y las Releases?
+El módulo [`com.ingsis.engine`](file:///home/elchurro274/Faculty/ingsis/PrintScript/com.ingsis.engine) expone la interfaz de línea de comandos integrada de PrintScript ([`CliEngine`](file:///home/elchurro274/Faculty/ingsis/PrintScript/com.ingsis.engine/src/main/java/engine/CliEngine.java)), soportando tanto ejecución por archivo como pipes desde `STDIN`, modo interactivo (REPL) y compatibilidad con las versiones `1.0` y `1.1`.
+
+### 5.1. Formas de Ejecución
+
+Existen dos vías principales para ejecutar la CLI localmente:
+
+1. **Vía Gradle (desarrollo y pruebas rápidas):**
+   ```bash
+   ./gradlew :com.ingsis.engine:run --args="<operación> [opciones]"
+   ```
+2. **Vía Distribución Instalada (binario ejecutable standalone):**
+   ```bash
+   # 1. Generar la distribución ejecutable del engine
+   ./gradlew :com.ingsis.engine:installDist
+
+   # 2. Ejecutar el binario generado
+   ./com.ingsis.engine/build/install/com.ingsis.engine/bin/com.ingsis.engine <operación> [opciones]
+   ```
+
+---
+
+### 5.2. Opciones Globales de la CLI
+
+| Opción | Descripción | Valor por Defecto |
+| :--- | :--- | :--- |
+| `-i, --input=<archivo>` | Archivo fuente PrintScript de entrada. | Si se omite, lee de `STDIN` (o entra al REPL). |
+| `-o, --output=<archivo>` | Archivo de salida de resultados o código formateado. | `STDOUT` (consola) |
+| `-c, --config=<archivo>` | Archivo de configuración YAML (para formateo o SCA). | Opcional |
+| `-v, --version=<versión>` | Versión de especificación de PrintScript (`1.0` o `1.1`). | `1.0` |
+
+---
+
+### 5.3. Catálogo Completo de Comandos
+
+#### 1. Ejecución de Código (`Execution` / `interpret` / `exec`)
+Ejecuta el pipeline completo de PrintScript (Lexer $\rightarrow$ Parser $\rightarrow$ Semantic Check $\rightarrow$ Interpreter).
+
+- **Ejecutar un archivo con PrintScript 1.0:**
+  ```bash
+  ./gradlew :com.ingsis.engine:run --args="Execution -v 1.0 -i ruta/al/archivo.ps"
+  ```
+- **Ejecutar un archivo con PrintScript 1.1 (soporta constantes y booleanos):**
+  ```bash
+  ./gradlew :com.ingsis.engine:run --args="Execution -v 1.1 -i ruta/al/archivo_v11.ps"
+  ```
+- **Ejecutar mediante Pipe (`STDIN`):**
+  ```bash
+  echo 'let x: string = "Hola Mundo"; println(x);' | ./gradlew :com.ingsis.engine:run --args="Execution -v 1.0"
+  ```
+- **Con binario compilado:**
+  ```bash
+  ./com.ingsis.engine/build/install/com.ingsis.engine/bin/com.ingsis.engine exec -v 1.0 -i archivo.ps
+  ```
+- **Aliases disponibles:** `Execution`, `interpret`, `exec`.
+
+#### 2. Validación de Sintaxis y Semántica (`Validation` / `validate`)
+Verifica que el código no tenga errores léxicos, sintácticos ni de tipos, sin llegar a ejecutarlo en runtime.
+
+- **Validar archivo con versión 1.0:**
+  ```bash
+  ./gradlew :com.ingsis.engine:run --args="Validation -v 1.0 -i ruta/al/archivo.ps"
+  ```
+- **Validar archivo con versión 1.1:**
+  ```bash
+  ./gradlew :com.ingsis.engine:run --args="validate -v 1.1 -i ruta/al/archivo_v11.ps"
+  ```
+- **Validar leyendo desde Pipe (`STDIN`):**
+  ```bash
+  echo 'const x: boolean = true;' | ./gradlew :com.ingsis.engine:run --args="Validation -v 1.1"
+  ```
+- **Aliases disponibles:** `Validation`, `validate`.
+
+#### 3. Formateo de Código (`Formatting` / `format` / `fmt`)
+Aplica las reglas de espaciado, sangría y saltos de línea provistas en un archivo de configuración YAML.
+
+- **Formatear e imprimir en consola (`STDOUT`):**
+  ```bash
+  ./gradlew :com.ingsis.engine:run --args="Formatting -v 1.0 -i ruta/al/codigo.ps -c config/formatter/rules.yaml"
+  ```
+- **Formatear y guardar en un archivo de salida (`-o`):**
+  ```bash
+  ./gradlew :com.ingsis.engine:run --args="format -v 1.0 -i ruta/al/codigo.ps -c config/formatter/rules.yaml -o formatted.ps"
+  ```
+- **Formatear leyendo desde `STDIN`:**
+  ```bash
+  cat codigo.ps | ./gradlew :com.ingsis.engine:run --args="fmt -v 1.0 -c config/formatter/rules.yaml -o formatted.ps"
+  ```
+- **Aliases disponibles:** `Formatting`, `format`, `fmt`.
+
+#### 4. Análisis Estático / Linter (`Analyzing` / `analyze` / `lint`)
+Analiza el código en busca de violaciones de estilo y buenas prácticas (SCA) definidas en un YAML (ej. convención de nomenclatura `camelCase` / `snake_case`, argumentos válidos en `println`, etc.).
+
+- **Analizar archivo con reglas SCA:**
+  ```bash
+  ./gradlew :com.ingsis.engine:run --args="Analyzing -v 1.0 -i ruta/al/archivo.ps -c config/sca/rules.yaml"
+  ```
+- **Analizar con alias `lint` y versión 1.1:**
+  ```bash
+  ./gradlew :com.ingsis.engine:run --args="lint -v 1.1 -i ruta/al/archivo_v11.ps -c config/sca/rules.yaml"
+  ```
+- **Aliases disponibles:** `Analyzing`, `analyze`, `lint`.
+
+#### 5. Modo REPL Interactivo
+Si se ejecuta el motor sin proveer el parámetro `-i` ni enviar datos por `STDIN`, se inicia automáticamente la consola interactiva:
+
+- **Iniciar REPL en versión 1.0:**
+  ```bash
+  ./gradlew :com.ingsis.engine:run
+  ```
+- **Iniciar REPL en versión 1.1:**
+  ```bash
+  ./gradlew :com.ingsis.engine:run --args="-v 1.1"
+  ```
+- **Uso en el REPL:**
+  - Escribe sentencias de PrintScript normalmente.
+  - Para ejecutar el bloque ingresado, presiona **Enter en una línea vacía**.
+  - Para salir de la consola, escribe `exit` y presiona Enter.
+
+---
+
+## 6. Tags, Releases y Publicación de Paquetes
+
+### 6.1. ¿Cómo funcionan las Tags y las Releases?
 
 - **Git Tag:** Es un puntero inmutable en el historial de Git a un commit concreto. Se usa para fijar versiones semánticas (por ejemplo `v1.1.0` o `1.1.0`).
 - **GitHub Release:** Es una capa sobre el tag que permite describir los cambios (*release notes*), adjuntar binarios y gatillar pipelines de CI/CD.
 
-### 5.2. Pipeline de Publicación en GitHub Actions ([`.github/workflows/publish.yml`](file:///home/elchurro274/Faculty/ingsis/PrintScript/.github/workflows/publish.yml))
+### 6.2. Pipeline de Publicación en GitHub Actions ([`.github/workflows/publish.yml`](file:///home/elchurro274/Faculty/ingsis/PrintScript/.github/workflows/publish.yml))
 
 El workflow de publicación del proyecto cuenta con validación previa y resolución dinámica de versiones:
 
@@ -188,33 +310,156 @@ El workflow de publicación del proyecto cuenta con validación previa y resoluc
 4. **Publicación (`gradlew publish`):**
    Invoca el plugin [`PublishingConventionPlugin.groovy`](file:///home/elchurro274/Faculty/ingsis/PrintScript/buildSrc/src/main/groovy/PublishingConventionPlugin.groovy) que empaqueta cada submódulo en un artefacto Maven y lo sube al registro de **GitHub Packages** (`maven.pkg.github.com`).
 
-### 5.3. Guía Práctica para Publicar una Nueva Versión
+---
 
-#### Método 1: Por Terminal con Git Tags (Recomendado)
-```bash
-# 1. Asegurar estado sincronizado con main
-git checkout main
-git pull origin main
+### 6.3. Diferencia Crucial entre Git Tag y GitHub Release
 
-# 2. Crear el tag anotado siguiendo SemVer (Major.Minor.Patch)
-git tag -a v1.2.0 -m "Release 1.2.0: Soporte PrintScript 1.1 y mejoras del linter"
-
-# 3. Subir el tag al remoto
-git push origin v1.2.0
-```
-*El workflow detectará el tag `v1.2.0`, correrá los tests y publicará la versión `1.2.0` en GitHub Packages.*
-
-#### Método 2: Por la Interfaz de GitHub (Releases)
-1. Entrar al repositorio en GitHub $\rightarrow$ **Releases** $\rightarrow$ **Draft a new release**.
-2. Crear un nuevo tag (ej: `v1.2.0`) sobre la rama `main`.
-3. Asignar un título y redactar el *Changelog* o notas de la versión.
-4. Presionar **Publish release**.
+- **`git push origin <tag>` (Git Tag):** Sube el puntero al repositorio de Git y dispara automáticamente la Action `publish.yml` para compilar y publicar los paquetes a **GitHub Packages**. Sin embargo, **no crea automáticamente una GitHub Release en la interfaz web de GitHub**.
+- **GitHub Release:** Es la entidad visible en la sección *Releases* del repositorio. Contiene el título formal, el *Changelog* o notas de versión, los binarios adjuntos descargables y la marca de versión más reciente (*Latest*). Debe crearse apuntando al tag existente.
 
 ---
 
-## 6. Reportes Generados y Consumo de Paquetes
+### 6.4. Guía Práctica: Crear una Tag y una Release desde la CLI
 
-### 6.1. Ubicación de Reportes Locales
+Todo el flujo se hace desde la terminal con `git` y la GitHub CLI (`gh`). Cada versión se publica **una sola vez**: los paquetes de GitHub Packages son inmutables y una versión ya subida no se puede volver a subir ni reutilizar.
+
+#### 6.4.1. Requisitos (una sola vez)
+
+```bash
+gh --version          # GitHub CLI instalada (sudo dnf install gh / brew install gh)
+gh auth login         # elegir GitHub.com, HTTPS y autenticar con el navegador
+gh auth status        # debe mostrar la cuenta logueada y el scope "repo"
+gh auth refresh -s read:packages   # permiso extra para listar los paquetes publicados (paso 7)
+```
+
+#### 6.4.2. Antes de versionar
+
+```bash
+# 1. Estar en main, sin cambios pendientes y al día con el remoto
+git checkout main
+git pull origin main
+git status                       # debe decir "nothing to commit, working tree clean"
+
+# 2. Verificar localmente lo mismo que corre el CI (incluye tests de contenedor si hay Docker)
+./gradlew clean check
+
+# 3. Confirmar que el último CI de main está en verde
+gh run list --branch main --limit 3
+
+# 4. Ver la última versión publicada para elegir la siguiente
+git fetch --tags
+git tag --sort=-v:refname | head -3
+gh release list --limit 3
+```
+
+La versión sigue **SemVer** (`MAYOR.MENOR.PARCHE`): PARCHE para correcciones (`v1.2.1`), MENOR para funcionalidad nueva compatible (`v1.3.0`), MAYOR para cambios incompatibles (`v2.0.0`). El workflow quita la `v` inicial, así que el tag `v1.3.0` publica los paquetes con versión `1.3.0`.
+
+#### 6.4.3. Flujo completo: Tag → Paquetes → Release
+
+```bash
+VERSION=1.3.0
+
+# 1. Crear el tag ANOTADO sobre el último commit de main (guarda autor, fecha y mensaje)
+git tag -a "v$VERSION" -m "Release $VERSION: <resumen de los cambios>"
+
+# 2. Revisar a qué commit apunta antes de subirlo (todavía se puede borrar local: git tag -d "v$VERSION")
+git show "v$VERSION" --stat | head -15
+
+# 3. Subir SOLO ese tag. Esto dispara publish.yml, que corre los chequeos y publica en GitHub Packages
+git push origin "v$VERSION"
+
+# 4. Seguir la corrida hasta que termine (debe quedar en verde)
+gh run list --workflow publish.yml --limit 3
+gh run watch "$(gh run list --workflow publish.yml --limit 1 --json databaseId --jq '.[0].databaseId')"
+
+# 5. Crear la GitHub Release sobre el tag ya existente, con notas generadas desde los commits y PRs
+gh release create "v$VERSION" --verify-tag --title "Release $VERSION" --generate-notes
+
+# 6. (Opcional) Adjuntar la CLI empaquetada para que se pueda descargar desde la release
+./gradlew :com.ingsis.engine:distZip -Pversion="$VERSION"
+gh release upload "v$VERSION" "com.ingsis.engine/build/distributions/com.ingsis.engine-$VERSION.zip"
+
+# 7. Verificar
+gh release view "v$VERSION"
+gh api "/orgs/IngsisPrintScript2026/packages?package_type=maven" --jq '.[].name'
+```
+
+- `--verify-tag` hace que `gh` falle si el tag no existe en el remoto, en vez de crearlo solo sobre otro commit.
+- Para escribir las notas a mano en vez de generarlas: `--notes-file CHANGELOG.md` o `--notes "texto"`.
+- Para dejar la release como borrador y publicarla después: `--draft`, y luego `gh release edit "v$VERSION" --draft=false`.
+- Para marcar una versión de prueba: `--prerelease`.
+
+> **⚠️ Doble disparo de `publish.yml`.** El workflow escucha tanto el push del tag (paso 3) como la publicación de la release (paso 5), y las dos corridas intentan publicar la misma versión. La segunda falla con `Received status code 409 from server: Conflict`. Ya pasó con `v1.2.0` el 29/09/2026: la corrida del tag publicó bien y la de la release quedó en rojo. Los paquetes quedan publicados igual (por la primera corrida); la corrida en rojo de la release se puede ignorar. Para eliminarlo, ver 6.4.6.
+
+#### 6.4.4. Publicar sin tag (disparo manual)
+
+El workflow también acepta un disparo manual con la versión como parámetro, útil para re-publicar si la corrida del tag falló por un problema externo (red, credenciales) **antes** de subir paquetes:
+
+```bash
+gh workflow run publish.yml --ref main -f version=1.3.0
+gh run watch "$(gh run list --workflow publish.yml --limit 1 --json databaseId --jq '.[0].databaseId')"
+```
+
+#### 6.4.5. Corregir errores
+
+```bash
+# El tag apunta al commit equivocado y TODAVÍA no se publicó nada:
+git tag -d "v$VERSION"                    # borrar local
+git push origin --delete "v$VERSION"      # borrar remoto
+# ...y volver a 6.4.3 desde el paso 1.
+
+# La release tiene mal el título o las notas:
+gh release edit "v$VERSION" --title "Release $VERSION" --notes-file CHANGELOG.md
+
+# Borrar la release y su tag remoto juntos:
+gh release delete "v$VERSION" --cleanup-tag --yes
+```
+
+Si los paquetes de esa versión ya se publicaron, **no se reutiliza el número**: se corrige en `main` y se saca la siguiente versión de parche (`1.3.1`).
+
+#### 6.4.6. Evitar el doble disparo (cambio sugerido, no aplicado)
+
+Para que cada versión dispare una sola publicación, alcanza con que `publish.yml` no escuche las releases y deje que el tag sea el único disparador:
+
+```yaml
+on:
+  push:
+    branches: [ main ]
+    tags:
+      - 'v*'
+      - '*.*'
+      - '[0-9]*'
+  # release:            ← quitar este disparador
+  #   types: [ published ]
+  workflow_dispatch:
+```
+
+Con ese cambio, el paso 5 de 6.4.3 solo crea la página de la release y no vuelve a publicar.
+
+#### 6.4.7. Alternativa desde la interfaz web
+
+1. Subir el tag desde la terminal (pasos 1 a 4 de 6.4.3).
+2. Entrar a `https://github.com/IngsisPrintScript2026/PrintScript/releases` y presionar **"Draft a new release"**.
+3. En **"Choose a tag"**, elegir el tag subido (ej: `v1.3.0`).
+4. Completar el título, presionar **"Generate release notes"** y luego **"Publish release"**.
+
+El aviso de doble disparo de 6.4.3 aplica igual: publicar la release desde la web también dispara `publish.yml`.
+
+#### Resumen rápido
+
+```bash
+VERSION=1.3.0
+git checkout main && git pull origin main && ./gradlew clean check
+git tag -a "v$VERSION" -m "Release $VERSION"
+git push origin "v$VERSION"                                   # publica los paquetes
+gh release create "v$VERSION" --verify-tag --title "Release $VERSION" --generate-notes
+```
+
+---
+
+## 7. Reportes Generados y Consumo de Paquetes
+
+### 7.1. Ubicación de Reportes Locales
 Cada tarea de análisis y verificación vuelca sus informes en carpetas personalizadas dentro del directorio `build/` de cada módulo:
 - **Checkstyle:** `<subproject>/build/custom-reports/checkstyle/checkstyleMain.html`
 - **PMD:** `<subproject>/build/custom-reports/pmd/pmdMain.html`
@@ -222,7 +467,7 @@ Cada tarea de análisis y verificación vuelca sus informes en carpetas personal
 - **JaCoCo (Cobertura individual):** `<subproject>/build/reports/jacoco/test/html/index.html`
 - **JaCoCo Agregado (Todo el proyecto):** `build/reports/jacoco/html/index.html` (generado vía `./gradlew jacocoRootReport`).
 
-### 6.2. Consumo en Proyectos Externos
+### 7.2. Consumo en Proyectos Externos
 Para consumir los artefactos publicados en GitHub Packages desde otro proyecto (por ejemplo, una UI web o un servicio backend en Spring Boot):
 
 ```groovy
