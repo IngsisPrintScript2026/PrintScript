@@ -6,59 +6,56 @@ package sca.unit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.ByteArrayInputStream;
-import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import sca.ScaContext;
-import sca.config.YamlScaRulesLoader;
 
 class ScaContextUnitTest {
 
     @Test
     @DisplayName(
-            "What: ScaContext | When: instantiated with rules | Then: properties return configured"
-                    + " settings")
-    void scaContext_whenInstantiated_thenReturnsConfiguredSettings() {
-        // What: ScaContext configured with custom flags
-        ScaContext context = new ScaContext("camel case", true, true);
+            "Given: no configuration | When: creating the default ScaContext | Then: no naming"
+                    + " convention is enforced")
+    void scaContext_whenCreatedWithDefaults_thenHasNoIdentifierFormat() {
+        // Given
+        // When
+        ScaContext context = new ScaContext();
 
-        // When & Then: verify properties
-        assertEquals("camel case", context.identifierFormat());
-        assertTrue(context.mandatoryLiteralOrIdentifierInPrintln());
-        assertTrue(context.mandatoryLiteralOrIdentifierInReadInput());
-
-        // Default constructor
-        ScaContext defaultCtx = new ScaContext();
-        assertFalse(defaultCtx.mandatoryLiteralOrIdentifierInPrintln());
-        assertFalse(defaultCtx.mandatoryLiteralOrIdentifierInReadInput());
+        // Then
+        assertNull(context.identifierFormat());
     }
 
     @Test
     @DisplayName(
-            "What: YamlScaRulesLoader | When: loading YAML input stream | Then: populates"
-                    + " ScaContext correctly")
-    void yamlRulesLoader_whenLoadingYaml_thenPopulatesScaContext() {
-        // What: YAML config string
-        String yaml =
-                """
-                identifier_format: "snake case"
-                mandatory-variable-or-literal-in-println: true
-                mandatory-variable-or-literal-in-readInput: false
-                """;
+            "Given: no configuration | When: creating the default ScaContext | Then: the println"
+                    + " and readInput argument rules are disabled")
+    void scaContext_whenCreatedWithDefaults_thenArgumentRulesAreDisabled() {
+        // Given
+        // When
+        ScaContext context = new ScaContext();
 
-        // When: loading ScaContext from YAML
-        ScaContext context =
-                YamlScaRulesLoader.loadFromYaml(
-                        new ByteArrayInputStream(yaml.getBytes(StandardCharsets.UTF_8)));
+        // Then
+        assertFalse(context.mandatoryLiteralOrIdentifierInPrintln());
+        assertFalse(context.mandatoryLiteralOrIdentifierInReadInput());
+    }
 
-        // Then: context attributes reflect YAML configuration
-        assertNotNull(context);
+    @Test
+    @DisplayName(
+            "Given: explicit rule values | When: creating the ScaContext | Then: exposes exactly"
+                    + " those values")
+    void scaContext_whenCreatedWithExplicitRules_thenExposesThem() {
+        // Given
+        String format = "snake case";
+
+        // When
+        ScaContext context = new ScaContext(format, true, true);
+
+        // Then
         assertEquals("snake case", context.identifierFormat());
         assertTrue(context.mandatoryLiteralOrIdentifierInPrintln());
-        assertFalse(context.mandatoryLiteralOrIdentifierInReadInput());
+        assertTrue(context.mandatoryLiteralOrIdentifierInReadInput());
     }
 }

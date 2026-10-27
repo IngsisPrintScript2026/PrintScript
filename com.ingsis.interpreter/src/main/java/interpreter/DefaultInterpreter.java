@@ -8,11 +8,10 @@ import environment.Environment;
 import evaluator.ExpressionEvaluator;
 import executor.DefaultStatementExecutor;
 import executor.StatementExecutor;
-import iterator.IterationStep;
 import java.util.function.Consumer;
 import node.Node;
 import node.ProgramNode;
-import result.CorrectResult;
+import pipeline.StatementPipeline;
 import result.IncorrectResult;
 import result.Result;
 import semantic.SemanticChecker;
@@ -93,57 +92,11 @@ public class DefaultInterpreter implements Interpreter {
         if (statementParser == null) {
             return Result.failure("Syntactic parser dependency must be injected into Interpreter.");
         }
-        return executeStream(tokenStream, semanticEnv, runtimeEnv);
-    }
-
-    private Result<SemanticEnvironment> executeStream(
-            TokenStream stream, SemanticEnvironment semEnv, Environment runtimeEnv) {
-        TokenStream currentStream = stream;
-        SemanticEnvironment currentSemEnv = semEnv;
-        while (!currentStream.isEmpty()) {
-            Result<IterationStep<Node>> parseResult = statementParser.parse(currentStream);
-            if (!parseResult.isCorrect()) {
-                return handleParseError(parseResult, currentSemEnv);
-            }
-            IterationStep<Node> step = ((CorrectResult<IterationStep<Node>>) parseResult).value();
-            currentStream = (TokenStream) step.next();
-            Result<SemanticEnvironment> stepRes =
-                    processNode(step.value(), currentSemEnv, runtimeEnv);
-            if (!stepRes.isCorrect()) {
-                return stepRes;
-            }
-            currentSemEnv = ((CorrectResult<SemanticEnvironment>) stepRes).value();
-        }
-        return Result.success(currentSemEnv);
-    }
-
-    private Result<SemanticEnvironment> handleParseError(
-            Result<IterationStep<Node>> parseResult, SemanticEnvironment currentSemEnv) {
-        String err = ((IncorrectResult<IterationStep<Node>>) parseResult).error();
-        if ("EOF".equalsIgnoreCase(err) || err.contains("EOF")) {
-            return Result.success(currentSemEnv);
-        }
-        return Result.failure(err.startsWith("Syntactic error:") ? err : "Syntactic error: " + err);
-    }
-
-    private Result<SemanticEnvironment> processNode(
-            Node statement, SemanticEnvironment semEnv, Environment runtimeEnv) {
-        SemanticEnvironment nextEnv = semEnv;
-        if (semanticChecker != null) {
-            Result<SemanticEnvironment> semResult = semanticChecker.checkNode(statement, semEnv);
-            if (!semResult.isCorrect()) {
-                String err = ((IncorrectResult<SemanticEnvironment>) semResult).error();
-                return Result.failure(
-                        err.startsWith("Semantic error:") ? err : "Semantic error: " + err);
-            }
-            nextEnv = ((CorrectResult<SemanticEnvironment>) semResult).value();
-        }
-        Result<Void> execRes = statementExecutor.execute(statement, runtimeEnv);
-        if (!execRes.isCorrect()) {
-            String err = ((IncorrectResult<Void>) execRes).error();
-            return Result.failure(err.startsWith("Runtime error:") ? err : "Runtime error: " + err);
-        }
-        return Result.success(nextEnv);
+        return new StatementPipeline(statementParser, semanticChecker)
+                .run(
+                        tokenStream,
+                        semanticEnv,
+                        (statement, env) -> statementExecutor.execute(statement, runtimeEnv));
     }
 
     @Override

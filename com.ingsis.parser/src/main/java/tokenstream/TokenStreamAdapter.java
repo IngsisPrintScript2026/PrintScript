@@ -46,9 +46,14 @@ public final class TokenStreamAdapter implements TokenStream {
     @Override
     public Result<IterationStep<Token>> consume(Predicate<Token> matcher) {
         return switch (peek(0)) {
-            case IncorrectResult<Token>(String err) -> Result.failure(err);
+            case IncorrectResult<Token>(String err) ->
+                    Result.failure(
+                            err.startsWith("Lexical error") ? err : "Unexpected end of file");
             case CorrectResult<Token>(Token token) ->
-                    matcher.test(token) ? consume() : Result.failure("Token inesperado: " + token);
+                    matcher.test(token)
+                            ? consume()
+                            : Result.failure(
+                                    "Unexpected token '" + token.value() + "' " + token.range());
         };
     }
 

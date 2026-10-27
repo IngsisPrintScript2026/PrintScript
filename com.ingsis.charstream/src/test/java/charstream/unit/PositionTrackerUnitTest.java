@@ -13,9 +13,9 @@ import org.junit.jupiter.api.Test;
 class PositionTrackerUnitTest {
 
     @Test
-    @DisplayName("What: PositionTracker | When: advancing standard char | Then: column increments")
+    @DisplayName("Given: PositionTracker | When: advancing standard char | Then: column increments")
     void positionTracker_whenAdvancingStandardChar_thenIncrementsColumn() {
-        // What: PositionTracker initialized at line 1, column 1
+        // Given: PositionTracker initialized at line 1, column 1
         PositionTracker tracker = new PositionTracker();
         assertEquals(1, tracker.getLine());
         assertEquals(1, tracker.getColumn());
@@ -30,10 +30,10 @@ class PositionTrackerUnitTest {
 
     @Test
     @DisplayName(
-            "What: PositionTracker | When: advancing newline | Then: line increments and column"
+            "Given: PositionTracker | When: advancing newline | Then: line increments and column"
                     + " resets")
     void positionTracker_whenAdvancingNewline_thenIncrementsLineAndResetsColumn() {
-        // What: PositionTracker at line 1, column 2
+        // Given: PositionTracker at line 1, column 2
         PositionTracker tracker = new PositionTracker().advance('a');
 
         // When: advancing newline '\n'
@@ -46,10 +46,10 @@ class PositionTrackerUnitTest {
 
     @Test
     @DisplayName(
-            "What: PositionTracker | When: advancing carriage return | Then: line increments and"
+            "Given: PositionTracker | When: advancing carriage return | Then: line increments and"
                     + " column resets")
     void positionTracker_whenAdvancingCarriageReturn_thenIncrementsLineAndResetsColumn() {
-        // What: PositionTracker at line 1, column 1
+        // Given: PositionTracker at line 1, column 1
         PositionTracker tracker = new PositionTracker();
 
         // When: advancing carriage return '\r'
@@ -62,11 +62,11 @@ class PositionTrackerUnitTest {
 
     @Test
     @DisplayName(
-            "What: PositionTracker | When: advancing CRLF sequence | Then: maintains same line"
+            "Given: PositionTracker | When: advancing CRLF sequence | Then: maintains same line"
                     + " without duplicate increment")
     void
             positionTracker_whenAdvancingCrlfSequence_thenMaintainsSameLineWithoutDuplicateIncrement() {
-        // What: PositionTracker after carriage return '\r'
+        // Given: PositionTracker after carriage return '\r'
         PositionTracker cr = new PositionTracker().advance('\r');
         assertEquals(2, cr.getLine());
 

@@ -30,10 +30,10 @@ class NodeVisitorIntegrationTest {
 
     @Test
     @DisplayName(
-            "What: NodeVisitor | When: visiting heterogeneous AST nodes | Then: dispatches"
+            "Given: NodeVisitor | When: visiting heterogeneous AST nodes | Then: dispatches"
                     + " polymorphic visits correctly")
     void nodeVisitor_whenVisitingHeterogeneousNodes_thenDispatchesPolymorphicVisits() {
-        // What: full set of AST nodes and a visitor implementation
+        // Given: full set of AST nodes and a visitor implementation
         Token tok = new Token(TokenType.IDENTIFIER, "test", new Position(1, 1));
         IdentifierNode id = NodeFactory.createIdentifier(tok);
         NumberLiteralNode num = new NumberLiteralNode(BigDecimal.TEN, 1, 1);

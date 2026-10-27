@@ -4,227 +4,113 @@
 
 package formatter.integration;
 
+import static formatter.support.FormatterFixtures.parse;
+import static formatter.support.FormatterFixtures.stream;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import formatter.ASTFormatter;
 import formatter.FormatContext;
-import formatter.Formatter;
-import formatter.config.YamlFormatRulesLoader;
-import java.io.ByteArrayInputStream;
-import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
+import formatter.support.FormatterFixtures;
 import node.ProgramNode;
-import node.expression.Identifier.IdentifierNode;
-import node.expression.function.CallFunctionNode;
-import node.expression.literal.BooleanLiteralNode;
-import node.expression.literal.NumberLiteralNode;
-import node.expression.literal.StringLiteralNode;
-import node.factory.NodeFactory;
-import node.keyword.AssignNode;
-import node.keyword.DeclarationKeywordNode;
-import node.keyword.IfKeywordNode;
-import node.keyword.declaration.DeclarationType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import position.Position;
 import result.CorrectResult;
 import result.Result;
-import token.Token;
-import token.TokenType;
 
+/** Real source → lexer → parser (1.1) → ASTFormatter, configured from a YAML string. */
 class ASTFormatterIntegrationTest {
-    private static final String PRINTLN = "println";
 
-    @Test
-    @DisplayName(
-            "What: ASTFormatter | When: formatting declaration and assign with default rules |"
-                    + " Then: emits correctly formatted source")
-    void astFormatter_whenFormattingDeclarationAndAssignWithDefaults_thenEmitsFormattedCode() {
-        // What: ProgramNode with let declaration and assignment
-        DeclarationKeywordNode decl =
-                NodeFactory.createDeclaration(
-                        DeclarationType.LET,
-                        new IdentifierNode("x", 1, 1),
-                        new NumberLiteralNode(BigDecimal.valueOf(42), 1, 1),
-                        new Token(TokenType.LET, "let", new Position(1, 1)));
-
-        AssignNode assign =
-                NodeFactory.createAssign(
-                        new IdentifierNode("x", 1, 1),
-                        new NumberLiteralNode(BigDecimal.valueOf(100), 1, 1),
-                        new Token(TokenType.EQUAL, "=", new Position(1, 1)));
-
-        ProgramNode program = NodeFactory.createProgram(List.of(decl, assign));
-        Formatter formatter = new ASTFormatter();
-
-        // When: formatting program
-        Result<String> result = formatter.format(program);
-
-        // Then: output contains formatted let and assignment
-        assertTrue(result.isCorrect(), "Formatting should succeed");
-        String formatted = ((CorrectResult<String>) result).value();
-        assertTrue(formatted.contains("let x: number = 42;"));
-        assertTrue(formatted.contains("x = 100;"));
+    private static String formatWith(ASTFormatter formatter, String source) {
+        Result<String> result = formatter.format(parse(source));
+        return ((CorrectResult<String>) result).value();
     }
 
     @Test
     @DisplayName(
-            "What: ASTFormatter | When: formatting with YAML rules for consigna 1 and 2 | Then:"
-                    + " applies colons, braces, and indents as specified")
-    void astFormatter_whenFormattingWithYamlConfigConsigna1And2_thenAppliesAllRulesAccurately() {
-        // What: YAML config and program with const and if-else
-        String yamlConfig =
-                """
-                space-before-colon: true
-                space-after-colon: true
-                space-around-equals: false
-                indent-inside-if: 2
-                if-brace-same-line: false
-                """;
+            "Given: ASTFormatter with defaults | When: formatting a parsed declaration and"
+                    + " assignment | Then: writes one normalized statement per line")
+    void astFormatter_whenDeclarationAndAssignment_thenFormatsBoth() {
+        // Given
+        ASTFormatter formatter = new ASTFormatter();
 
-        ByteArrayInputStream configStream =
-                new ByteArrayInputStream(yamlConfig.getBytes(StandardCharsets.UTF_8));
-        FormatContext context = YamlFormatRulesLoader.loadFromYaml(configStream);
-        ASTFormatter formatter = new ASTFormatter(context);
+        // When
+        String output = formatWith(formatter, "let x:number=42;x=100;");
 
-        DeclarationKeywordNode decl =
-                NodeFactory.createDeclaration(
-                        DeclarationType.CONST,
-                        new IdentifierNode("flag", 1, 1),
-                        new BooleanLiteralNode(true, 1, 1),
-                        new Token(TokenType.CONST, "const", new Position(1, 1)));
-
-        CallFunctionNode callThen =
-                NodeFactory.createCall(
-                        PRINTLN,
-                        List.of(new StringLiteralNode("Yes", 2, 5)),
-                        new Token(TokenType.IDENTIFIER, PRINTLN, new Position(2, 5)));
-
-        CallFunctionNode callElse =
-                NodeFactory.createCall(
-                        PRINTLN,
-                        List.of(new StringLiteralNode("No", 3, 5)),
-                        new Token(TokenType.IDENTIFIER, PRINTLN, new Position(3, 5)));
-
-        IfKeywordNode ifNode =
-                NodeFactory.createIf(
-                        new IdentifierNode("flag", 1, 1),
-                        List.of(callThen),
-                        List.of(callElse),
-                        new Token(TokenType.IF, "if", new Position(1, 1)));
-
-        ProgramNode program = NodeFactory.createProgram(List.of(decl, ifNode));
-
-        // When: formatting program with YAML rules
-        Result<String> result = formatter.format(program);
-
-        // Then: formatting complies with colon spaces, brace positions, and indentation
-        assertTrue(result.isCorrect());
-        String formatted = ((CorrectResult<String>) result).value();
-
-        assertTrue(
-                formatted.contains("const flag : boolean=true;"),
-                "Should respect space-before-colon and no space-around-equals");
-        assertTrue(
-                formatted.contains("if (flag)\n{"),
-                "Should put brace below line when if-brace-same-line is false");
-        assertTrue(
-                formatted.contains("else\n{"),
-                "Should put else brace below line when if-brace-same-line is false");
-        assertTrue(
-                formatted.contains("  println(\"Yes\");"),
-                "Should use 2 spaces indentation inside if");
-        assertTrue(
-                formatted.contains("  println(\"No\");"),
-                "Should use 2 spaces indentation inside else");
+        // Then
+        assertEquals("let x: number = 42;\nx = 100;", output);
     }
 
     @Test
     @DisplayName(
-            "What: ASTFormatter | When: formatting if statement with same-line brace and assignment"
-                    + " without spaces | Then: applies styles accurately")
-    void astFormatter_whenFormattingIfWithSameLineBraceAndNoSpacesAroundEquals_thenAppliesStyles() {
-        // What: FormatContext with if-brace-same-line and no space around equals
-        FormatContext ctx =
-                new FormatContext(
-                        0,
-                        4,
-                        false, // spaceBeforeColon
-                        true, // spaceAfterColon
-                        false, // spaceAroundEquals
-                        true, // spaceAroundOperators
-                        true, // lineBreakAfterStatement
-                        1, // lineBreaksAfterPrintln
-                        false, // singleSpaceSeparation
-                        true, // ifBraceSameLine
-                        false // ifBraceBelowLine
-                        );
+            "Given: ASTFormatter with defaults | When: formatting a parsed arithmetic expression |"
+                    + " Then: operators are spaced")
+    void astFormatter_whenArithmetic_thenSpacesOperators() {
+        // Given
+        ASTFormatter formatter = new ASTFormatter();
+
+        // When
+        String output = formatWith(formatter, "let r:number=1+2*3;");
+
+        // Then
+        assertEquals("let r: number = 1 + 2 * 3;", output);
+    }
+
+    @Test
+    @DisplayName(
+            "Given: a YAML config with colon spaces, no spaces around '=' and if-brace-same-line"
+                + " false | When: formatting a parsed const and if/else | Then: applies them all")
+    void astFormatter_whenYamlConfig_thenAppliesConfiguredRules() {
+        // Given
+        String yaml =
+                "space-before-colon: true\nspace-after-colon: true\nspace-around-equals: false\n"
+                        + "indent-inside-if: 2\nif-brace-same-line: false";
+        ASTFormatter formatter = ASTFormatter.fromYamlConfig(stream(yaml));
+
+        // When
+        String output =
+                formatWith(
+                        formatter,
+                        "const flag: boolean = true; if (flag) { println(\"Yes\"); } else {"
+                                + " println(\"No\"); }");
+
+        // Then
+        assertEquals(
+                "const flag : boolean=true;\nif (flag)\n{\n  println(\"Yes\");\n}\nelse\n{\n"
+                        + "  println(\"No\");\n}",
+                output);
+    }
+
+    @Test
+    @DisplayName(
+            "Given: indent-inside-if 2 | When: formatting parsed nested ifs | Then: each level is"
+                    + " indented two more spaces")
+    void astFormatter_whenNestedIfs_thenIndentsEachLevel() {
+        // Given
+        FormatContext ctx = FormatterFixtures.context("indent-inside-if: 2");
         ASTFormatter formatter = new ASTFormatter(ctx);
 
-        CallFunctionNode callThen =
-                NodeFactory.createCall(
-                        PRINTLN,
-                        List.of(new StringLiteralNode("Yes", 1, 1)),
-                        new Token(TokenType.IDENTIFIER, PRINTLN, new Position(1, 1)));
+        // When
+        String output = formatWith(formatter, "if(true){if(false){println(1);}}");
 
-        CallFunctionNode callElse =
-                NodeFactory.createCall(
-                        PRINTLN,
-                        List.of(new StringLiteralNode("No", 1, 1)),
-                        new Token(TokenType.IDENTIFIER, PRINTLN, new Position(1, 1)));
-
-        IfKeywordNode ifNode =
-                NodeFactory.createIf(
-                        new BooleanLiteralNode(true, 1, 1),
-                        List.of(callThen),
-                        List.of(callElse),
-                        new Token(TokenType.IF, "if", new Position(1, 1)));
-
-        // When: formatting statement
-        String formatted = formatter.formatStatement(ifNode, ctx);
-
-        // Then: braces stay on same line
-        assertTrue(formatted.contains("if (true) {\n"));
-        assertTrue(formatted.contains("} else {\n"));
-
-        // When: formatting assignment
-        AssignNode assign =
-                new AssignNode(
-                        new IdentifierNode("a", 1, 1),
-                        new NumberLiteralNode(BigDecimal.TEN, 1, 1),
-                        1,
-                        1);
-        String formattedAssign = formatter.formatStatement(assign, ctx);
-
-        // Then: no spaces around equals
-        assertEquals("a=10;", formattedAssign);
+        // Then
+        assertEquals("if (true) {\n  if (false) {\n    println(1);\n  }\n}", output);
     }
 
     @Test
     @DisplayName(
-            "What: ASTFormatter with YAML space-after-comma | When: formatting call with multiple"
-                + " args | Then: formats arguments separated by commas without space when false")
-    void astFormatter_whenYamlConfigSetsSpaceAfterCommaFalse_thenFormatsWithoutSpaceAfterComma() {
-        // What: YAML config disabling space after comma and call node with multiple arguments
-        String yamlConfig = "space-after-comma: false\n";
-        ByteArrayInputStream configStream =
-                new ByteArrayInputStream(yamlConfig.getBytes(StandardCharsets.UTF_8));
-        FormatContext context = YamlFormatRulesLoader.loadFromYaml(configStream);
-        ASTFormatter formatter = new ASTFormatter(context);
+            "Given: ASTFormatter with defaults | When: formatting a parsed readInput declaration |"
+                    + " Then: keeps the call as the initial value")
+    void astFormatter_whenReadInputDeclaration_thenFormatsCall() {
+        // Given
+        ASTFormatter formatter = new ASTFormatter();
+        ProgramNode program = parse("let name:string=readInput(\"Name:\");");
 
-        CallFunctionNode call =
-                NodeFactory.createCall(
-                        "func",
-                        List.of(new StringLiteralNode("a", 1, 1), new StringLiteralNode("b", 1, 2)),
-                        new Token(TokenType.IDENTIFIER, "func", new Position(1, 1)));
+        // When
+        Result<String> result = formatter.format(program);
 
-        // When: formatting call node
-        Result<String> res = formatter.formatNode(call);
-
-        // Then: arguments are separated by comma without space
-        assertTrue(res.isCorrect());
-        assertEquals("func(\"a\",\"b\");", ((CorrectResult<String>) res).value());
+        // Then
+        assertEquals(
+                "let name: string = readInput(\"Name:\");",
+                ((CorrectResult<String>) result).value());
     }
 }

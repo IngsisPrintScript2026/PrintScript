@@ -29,10 +29,10 @@ class ExpressionTypeInferenceUnitTest {
 
     @Test
     @DisplayName(
-            "What: ExpressionTypeInference | When: inferring literals, operators, and functions |"
+            "Given: ExpressionTypeInference | When: inferring literals, operators, and functions |"
                     + " Then: resolves correct DataType or fails appropriately")
     void typeInference_whenInferringExpressions_thenResolvesExpectedDataTypes() {
-        // What: ExpressionTypeInference and SemanticEnvironment with typed variables
+        // Given: ExpressionTypeInference and SemanticEnvironment with typed variables
         ExpressionTypeInference inferencer = new ExpressionTypeInference();
         SemanticEnvironment env = new SemanticEnvironment();
         env = env.define("numVar", DataType.NUMBER, true, true);

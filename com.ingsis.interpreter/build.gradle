@@ -5,4 +5,6 @@ plugins {
 dependencies {
     implementation project(':com.ingsis.common')
     implementation project(':com.ingsis.parser')
+    testImplementation project(':com.ingsis.charstream')
+    testImplementation project(':com.ingsis.lexer')
 }

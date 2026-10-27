@@ -52,10 +52,10 @@ class VersionStrategyUnitTest {
 
     @Test
     @DisplayName(
-            "What: Version strategies and factory | When: retrieving and initializing strategies |"
+            "Given: Version strategies and factory | When: retrieving and initializing strategies |"
                     + " Then: supplies version configurations")
     void versionStrategiesAndFactory_whenQueried_thenSuppliesCorrectConfigurations() {
-        // What: VersionStrategyRegistry
+        // Given: VersionStrategyRegistry
         VersionStrategyRegistry registry = new VersionStrategyRegistry();
 
         // When & Then: registry resolves both 1.0 and 1.1
@@ -100,10 +100,10 @@ class VersionStrategyUnitTest {
 
     @Test
     @DisplayName(
-            "What: WithoutElseStrategy | When: checking if stream has else token | Then: matches"
+            "Given: WithoutElseStrategy | When: checking if stream has else token | Then: matches"
                     + " accurately")
     void withoutElseStrategy_whenCheckingStream_thenMatchesAccurately() {
-        // What: WithoutElseStrategy and streams
+        // Given: WithoutElseStrategy and streams
         WithoutElseStrategy withoutElse = new WithoutElseStrategy();
         Position pos = new Position(1, 1);
 

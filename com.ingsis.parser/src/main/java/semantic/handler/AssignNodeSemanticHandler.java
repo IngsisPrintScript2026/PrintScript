@@ -13,7 +13,15 @@ import semantic.environment.SemanticEnvironment;
 import semantic.evaluator.ExpressionTypeInference;
 
 public class AssignNodeSemanticHandler implements SemanticNodeHandler<AssignNode> {
-    private final ExpressionTypeInference typeInferencer = new ExpressionTypeInference();
+    private final ExpressionTypeInference typeInferencer;
+
+    public AssignNodeSemanticHandler(ExpressionTypeInference typeInferencer) {
+        this.typeInferencer = typeInferencer;
+    }
+
+    public AssignNodeSemanticHandler() {
+        this(new ExpressionTypeInference());
+    }
 
     @Override
     public Class<AssignNode> nodeType() {
@@ -51,10 +59,9 @@ public class AssignNodeSemanticHandler implements SemanticNodeHandler<AssignNode
         DataType exprType = ((CorrectResult<DataType>) exprTypeRes).value();
         if (exprType != null && symbol.type() != null && symbol.type() != exprType) {
             return Result.failure(
-                    "Type mismatch in assignment to variable '"
-                            + varName
-                            + "' at line "
-                            + assign.line());
+                    String.format(
+                            "Cannot assign type %s to variable '%s' of type %s",
+                            exprType, varName, symbol.type()));
         }
         DataType finalType = exprType != null ? exprType : symbol.type();
         return Result.success(env.define(varName, finalType, symbol.isMutable(), true));

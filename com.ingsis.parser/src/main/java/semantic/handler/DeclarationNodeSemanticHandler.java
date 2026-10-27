@@ -13,7 +13,15 @@ import semantic.environment.SemanticEnvironment;
 import semantic.evaluator.ExpressionTypeInference;
 
 public class DeclarationNodeSemanticHandler implements SemanticNodeHandler<DeclarationKeywordNode> {
-    private final ExpressionTypeInference typeInferencer = new ExpressionTypeInference();
+    private final ExpressionTypeInference typeInferencer;
+
+    public DeclarationNodeSemanticHandler(ExpressionTypeInference typeInferencer) {
+        this.typeInferencer = typeInferencer;
+    }
+
+    public DeclarationNodeSemanticHandler() {
+        this(new ExpressionTypeInference());
+    }
 
     @Override
     public Class<DeclarationKeywordNode> nodeType() {
@@ -29,7 +37,7 @@ public class DeclarationNodeSemanticHandler implements SemanticNodeHandler<Decla
         }
         boolean isInitialized = !(decl.expressionNode() instanceof NilExpressionNode);
         if (!isInitialized) {
-            return Result.success(env.define(varName, null, decl.isMutable(), false));
+            return Result.success(env.define(varName, decl.dataType(), decl.isMutable(), false));
         }
         return checkInitializedDeclaration(decl, env, varName);
     }
@@ -44,9 +52,8 @@ public class DeclarationNodeSemanticHandler implements SemanticNodeHandler<Decla
         if (inferredType != null && decl.dataType() != null && decl.dataType() != inferredType) {
             return Result.failure(
                     String.format(
-                            "Semantic error at line %d, column %d: cannot assign type %s to"
-                                    + " variable '%s' of type %s",
-                            decl.line(), decl.column(), inferredType, varName, decl.dataType()));
+                            "Cannot assign type %s to variable '%s' of type %s",
+                            inferredType, varName, decl.dataType()));
         }
         DataType finalType = decl.dataType() != null ? decl.dataType() : inferredType;
         return Result.success(env.define(varName, finalType, decl.isMutable(), true));

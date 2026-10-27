@@ -30,11 +30,11 @@ class FakeCharReaderUnitTest {
 
     @Test
     @DisplayName(
-            "What: FakeCharReader | When: invoking default unread method | Then: subsequent read"
+            "Given: FakeCharReader | When: invoking default unread method | Then: subsequent read"
                     + " returns expected char")
     void fakeCharReader_whenInvokingDefaultUnread_thenSubsequentReadReturnsExpectedChar()
             throws Exception {
-        // What: FakeCharReader returning 42
+        // Given: FakeCharReader returning 42
         FakeCharReader fakeReader = new FakeCharReader(42);
 
         // When: invoking unread default implementation

@@ -14,11 +14,16 @@ import token.Token;
 import token.TokenType;
 import tokenstream.TokenStream;
 
-public class LineExpressionParser implements Parser<ExpressionNode> {
+public class LineExpressionParser implements StatementParser<ExpressionNode> {
     private final Parser<ExpressionNode> expressionParser;
 
     public LineExpressionParser(Parser<ExpressionNode> expressionParser) {
         this.expressionParser = expressionParser;
+    }
+
+    @Override
+    public boolean canStart(TokenStream stream) {
+        return true;
     }
 
     @Override

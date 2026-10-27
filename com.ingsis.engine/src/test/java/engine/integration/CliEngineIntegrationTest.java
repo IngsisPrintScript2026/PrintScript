@@ -25,10 +25,10 @@ class CliEngineIntegrationTest {
 
     @Test
     @DisplayName(
-            "What: CliEngine direct methods | When: interpreting, validating, formatting, and"
+            "Given: CliEngine direct methods | When: interpreting, validating, formatting, and"
                     + " analyzing | Then: executes pipeline successfully")
     void cliEngine_whenInvokingDirectMethods_thenExecutesPipeline() {
-        // What: code and CliEngine
+        // Given: code and CliEngine
         String code =
                 """
                 let x: number = 42;
@@ -65,11 +65,11 @@ class CliEngineIntegrationTest {
 
     @Test
     @DisplayName(
-            "What: CliEngine command-line interface | When: invoking via picocli with CLI arguments"
-                    + " | Then: executes subcommands and exits with expected codes")
+            "Given: CliEngine command-line interface | When: invoking via picocli with CLI"
+                    + " arguments | Then: executes subcommands and exits with expected codes")
     void cliEngine_whenExecutingViaCommandLine_thenProcessesOperationsAndExitCodes()
             throws Exception {
-        // What: temporary input, output, and config files
+        // Given: temporary input, output, and config files
         File tempInput = File.createTempFile("printscript_input", ".prs");
         tempInput.deleteOnExit();
         try (FileWriter fw = new FileWriter(tempInput)) {

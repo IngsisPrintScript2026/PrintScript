@@ -8,6 +8,7 @@ application {
 
 run {
     standardInput = System.in
+    workingDir = rootProject.projectDir
 }
 
 dependencies {
@@ -18,4 +19,40 @@ dependencies {
     implementation project(':com.ingsis.interpreter')
     implementation project(':com.ingsis.formatter')
     implementation project(':com.ingsis.sca')
+}
+
+// Tests that run the real CLI distribution inside a Docker container (Testcontainers).
+// They are skipped automatically when Docker is not available.
+sourceSets {
+    containerTest {
+        java.srcDir 'src/containerTest/java'
+    }
+}
+
+configurations {
+    containerTestImplementation.extendsFrom testImplementation
+    containerTestRuntimeOnly.extendsFrom testRuntimeOnly
+}
+
+dependencies {
+    containerTestImplementation 'org.testcontainers:testcontainers:2.0.5'
+    containerTestImplementation 'org.testcontainers:testcontainers-junit-jupiter:2.0.5'
+    containerTestRuntimeOnly 'org.slf4j:slf4j-simple:2.0.17'
+}
+
+tasks.register('containerTest', Test) {
+    description = 'Runs the installed CLI distribution inside a Docker container.'
+    group = 'verification'
+    testClassesDirs = sourceSets.containerTest.output.classesDirs
+    classpath = sourceSets.containerTest.runtimeClasspath
+    useJUnitPlatform()
+    dependsOn tasks.named('installDist')
+    def distDir = layout.buildDirectory.dir("install/${project.name}")
+    inputs.dir(distDir)
+    systemProperty 'printscript.dist', distDir.get().asFile.absolutePath
+    shouldRunAfter tasks.named('test')
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('containerTest')
 }

@@ -4,14 +4,21 @@
 
 package semantic.handler;
 
-import node.expression.ExpressionNode;
 import node.expression.function.CallFunctionNode;
 import result.Result;
 import semantic.environment.SemanticEnvironment;
 import semantic.evaluator.ExpressionTypeInference;
 
 public class CallFunctionNodeSemanticHandler implements SemanticNodeHandler<CallFunctionNode> {
-    private final ExpressionTypeInference typeInference = new ExpressionTypeInference();
+    private final ExpressionTypeInference typeInference;
+
+    public CallFunctionNodeSemanticHandler(ExpressionTypeInference typeInference) {
+        this.typeInference = typeInference;
+    }
+
+    public CallFunctionNodeSemanticHandler() {
+        this(new ExpressionTypeInference());
+    }
 
     @Override
     public Class<CallFunctionNode> nodeType() {
@@ -20,11 +27,9 @@ public class CallFunctionNodeSemanticHandler implements SemanticNodeHandler<Call
 
     @Override
     public Result<SemanticEnvironment> check(CallFunctionNode call, SemanticEnvironment env) {
-        for (ExpressionNode arg : call.argumentNodes()) {
-            Result<?> argRes = typeInference.inferType(arg, env);
-            if (!argRes.isCorrect()) {
-                return Result.failure(((result.IncorrectResult<?>) argRes).error());
-            }
+        Result<?> callRes = typeInference.inferType(call, env);
+        if (!callRes.isCorrect()) {
+            return Result.failure(((result.IncorrectResult<?>) callRes).error());
         }
         return Result.success(env);
     }

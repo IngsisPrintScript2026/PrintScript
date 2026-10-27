@@ -23,10 +23,10 @@ class FormatServiceUnitTest {
 
     @Test
     @DisplayName(
-            "What: FormatService | When: formatting V1.0 pipeline | Then: writes formatted output"
+            "Given: FormatService | When: formatting V1.0 pipeline | Then: writes formatted output"
                     + " to writer")
     void formatService_whenFormattingV10Pipeline_thenEmitsFormattedResult() {
-        // What: unformatted V1.0 source code
+        // Given: unformatted V1.0 source code
         String inputCode =
                 """
                 let a: number = 12;
@@ -52,10 +52,10 @@ class FormatServiceUnitTest {
 
     @Test
     @DisplayName(
-            "What: CliEngine format method | When: formatting code | Then: formats output to"
+            "Given: CliEngine format method | When: formatting code | Then: formats output to"
                     + " writer")
     void cliEngine_whenInvokingFormatMethod_thenFormatsSuccessfully() {
-        // What: unformatted source code
+        // Given: unformatted source code
         String inputCode = "let x: string = \"hello\";\nprintln(x);\n";
         Engine engine = new CliEngine();
         ByteArrayInputStream in =
@@ -74,10 +74,10 @@ class FormatServiceUnitTest {
 
     @Test
     @DisplayName(
-            "What: FormatService with YAML rules | When: formatting with custom rules | Then:"
+            "Given: FormatService with YAML rules | When: formatting with custom rules | Then:"
                     + " applies rules to output")
     void formatService_whenFormattingWithYamlRules_thenAppliesConfiguredRules() {
-        // What: YAML config and input code
+        // Given: YAML config and input code
         String yamlConfig =
                 """
                 space-before-colon: true
@@ -113,10 +113,10 @@ class FormatServiceUnitTest {
 
     @Test
     @DisplayName(
-            "What: FormatService vs ExecuteService | When: code is semantically invalid | Then:"
+            "Given: FormatService vs ExecuteService | When: code is semantically invalid | Then:"
                     + " formatting succeeds but execution fails")
     void formatService_whenCodeIsSemanticallyInvalid_thenFormattingSucceedsButExecutionFails() {
-        // What: syntactically valid code with semantic error (reassigning const)
+        // Given: syntactically valid code with semantic error (reassigning const)
         String inputCode =
                 """
                 const x: number = 5;

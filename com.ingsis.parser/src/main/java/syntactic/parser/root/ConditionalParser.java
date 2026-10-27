@@ -22,8 +22,9 @@ import token.SymbolType;
 import token.Token;
 import token.TokenType;
 import tokenstream.TokenStream;
+import tokenstream.rules.TokenMatchers;
 
-public class ConditionalParser implements Parser<IfKeywordNode> {
+public class ConditionalParser implements StatementParser<IfKeywordNode> {
     private final Parser<ExpressionNode> conditionParser;
     private final Parser<Node> statementParser;
     private final List<ConditionalElseStrategy> elseStrategies;
@@ -42,6 +43,11 @@ public class ConditionalParser implements Parser<IfKeywordNode> {
                 conditionParser,
                 statementParser,
                 List.of(new WithElseStrategy(), new WithoutElseStrategy()));
+    }
+
+    @Override
+    public boolean canStart(TokenStream stream) {
+        return StatementParser.peekMatches(stream, 0, TokenMatchers.isType(TokenType.IF));
     }
 
     @Override

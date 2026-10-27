@@ -11,12 +11,14 @@ public final class MetaCharStringBuilder implements MetaCharacterStringBuilder {
     // Se utilizan valores negativos para representar que esta inicializado vacio y para no utilizar
     // null como Position
     private Position position = new Position(-1, -1);
+    private Position endPosition = new Position(-1, -1);
 
     @Override
     public MetaCharacterStringBuilder append(MetaCharacter metaCharacter) {
         if (builder.isEmpty()) {
             this.position = metaCharacter.position();
         }
+        this.endPosition = metaCharacter.position();
         this.builder.append(metaCharacter.character());
         return this;
     }
@@ -27,6 +29,10 @@ public final class MetaCharStringBuilder implements MetaCharacterStringBuilder {
 
     public Position getStartPosition() {
         return this.position;
+    }
+
+    public Position getEndPosition() {
+        return this.endPosition;
     }
 
     public boolean isEmpty() {

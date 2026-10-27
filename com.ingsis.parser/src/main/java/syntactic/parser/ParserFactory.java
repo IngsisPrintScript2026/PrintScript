@@ -12,6 +12,7 @@ import node.Node;
 import node.expression.ExpressionNode;
 import node.expression.Identifier.IdentifierNode;
 import result.CorrectResult;
+import result.IncorrectResult;
 import result.Result;
 import syntactic.Parser;
 import syntactic.parser.literal.BooleanLiteralParser;
@@ -24,9 +25,11 @@ import syntactic.parser.root.ConditionalParser;
 import syntactic.parser.root.DeclarationParser;
 import syntactic.parser.root.FunctionParser;
 import syntactic.parser.root.LineExpressionParser;
+import syntactic.parser.root.StatementParser;
 import syntactic.version.LiteralParsers;
 import syntactic.version.VersionStrategy;
 import syntactic.version.VersionStrategyRegistry;
+import token.Token;
 import tokenstream.TokenStream;
 import version.Version;
 
@@ -40,14 +43,14 @@ public final class ParserFactory {
         Parser<IdentifierNode> identifierParser = new IdentifierParser();
         Parser<ExpressionNode> prattParser = getExpressionNodeParser(identifierParser, strategy);
         AtomicReference<Parser<Node>> stmtParserRef = new AtomicReference<>();
-        List<Parser<? extends Node>> parsers =
+        List<StatementParser<? extends Node>> parsers =
                 buildStatementParsers(strategy, identifierParser, prattParser, stmtParserRef);
-        Parser<Node> statementParser = buildCompositeParser(parsers);
+        Parser<Node> statementParser = buildCompositeParser(parsers, strategy.version());
         stmtParserRef.set(statementParser);
         return statementParser;
     }
 
-    private static List<Parser<? extends Node>> buildStatementParsers(
+    private static List<StatementParser<? extends Node>> buildStatementParsers(
             VersionStrategy strategy,
             Parser<IdentifierNode> identifierParser,
             Parser<ExpressionNode> prattParser,
@@ -66,21 +69,50 @@ public final class ParserFactory {
                 declarationParser, assignParser, conditionalParser, lineExprParser);
     }
 
-    private static Parser<Node> buildCompositeParser(List<Parser<? extends Node>> parsers) {
+    // Predictive dispatch: the first parser whose lookahead accepts the stream owns the statement,
+    // so its specific error is the one reported to the user.
+    private static Parser<Node> buildCompositeParser(
+            List<StatementParser<? extends Node>> parsers, Version version) {
         return stream -> {
             if (stream == null || stream.isEmpty()) {
                 return Result.failure("EOF");
             }
-            for (Parser<? extends Node> p : parsers) {
-                Result<? extends IterationStep<? extends Node>> res = p.parse(stream);
-                if (res.isCorrect()) {
-                    IterationStep<? extends Node> step =
-                            ((CorrectResult<? extends IterationStep<? extends Node>>) res).value();
-                    return Result.success(new IterationStep<>(step.value(), step.next()));
+            for (StatementParser<? extends Node> p : parsers) {
+                if (p.canStart(stream)) {
+                    return widen(p.parse(stream));
                 }
             }
-            return Result.failure("Failed to parse statement at token stream");
+            return Result.failure(unexpectedToken(stream, version));
         };
+    }
+
+    private static <T extends Node> Result<IterationStep<T>> widen(
+            Result<? extends IterationStep<? extends T>> res) {
+        return switch (res) {
+            case CorrectResult<? extends IterationStep<? extends T>>(var step) ->
+                    Result.success(new IterationStep<>(step.value(), step.next()));
+            case IncorrectResult<? extends IterationStep<? extends T>>(String err) ->
+                    Result.failure(err);
+        };
+    }
+
+    private static String unexpectedToken(TokenStream stream, Version version) {
+        return switch (stream.peek(0)) {
+            case CorrectResult<Token>(Token token) ->
+                    "Unexpected token '"
+                            + token.value()
+                            + "' "
+                            + token.range()
+                            + " (not valid in PrintScript "
+                            + versionLabel(version)
+                            + ")";
+            case IncorrectResult<Token>(String err) ->
+                    err.startsWith("Lexical error") ? err : "Unexpected end of file";
+        };
+    }
+
+    private static String versionLabel(Version version) {
+        return version == Version.V_1_0 ? "1.0" : "1.1";
     }
 
     private static Parser<ExpressionNode> getExpressionNodeParser(
@@ -107,21 +139,18 @@ public final class ParserFactory {
                     new FunctionParser(identifierParser, exprParserSupplier.get());
             List<Parser<? extends ExpressionNode>> primaryList =
                     strategy.primaryParsers(literalParsers, functionParser, identifierParser);
-            return parseFirstMatching(primaryList, stream);
+            return parseFirstMatching(primaryList, stream, strategy.version());
         };
     }
 
     private static Result<IterationStep<ExpressionNode>> parseFirstMatching(
-            List<Parser<? extends ExpressionNode>> parsers, TokenStream stream) {
+            List<Parser<? extends ExpressionNode>> parsers, TokenStream stream, Version version) {
         for (Parser<? extends ExpressionNode> p : parsers) {
             Result<? extends IterationStep<? extends ExpressionNode>> res = p.parse(stream);
             if (res.isCorrect()) {
-                IterationStep<? extends ExpressionNode> step =
-                        ((CorrectResult<? extends IterationStep<? extends ExpressionNode>>) res)
-                                .value();
-                return Result.success(new IterationStep<>(step.value(), step.next()));
+                return widen(res);
             }
         }
-        return Result.failure("Unrecognized primary expression token stream");
+        return Result.failure(unexpectedToken(stream, version));
     }
 }

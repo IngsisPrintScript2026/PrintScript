@@ -19,9 +19,9 @@ import token.matcher.chain.TokenMatcher;
 class TokenMatcherUnitTest {
 
     @Test
-    @DisplayName("What: TokenMatcher | When: matching keywords | Then: returns correct TokenType")
+    @DisplayName("Given: TokenMatcher | When: matching keywords | Then: returns correct TokenType")
     void tokenMatcher_whenMatchingKeywords_thenReturnsExpectedTokenType() {
-        // What: keyword strings
+        // Given: keyword strings
         // When & Then: matching keywords
         assertSuccess(TokenType.LET, TokenMatcher.match("let"));
         assertSuccess(TokenType.NUMBER, TokenMatcher.match("number"));
@@ -30,10 +30,10 @@ class TokenMatcherUnitTest {
 
     @Test
     @DisplayName(
-            "What: TokenMatcher | When: matching symbols and operators | Then: returns correct"
+            "Given: TokenMatcher | When: matching symbols and operators | Then: returns correct"
                     + " TokenType")
     void tokenMatcher_whenMatchingSymbols_thenReturnsExpectedTokenType() {
-        // What: symbol strings
+        // Given: symbol strings
         // When & Then: matching punctuation and operators
         assertSuccess(TokenType.PLUS, TokenMatcher.match("+"));
         assertSuccess(TokenType.COLON, TokenMatcher.match(":"));
@@ -42,10 +42,10 @@ class TokenMatcherUnitTest {
 
     @Test
     @DisplayName(
-            "What: TokenMatcher | When: matching literals | Then: returns correct literal"
+            "Given: TokenMatcher | When: matching literals | Then: returns correct literal"
                     + " TokenType")
     void tokenMatcher_whenMatchingLiterals_thenReturnsExpectedTokenType() {
-        // What: literal representations
+        // Given: literal representations
         // When & Then: matching numbers, strings, and booleans
         assertSuccess(TokenType.NUMBER_LITERAL, TokenMatcher.match("123"));
         assertSuccess(TokenType.NUMBER_LITERAL, TokenMatcher.match("3.14"));
@@ -59,19 +59,19 @@ class TokenMatcherUnitTest {
 
     @Test
     @DisplayName(
-            "What: TokenMatcher | When: matching identifiers | Then: returns TokenType.IDENTIFIER")
+            "Given: TokenMatcher | When: matching identifiers | Then: returns TokenType.IDENTIFIER")
     void tokenMatcher_whenMatchingIdentifiers_thenReturnsIdentifierTokenType() {
-        // What: identifier string "myVariable"
+        // Given: identifier string "myVariable"
         // When & Then: matching identifier
         assertSuccess(TokenType.IDENTIFIER, TokenMatcher.match("myVariable"));
     }
 
     @Test
     @DisplayName(
-            "What: TokenMatcher | When: matching invalid or empty input | Then: returns failure"
+            "Given: TokenMatcher | When: matching invalid or empty input | Then: returns failure"
                     + " result")
     void tokenMatcher_whenMatchingInvalidOrEmptyInput_thenReturnsFailureResult() {
-        // What: invalid string and null/empty inputs
+        // Given: invalid string and null/empty inputs
         // When & Then: assert failures with appropriate error descriptions
         assertFailure(TokenMatcher.match("123abcinvalid!!!"));
         assertNullOrEmptyFailure(TokenMatcher.match(null));

@@ -18,10 +18,10 @@ class CliEngineReplAndStdinIntegrationTest {
 
     @Test
     @DisplayName(
-            "What: CliEngine REPL and STDIN | When: feeding input through System.in | Then:"
+            "Given: CliEngine REPL and STDIN | When: feeding input through System.in | Then:"
                     + " processes lines, REPL loop, and commands correctly")
     void cliEngine_whenFeedingSystemIn_thenProcessesReplAndCommandsCorrectly() throws Exception {
-        // What: original System.in saved
+        // Given: original System.in saved
         InputStream origIn = System.in;
         try {
             // When: running interactive REPL with custom stream where available() returns 0

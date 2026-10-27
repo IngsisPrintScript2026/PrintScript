@@ -53,10 +53,10 @@ class SyntacticParserIntegrationTest {
 
     @Test
     @DisplayName(
-            "What: SyntacticParser | When: parsing let declaration | Then: emits ProgramNode with"
+            "Given: SyntacticParser | When: parsing let declaration | Then: emits ProgramNode with"
                     + " DeclarationKeywordNode")
     void syntacticParser_whenParsingLetDeclaration_thenEmitsProgramNodeWithDeclaration() {
-        // What: tokens for "let x: number = 42;"
+        // Given: tokens for "let x: number = 42;"
         List<Token> tokens =
                 List.of(
                         new Token(TokenType.LET, "let", pos, pos),
@@ -88,10 +88,10 @@ class SyntacticParserIntegrationTest {
 
     @Test
     @DisplayName(
-            "What: SyntacticParser | When: parsing direct program AST | Then: emits ProgramNode"
+            "Given: SyntacticParser | When: parsing direct program AST | Then: emits ProgramNode"
                     + " directly")
     void syntacticParser_whenParsingDirectProgramAST_thenEmitsProgramNode() {
-        // What: tokens for "let x: number = 42;"
+        // Given: tokens for "let x: number = 42;"
         List<Token> tokens =
                 List.of(
                         new Token(TokenType.LET, "let", pos, pos),
@@ -116,10 +116,10 @@ class SyntacticParserIntegrationTest {
 
     @Test
     @DisplayName(
-            "What: AssignParser | When: parsing valid assignment and invalid assignment | Then:"
+            "Given: AssignParser | When: parsing valid assignment and invalid assignment | Then:"
                     + " emits AssignNode or fails")
     void assignParser_whenParsingAssignment_thenEmitsAssignNodeOrFails() {
-        // What: AssignParser and tokens for "x = 10;"
+        // Given: AssignParser and tokens for "x = 10;"
         AssignParser assignParser =
                 new AssignParser(new IdentifierParser(), asExprParser(new NumberLiteralParser()));
 
@@ -149,10 +149,10 @@ class SyntacticParserIntegrationTest {
 
     @Test
     @DisplayName(
-            "What: FunctionParser | When: parsing println call | Then: emits CallFunctionNode or"
+            "Given: FunctionParser | When: parsing println call | Then: emits CallFunctionNode or"
                     + " fails on syntax error")
     void functionParser_whenParsingPrintlnCall_thenEmitsCallFunctionNodeOrFails() {
-        // What: FunctionParser and tokens for println("hello");
+        // Given: FunctionParser and tokens for println("hello");
         FunctionParser functionParser =
                 new FunctionParser(new IdentifierParser(), asExprParser(new StringLiteralParser()));
 
@@ -186,10 +186,10 @@ class SyntacticParserIntegrationTest {
 
     @Test
     @DisplayName(
-            "What: SyntacticParser error handling | When: stream is null, empty, or contains"
+            "Given: SyntacticParser error handling | When: stream is null, empty, or contains"
                     + " invalid syntax | Then: fails with syntactic error")
     void syntacticParser_whenStreamIsInvalidOrEmpty_thenFailsGracefully() {
-        // What: SyntacticParser
+        // Given: SyntacticParser
         SyntacticParser parser = new SyntacticParser(Version.V_1_0);
 
         // When & Then: null and empty stream fail

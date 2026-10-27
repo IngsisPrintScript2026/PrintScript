@@ -26,7 +26,7 @@ import token.Token;
 import token.TokenType;
 import tokenstream.TokenStream;
 
-public class DeclarationParser implements Parser<DeclarationKeywordNode> {
+public class DeclarationParser implements StatementParser<DeclarationKeywordNode> {
     private final Parser<IdentifierNode> identifierParser;
     private final Parser<ExpressionNode> expressionParser;
     private final Predicate<Token> declarationKeywordMatcher;
@@ -52,6 +52,11 @@ public class DeclarationParser implements Parser<DeclarationKeywordNode> {
     public DeclarationParser(
             Parser<IdentifierNode> identifierParser, Parser<ExpressionNode> expressionParser) {
         this(identifierParser, expressionParser, DeclarationType::exists, DataType::exists);
+    }
+
+    @Override
+    public boolean canStart(TokenStream stream) {
+        return StatementParser.peekMatches(stream, 0, declarationKeywordMatcher);
     }
 
     @Override
@@ -116,7 +121,7 @@ public class DeclarationParser implements Parser<DeclarationKeywordNode> {
             TokenStream stream) {
         Result<Token> peekResult = stream.peek(0);
         if (!peekResult.isCorrect()) {
-            return Result.failure("Fin de archivo inesperado al parsear declaración");
+            return Result.failure("Unexpected end of file");
         }
         Token peekToken = ((CorrectResult<Token>) peekResult).value();
         Optional<SymbolType> symbolOpt = SymbolType.fromToken(peekToken);
@@ -124,6 +129,6 @@ public class DeclarationParser implements Parser<DeclarationKeywordNode> {
             DeclarationSymbolStrategy strategy = symbolStrategies.get(symbolOpt.get());
             return strategy.parse(info, identifier, stream, expressionParser);
         }
-        return Result.failure("Símbolo inesperado en la declaración: " + peekToken.value());
+        return Result.failure("Unexpected token '" + peekToken.value() + "' " + peekToken.range());
     }
 }

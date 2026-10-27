@@ -24,10 +24,10 @@ class ValidationServiceUnitTest {
 
     @Test
     @DisplayName(
-            "What: ValidationService | When: validating valid V1.0 code | Then: returns successful"
+            "Given: ValidationService | When: validating valid V1.0 code | Then: returns successful"
                     + " validation")
     void validationService_whenValidatingValidV10Code_thenSucceeds() {
-        // What: valid V1.0 source code
+        // Given: valid V1.0 source code
         String code =
                 """
                 let x: number = 10;
@@ -49,10 +49,10 @@ class ValidationServiceUnitTest {
 
     @Test
     @DisplayName(
-            "What: ValidationService | When: validating valid V1.1 code | Then: returns successful"
+            "Given: ValidationService | When: validating valid V1.1 code | Then: returns successful"
                     + " validation")
     void validationService_whenValidatingValidV11Code_thenSucceeds() {
-        // What: valid V1.1 source code with conditionals and const
+        // Given: valid V1.1 source code with conditionals and const
         String code =
                 """
                 const isReady: boolean = true;
@@ -77,10 +77,10 @@ class ValidationServiceUnitTest {
 
     @Test
     @DisplayName(
-            "What: ValidationService | When: syntax error is present | Then: reports syntactic"
+            "Given: ValidationService | When: syntax error is present | Then: reports syntactic"
                     + " error with line and column range")
     void validationService_whenSyntacticErrorPresent_thenReportsSyntaxErrorWithRange() {
-        // What: code missing colon
+        // Given: code missing colon
         String code = "let a number = 5;";
 
         ByteArrayInputStream in = new ByteArrayInputStream(code.getBytes(StandardCharsets.UTF_8));
@@ -93,16 +93,16 @@ class ValidationServiceUnitTest {
         String errorMsg = ((IncorrectResult<String>) result).error();
         assertTrue(errorMsg.contains("Syntactic error"), "Error should mention syntactic error");
         assertTrue(
-                errorMsg.contains("Line") && errorMsg.contains("Column"),
-                "Error should mention Line and Column range");
+                errorMsg.contains("'number' from line 1, column 7 to line 1, column 12"),
+                "Error should point at the offending token with its start and end");
     }
 
     @Test
     @DisplayName(
-            "What: ValidationService | When: undeclared variable is referenced | Then: reports"
+            "Given: ValidationService | When: undeclared variable is referenced | Then: reports"
                     + " semantic error")
     void validationService_whenUndeclaredVariableUsed_thenReportsSemanticError() {
-        // What: code referencing undeclared variable
+        // Given: code referencing undeclared variable
         String code =
                 """
                 let x: number = 5;
@@ -119,16 +119,16 @@ class ValidationServiceUnitTest {
         String errorMsg = ((IncorrectResult<String>) result).error();
         assertTrue(errorMsg.contains("Semantic error"), "Error should mention semantic error");
         assertTrue(
-                errorMsg.contains("Line") && errorMsg.contains("Column"),
-                "Error should report location range");
+                errorMsg.contains("from line 2, column 1 to line 2, column 11"),
+                "Error should report the statement start and end");
     }
 
     @Test
     @DisplayName(
-            "What: ValidationService | When: reassigning constant variable | Then: reports semantic"
-                    + " error")
+            "Given: ValidationService | When: reassigning constant variable | Then: reports"
+                    + " semantic error")
     void validationService_whenReassigningConstVariable_thenReportsSemanticError() {
-        // What: code reassigning const
+        // Given: code reassigning const
         String code =
                 """
                 const x: number = 10;

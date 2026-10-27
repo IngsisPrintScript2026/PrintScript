@@ -41,6 +41,9 @@ jobs:
       - name: Verify Code Coverage (> 80%)
         run: ./gradlew jacocoTestCoverageVerification
 
+      - name: Run Container Tests (CLI distribution on Docker via Testcontainers)
+        run: ./gradlew containerTest
+
       - name: Upload Test & Quality Reports
         if: always()
         uses: actions/upload-artifact@v4

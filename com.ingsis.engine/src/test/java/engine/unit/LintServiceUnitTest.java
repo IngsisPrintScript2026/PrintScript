@@ -22,10 +22,10 @@ class LintServiceUnitTest {
 
     @Test
     @DisplayName(
-            "What: LintService | When: identifier format violates camel case | Then: reports camel"
+            "Given: LintService | When: identifier format violates camel case | Then: reports camel"
                     + " case violation")
     void lintService_whenCodeViolatesSnakeCaseNamingRule_thenReportsCamelCaseViolation() {
-        // What: YAML rule for camel case and code with snake_case
+        // Given: YAML rule for camel case and code with snake_case
         String yamlRules = "identifier_format: \"camel case\"\n";
         String code = "let my_variable_name: number = 10;\n";
 
@@ -45,10 +45,10 @@ class LintServiceUnitTest {
 
     @Test
     @DisplayName(
-            "What: LintService | When: println contains complex expression | Then: reports println"
+            "Given: LintService | When: println contains complex expression | Then: reports println"
                     + " expression violation")
     void lintService_whenPrintlnContainsBinaryExpression_thenReportsExpressionViolation() {
-        // What: YAML rule requiring literal/variable in println and offending code
+        // Given: YAML rule requiring literal/variable in println and offending code
         String yamlRules = "mandatory-variable-or-literal-in-println: true\n";
         String code =
                 """
@@ -72,10 +72,10 @@ class LintServiceUnitTest {
 
     @Test
     @DisplayName(
-            "What: LintService | When: analyzing valid code and error conditions | Then: handles"
+            "Given: LintService | When: analyzing valid code and error conditions | Then: handles"
                     + " success and errors accordingly")
     void lintService_whenAnalyzingValidAndErrorScenarios_thenHandlesCorrectly() {
-        // What: LintService
+        // Given: LintService
         LintService lintService = new LintService();
 
         // When: valid code with no config

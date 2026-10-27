@@ -5,6 +5,7 @@
 package token;
 
 import position.Position;
+import position.SourceRange;
 
 public interface TokenInterface {
     TokenType type();
@@ -21,6 +22,11 @@ public interface TokenInterface {
 
     default Integer column() {
         return startPosition() != null ? startPosition().column() : -1;
+    }
+
+    default SourceRange range() {
+        return new SourceRange(
+                startPosition(), endPosition() != null ? endPosition() : startPosition());
     }
 
     default boolean isNull() {

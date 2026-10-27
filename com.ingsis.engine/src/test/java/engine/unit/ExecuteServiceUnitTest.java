@@ -27,10 +27,10 @@ class ExecuteServiceUnitTest {
 
     @Test
     @DisplayName(
-            "What: ExecuteService | When: executing V1.0 arithmetic and print statements | Then:"
+            "Given: ExecuteService | When: executing V1.0 arithmetic and print statements | Then:"
                     + " prints expected division result")
     void executeService_whenExecutingV10DivisionCode_thenOutputsExpectedResult() {
-        // What: arithmetic program
+        // Given: arithmetic program
         String code =
                 """
                 let a: number = 12;
@@ -56,10 +56,10 @@ class ExecuteServiceUnitTest {
 
     @Test
     @DisplayName(
-            "What: ExecuteService | When: running persistent REPL steps | Then: preserves"
+            "Given: ExecuteService | When: running persistent REPL steps | Then: preserves"
                     + " environment across steps")
     void executeService_whenRunningPersistentReplSteps_thenPreservesState() {
-        // What: ExecuteService and persistent environments
+        // Given: ExecuteService and persistent environments
         ExecuteService executeService = new ExecuteService();
         SemanticEnvironment semanticEnv = new SemanticEnvironment();
         Environment runtimeEnv = new Environment();
@@ -97,10 +97,10 @@ class ExecuteServiceUnitTest {
 
     @Test
     @DisplayName(
-            "What: ExecuteService | When: executing V1.1 conditionals and const | Then: executes"
+            "Given: ExecuteService | When: executing V1.1 conditionals and const | Then: executes"
                     + " appropriate branch")
     void executeService_whenExecutingV11ConditionalsAndConst_thenExecutesTargetBranch() {
-        // What: V1.1 code with const and if-else
+        // Given: V1.1 code with const and if-else
         String code =
                 """
                 const flag: boolean = true;
@@ -128,10 +128,10 @@ class ExecuteServiceUnitTest {
 
     @Test
     @DisplayName(
-            "What: ExecuteService | When: code contains syntactic error | Then: fails gracefully"
+            "Given: ExecuteService | When: code contains syntactic error | Then: fails gracefully"
                     + " with syntax error message")
     void executeService_whenSyntacticErrorPresent_thenFailsGracefully() {
-        // What: code missing colon
+        // Given: code missing colon
         String code = "let a number = 12;";
 
         ExecuteService executeService = new ExecuteService();
@@ -148,10 +148,10 @@ class ExecuteServiceUnitTest {
 
     @Test
     @DisplayName(
-            "What: ExecuteService | When: invoking delegated engine methods | Then: succeeds across"
-                    + " validate, format, analyze, and interpret")
+            "Given: ExecuteService | When: invoking delegated engine methods | Then: succeeds"
+                    + " across validate, format, analyze, and interpret")
     void executeService_whenInvokingDelegatedEngineMethods_thenDelegatesSuccessfully() {
-        // What: valid code
+        // Given: valid code
         ExecuteService executeService = new ExecuteService();
         String code = "let x: number = 42;\n";
 

@@ -17,10 +17,10 @@ class SemanticEnvironmentUnitTest {
 
     @Test
     @DisplayName(
-            "What: SemanticEnvironment | When: defining variables and child scopes | Then:"
+            "Given: SemanticEnvironment | When: defining variables and child scopes | Then:"
                     + " correctly manages variable scopes and attributes")
     void semanticEnvironment_whenDefiningVariablesAndScopes_thenCorrectlyManagesScopes() {
-        // What: initial SemanticEnvironment
+        // Given: initial SemanticEnvironment
         SemanticEnvironment env = new SemanticEnvironment();
 
         // When: defining variable "x" as mutable and initialized

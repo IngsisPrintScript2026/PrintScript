@@ -12,7 +12,15 @@ import semantic.environment.SemanticEnvironment;
 import semantic.evaluator.ExpressionTypeInference;
 
 public class IfNodeSemanticHandler implements SemanticNodeHandler<IfKeywordNode> {
-    private final ExpressionTypeInference typeInference = new ExpressionTypeInference();
+    private final ExpressionTypeInference typeInference;
+
+    public IfNodeSemanticHandler(ExpressionTypeInference typeInference) {
+        this.typeInference = typeInference;
+    }
+
+    public IfNodeSemanticHandler() {
+        this(new ExpressionTypeInference());
+    }
 
     @Override
     public Class<IfKeywordNode> nodeType() {
@@ -32,7 +40,6 @@ public class IfNodeSemanticHandler implements SemanticNodeHandler<IfKeywordNode>
                     "Condition of 'if' at line " + ifNode.line() + " must be boolean");
         }
 
-        SemanticEnvironment thenEnv = new SemanticEnvironment(env);
         return Result.success(env);
     }
 }

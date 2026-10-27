@@ -17,11 +17,11 @@ class StreamCharReaderUnitTest {
 
     @Test
     @DisplayName(
-            "What: StreamCharReader | When: reading and unreading characters | Then: characters are"
-                    + " returned accurately")
+            "Given: StreamCharReader | When: reading and unreading characters | Then: characters"
+                    + " are returned accurately")
     void streamCharReader_whenReadingAndUnreadingChars_thenReturnsExpectedCharacters()
             throws Exception {
-        // What: StreamCharReader initialized with StringReader "ab"
+        // Given: StreamCharReader initialized with StringReader "ab"
         StringReader stringReader = new StringReader("ab");
         StreamCharReader charReader = new StreamCharReader(stringReader);
 
@@ -44,10 +44,10 @@ class StreamCharReaderUnitTest {
 
     @Test
     @DisplayName(
-            "What: StreamCharReader | When: wrapping BufferedReader and PushbackReader | Then:"
+            "Given: StreamCharReader | When: wrapping BufferedReader and PushbackReader | Then:"
                     + " reads chars correctly")
     void streamCharReader_whenWrappingDifferentReaders_thenReadsCharsCorrectly() throws Exception {
-        // What: BufferedReader and PushbackReader sources
+        // Given: BufferedReader and PushbackReader sources
         BufferedReader br = new BufferedReader(new StringReader("x"));
         PushbackReader pr = new PushbackReader(new StringReader("y"));
 

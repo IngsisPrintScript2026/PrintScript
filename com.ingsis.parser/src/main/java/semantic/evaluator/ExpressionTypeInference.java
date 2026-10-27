@@ -4,7 +4,9 @@
 
 package semantic.evaluator;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import node.expression.ExpressionNode;
 import node.expression.Identifier.IdentifierNode;
 import node.expression.function.CallFunctionNode;
@@ -16,8 +18,22 @@ import node.expression.nullObject.NilExpressionNode;
 import node.expression.operator.OperatorNode;
 import result.Result;
 import semantic.environment.SemanticEnvironment;
+import syntactic.version.VersionStrategyRegistry;
+import version.Version;
 
 public class ExpressionTypeInference {
+    private final Version version;
+    private final Set<String> builtInFunctions;
+
+    public ExpressionTypeInference(Version version) {
+        this.version = version;
+        this.builtInFunctions =
+                new VersionStrategyRegistry().getStrategy(version).builtInFunctions();
+    }
+
+    public ExpressionTypeInference() {
+        this(Version.V_1_1);
+    }
 
     public Result<DataType> inferType(ExpressionNode expr, SemanticEnvironment env) {
         return switch (expr) {
@@ -81,9 +97,29 @@ public class ExpressionTypeInference {
 
     private Result<DataType> inferFunctionType(CallFunctionNode call, SemanticEnvironment env) {
         String fnName = call.identifierNode().name();
-        if ("readInput".equalsIgnoreCase(fnName) || "readEnv".equalsIgnoreCase(fnName)) {
-            return Result.success(null);
+        if (!builtInFunctions.contains(fnName)) {
+            return Result.failure(
+                    "Function '"
+                            + fnName
+                            + "' is not supported in PrintScript "
+                            + (version == Version.V_1_0 ? "1.0" : "1.1"));
         }
-        return Result.success(DataType.STRING);
+        Result<DataType> argsRes = checkArguments(call.argumentNodes(), env);
+        if (!argsRes.isCorrect()) {
+            return argsRes;
+        }
+        // readInput/readEnv adapt to the type of the variable that receives them (null = any)
+        boolean adaptsToTarget = "readInput".equals(fnName) || "readEnv".equals(fnName);
+        return Result.success(adaptsToTarget ? null : DataType.STRING);
+    }
+
+    private Result<DataType> checkArguments(List<ExpressionNode> args, SemanticEnvironment env) {
+        for (ExpressionNode arg : args) {
+            Result<DataType> argRes = inferType(arg, env);
+            if (!argRes.isCorrect()) {
+                return argRes;
+            }
+        }
+        return Result.success(null);
     }
 }

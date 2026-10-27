@@ -79,7 +79,7 @@ public final class LazyTokenStream implements TokenStream {
     public Result<IterationStep<Token>> consume() {
         if (currentNode == null || currentNode.token == null) {
             if (currentNode != null && currentNode.error != null && !currentNode.isEof) {
-                return Result.failure("Lexical error: " + currentNode.error);
+                return Result.failure(lexicalError(currentNode.error));
             }
             return Result.failure("EOF: Se alcanzó el fin del flujo de tokens.");
         }
@@ -96,9 +96,14 @@ public final class LazyTokenStream implements TokenStream {
     @Override
     public Result<IterationStep<Token>> consume(Predicate<Token> matcher) {
         return switch (peek(0)) {
-            case IncorrectResult<Token>(String err) -> Result.failure(err);
+            case IncorrectResult<Token>(String err) ->
+                    Result.failure(
+                            err.startsWith("Lexical error") ? err : "Unexpected end of file");
             case CorrectResult<Token>(Token token) ->
-                    matcher.test(token) ? consume() : Result.failure("Token inesperado: " + token);
+                    matcher.test(token)
+                            ? consume()
+                            : Result.failure(
+                                    "Unexpected token '" + token.value() + "' " + token.range());
         };
     }
 
@@ -116,16 +121,22 @@ public final class LazyTokenStream implements TokenStream {
         }
         if (curr == null || curr.token == null) {
             if (curr != null && curr.error != null && !curr.isEof) {
-                return Result.failure("Lexical error: " + curr.error);
+                return Result.failure(lexicalError(curr.error));
             }
             return Result.failure("Índice fuera de los límites del stream: " + offset);
         }
         return Result.success(curr.token);
     }
 
+    private static String lexicalError(String error) {
+        return error.startsWith("Lexical error") ? error : "Lexical error: " + error;
+    }
+
     @Override
     public boolean isEmpty() {
-        return currentNode == null || currentNode.token == null;
+        // A pending lexical error is not the end of the stream: it must reach the parser.
+        return currentNode == null
+                || (currentNode.token == null && (currentNode.error == null || currentNode.isEof));
     }
 
     @Override

@@ -10,10 +10,12 @@ import result.Result;
 
 public enum OperatorType {
     ASSIGNATION("=", 2, 1),
-    PLUS("+", 12, 11),
-    MINUS("-", 12, 11),
-    STAR("*", 22, 21),
-    SLASH("/", 22, 21);
+    // left binding power < right binding power makes the operator left-associative:
+    // 10 - 4 - 3 is (10 - 4) - 3
+    PLUS("+", 11, 12),
+    MINUS("-", 11, 12),
+    STAR("*", 21, 22),
+    SLASH("/", 21, 22);
 
     private final String symbol;
     private final int lBindingPower;

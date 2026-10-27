@@ -10,6 +10,7 @@ import formatter.rule.BracePositionRule;
 import formatter.rule.FormattingRule;
 import formatter.rule.IndentationRule;
 import formatter.rule.LineBreakAfterStatementRule;
+import formatter.rule.LinesBeforePrintlnRule;
 import formatter.rule.SingleSpaceSeparationRule;
 import formatter.rule.SpaceAfterColonRule;
 import formatter.rule.SpaceAfterCommaRule;
@@ -20,21 +21,27 @@ import iterator.IterationStep;
 import iterator.SafeIterator;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
+import java.io.InputStreamReader;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
 import lexer.Lexer;
 import node.Node;
 import node.ProgramNode;
+import position.Position;
 import result.CorrectResult;
+import result.IncorrectResult;
 import result.Result;
 import token.Token;
 import token.TokenType;
 
+/**
+ * Formats source code as a stream of tokens: each token is written as soon as it is read, so the
+ * whole program never has to fit in memory. The whitespace between two tokens is rebuilt from their
+ * positions and then rewritten by the {@link FormattingRule}s, applied in order.
+ */
 public class TokenStreamFormatter implements Formatter {
-
     private final List<FormattingRule> rules;
     private final FormatContext context;
 
@@ -47,13 +54,14 @@ public class TokenStreamFormatter implements Formatter {
         this(
                 context,
                 List.of(
-                        new SpaceAfterColonRule(),
+                        new SingleSpaceSeparationRule(),
                         new SpaceBeforeColonRule(),
+                        new SpaceAfterColonRule(),
                         new SpaceAroundEqualsRule(),
                         new SpaceAroundOperatorsRule(),
                         new SpaceAfterCommaRule(),
                         new LineBreakAfterStatementRule(),
-                        new SingleSpaceSeparationRule(),
+                        new LinesBeforePrintlnRule(),
                         new BracePositionRule()));
     }
 
@@ -71,84 +79,67 @@ public class TokenStreamFormatter implements Formatter {
         return Result.failure("TokenStreamFormatter formats directly from input stream");
     }
 
+    /** Convenience for small inputs: returns the formatted source as a string. */
+    public Result<String> format(InputStream in) {
+        StringWriter writer = new StringWriter();
+        Result<String> res = format(in, writer);
+        return res.isCorrect() ? Result.success(writer.toString()) : res;
+    }
+
     public Result<String> format(InputStream in, Writer writer) {
+        StreamCharReader reader =
+                new StreamCharReader(new InputStreamReader(in, StandardCharsets.UTF_8));
+        return format(new Lexer(new CharStream(reader)), writer);
+    }
+
+    public Result<String> format(SafeIterator<Token> tokens, Writer writer) {
         try {
-            String sourceCode = new String(in.readAllBytes(), StandardCharsets.UTF_8);
-            List<Token> tokens = tokenize(sourceCode);
-            if (tokens.isEmpty()) {
-                return writeResult(sourceCode, writer);
-            }
-            String formatted = applyFormatting(sourceCode, tokens);
-            return writeResult(formatted, writer);
-        } catch (Exception e) {
+            return formatTokens(tokens, writer);
+        } catch (IOException e) {
             return Result.failure("Formatting error: " + e.getMessage());
         }
     }
 
-    private List<Token> tokenize(String sourceCode) {
-        List<Token> tokens = new ArrayList<>();
-        try (StringReader sr = new StringReader(sourceCode);
-                StreamCharReader reader = new StreamCharReader(sr)) {
-            SafeIterator<Token> lexer = new Lexer(new CharStream(reader));
-            collectTokens(lexer, tokens);
-        } catch (Exception ignored) {
-        }
-        return tokens;
-    }
-
-    private void collectTokens(SafeIterator<Token> lexer, List<Token> tokens) {
-        SafeIterator<Token> current = lexer;
-        while (true) {
-            Result<IterationStep<Token>> res = current.next();
-            if (!res.isCorrect()) {
-                break;
-            }
-            IterationStep<Token> step = ((CorrectResult<IterationStep<Token>>) res).value();
-            tokens.add(step.value());
-            current = step.nextStream();
-        }
-    }
-
-    private int[][] computeOffsets(List<Token> tokens, String sourceCode) {
-        int[] starts = new int[tokens.size()];
-        int[] ends = new int[tokens.size()];
-        int currentOffset = 0;
-        for (int i = 0; i < tokens.size(); i++) {
-            Token t = tokens.get(i);
-            int found = sourceCode.indexOf(t.value(), currentOffset);
-            starts[i] = (found == -1) ? currentOffset : found;
-            ends[i] = starts[i] + t.value().length();
-            currentOffset = ends[i];
-        }
-        return new int[][] {starts, ends};
-    }
-
-    private record SourceLayout(String source, List<Token> tokens, int[] starts, int[] ends) {}
-
-    private String applyFormatting(String sourceCode, List<Token> tokens) {
-        int[][] offsets = computeOffsets(tokens, sourceCode);
-        SourceLayout layout = new SourceLayout(sourceCode, tokens, offsets[0], offsets[1]);
-        StringBuilder sb = new StringBuilder();
-        sb.append(sourceCode, 0, layout.starts()[0]);
-
+    private Result<String> formatTokens(SafeIterator<Token> tokens, Writer writer)
+            throws IOException {
         FormattingState state = new FormattingState();
-        for (int i = 0; i < tokens.size(); i++) {
-            formatTokenStep(sb, layout, i, state);
+        Result<IterationStep<Token>> next = tokens.next();
+        while (next instanceof CorrectResult<IterationStep<Token>>(var step)) {
+            writeToken(step.value(), state, writer);
+            next = step.<SafeIterator<Token>>nextStream().next();
         }
-        appendTrailingSource(sb, sourceCode, layout.ends()[tokens.size() - 1]);
-        return sb.toString();
+        if (next instanceof IncorrectResult<IterationStep<Token>>(String err)
+                && !"EOF".equals(err)) {
+            writer.flush();
+            return Result.failure("Formatting error: " + err);
+        }
+        if (state.prev != null) {
+            writer.write("\n");
+        }
+        writer.flush();
+        return Result.success("Formatting completed");
     }
 
-    private void formatTokenStep(
-            StringBuilder sb, SourceLayout layout, int i, FormattingState state) {
-        Token current = layout.tokens().get(i);
-        if (i > 0) {
-            Token prev = layout.tokens().get(i - 1);
-            String sep = layout.source().substring(layout.ends()[i - 1], layout.starts()[i]);
-            sb.append(computeSeparator(prev, current, sep, state));
+    private void writeToken(Token current, FormattingState state, Writer writer)
+            throws IOException {
+        if (state.prev != null) {
+            String original = separatorBetween(state.prev, current);
+            writer.write(computeSeparator(state.prev, current, original, state));
         }
         updateStateForToken(current, state);
-        sb.append(current.value());
+        writer.write(current.value());
+        state.prev = current;
+    }
+
+    /** Rebuilds the whitespace the lexer skipped between two tokens from their positions. */
+    static String separatorBetween(Token prev, Token current) {
+        Position end = prev.range().end();
+        Position start = current.startPosition();
+        int lineBreaks = start.line() - end.line();
+        if (lineBreaks > 0) {
+            return "\n".repeat(lineBreaks) + " ".repeat(Math.max(0, start.column() - 1));
+        }
+        return " ".repeat(Math.max(0, start.column() - end.column() - 1));
     }
 
     private String computeSeparator(
@@ -180,7 +171,7 @@ public class TokenStreamFormatter implements Formatter {
         } else if (current.type() == TokenType.RBRACE) {
             state.depth = Math.max(0, state.depth - 1);
         }
-        if (current.type() == TokenType.PRINTLN || "println".equals(current.value())) {
+        if (current.type() == TokenType.PRINTLN) {
             state.stmtHasPrintln = true;
         }
         if (current.type() == TokenType.SEMICOLON && state.stmtHasPrintln) {
@@ -189,21 +180,8 @@ public class TokenStreamFormatter implements Formatter {
         }
     }
 
-    private void appendTrailingSource(StringBuilder sb, String source, int lastEndOffset) {
-        if (lastEndOffset < source.length()) {
-            sb.append(source.substring(lastEndOffset));
-        }
-    }
-
-    private Result<String> writeResult(String output, Writer writer) throws IOException {
-        if (writer != null) {
-            writer.write(output);
-            writer.flush();
-        }
-        return Result.success(output);
-    }
-
     private static class FormattingState {
+        Token prev;
         int depth = 0;
         boolean justFinishedPrintln = false;
         boolean stmtHasPrintln = false;

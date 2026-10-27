@@ -16,6 +16,7 @@ import java.util.function.Consumer;
 import node.Node;
 import node.expression.ExpressionNode;
 import node.expression.function.CallFunctionNode;
+import node.expression.literal.DataType;
 import node.keyword.AssignNode;
 import node.keyword.DeclarationKeywordNode;
 import node.keyword.IfKeywordNode;
@@ -63,13 +64,14 @@ public class DefaultStatementExecutor implements StatementExecutor {
     private Result<Void> executeDeclaration(DeclarationKeywordNode decl, Environment env) {
         Object value = null;
         if (decl.expressionNode() != null) {
-            Result<Object> valRes = expressionEvaluator.evaluate(decl.expressionNode(), env);
+            Result<Object> valRes =
+                    expressionEvaluator.evaluate(decl.expressionNode(), env, decl.declaredType());
             if (!valRes.isCorrect())
                 return Result.failure(((IncorrectResult<Object>) valRes).error());
             value = ((CorrectResult<Object>) valRes).value();
         }
         try {
-            env.declare(decl.identifierNode().name(), value, null, decl.isMutable());
+            env.declare(decl.identifierNode().name(), value, decl.declaredType(), decl.isMutable());
             return Result.success(null);
         } catch (Exception e) {
             return Result.failure("Declaration error: " + e.getMessage());
@@ -77,7 +79,12 @@ public class DefaultStatementExecutor implements StatementExecutor {
     }
 
     private Result<Void> executeAssign(AssignNode assign, Environment env) {
-        Result<Object> valRes = expressionEvaluator.evaluate(assign.expressionNode(), env);
+        DataType targetType =
+                env.find(assign.identifierNode().name())
+                        .map(Environment.VariableInfo::type)
+                        .orElse(null);
+        Result<Object> valRes =
+                expressionEvaluator.evaluate(assign.expressionNode(), env, targetType);
         if (!valRes.isCorrect()) return Result.failure(((IncorrectResult<Object>) valRes).error());
         try {
             env.assign(assign.identifierNode().name(), ((CorrectResult<Object>) valRes).value());

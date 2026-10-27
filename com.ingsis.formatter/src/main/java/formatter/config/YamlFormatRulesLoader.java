@@ -90,7 +90,8 @@ public class YamlFormatRulesLoader {
             Boolean singleSpace,
             Boolean sameLine,
             Boolean belowLine,
-            Boolean spaceAfterComma) {}
+            Boolean spaceAfterComma,
+            Integer printlnBreaksBefore) {}
 
     private static FormattingRulesData extractRulesData(Map<String, Object> data) {
         return new FormattingRulesData(
@@ -107,7 +108,8 @@ public class YamlFormatRulesLoader {
                 getSingleSpace(data),
                 getOptionalBoolean(data, "if-brace-same-line", "ifBraceSameLine"),
                 getOptionalBoolean(data, "if-brace-below-line", "ifBraceBelowLine"),
-                getSpaceAfterComma(data));
+                getSpaceAfterComma(data),
+                getOptionalInt(data, "line-breaks-before-println", "lineBreaksBeforePrintln"));
     }
 
     private static FormatContext assembleContext(SpacingRules s, FormattingRulesData r) {
@@ -123,7 +125,8 @@ public class YamlFormatRulesLoader {
                 r.singleSpace(),
                 r.sameLine(),
                 r.belowLine(),
-                r.spaceAfterComma());
+                r.spaceAfterComma(),
+                r.printlnBreaksBefore());
     }
 
     private static Boolean getSpaceAfterComma(Map<String, Object> data) {
@@ -145,12 +148,7 @@ public class YamlFormatRulesLoader {
     }
 
     private static Integer getPrintlnBreaks(Map<String, Object> data) {
-        return getOptionalInt(
-                data,
-                "line-breaks-after-println",
-                "lineBreaksAfterPrintln",
-                "line-breaks-before-println",
-                "lineBreaksBeforePrintln");
+        return getOptionalInt(data, "line-breaks-after-println", "lineBreaksAfterPrintln");
     }
 
     private static Boolean getSingleSpace(Map<String, Object> data) {

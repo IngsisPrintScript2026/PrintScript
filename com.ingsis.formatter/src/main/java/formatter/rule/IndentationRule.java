@@ -21,7 +21,7 @@ public class IndentationRule implements FormattingRule {
 
     @Override
     public boolean applies(Token prev, Token current, FormatContext context) {
-        return context.indentSpaces() != null;
+        return true;
     }
 
     @Override
@@ -36,7 +36,7 @@ public class IndentationRule implements FormattingRule {
             targetDepth = Math.max(0, currentDepth - 1);
         }
 
-        int indentSize = context.indentSpaces();
+        int indentSize = context.getIndentSpaces();
         String indent = " ".repeat(Math.max(0, targetDepth * indentSize));
 
         // Preserve all newlines in originalSeparator, replace the final trailing spaces with indent

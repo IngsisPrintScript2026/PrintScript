@@ -8,25 +8,28 @@ import formatter.FormatContext;
 import token.Token;
 import token.TokenType;
 
+/**
+ * The '{' of an if/else block goes on the same line as its header (default), unless
+ * if-brace-below-line is explicitly enabled. "} else" follows the same placement.
+ */
 public class BracePositionRule implements FormattingRule {
     @Override
     public boolean applies(Token prev, Token current, FormatContext context) {
-        if (current == null || current.type() != TokenType.LBRACE) {
+        if (current == null) {
             return false;
         }
-        return Boolean.TRUE.equals(context.ifBraceSameLine())
-                || Boolean.TRUE.equals(context.ifBraceBelowLine());
+        return current.type() == TokenType.LBRACE
+                || (current.type() == TokenType.ELSE
+                        && prev != null
+                        && prev.type() == TokenType.RBRACE);
     }
 
     @Override
     public String formatSeparator(
             Token prev, Token current, String originalSeparator, FormatContext context) {
-        if (Boolean.TRUE.equals(context.ifBraceSameLine())) {
-            return " ";
-        }
-        if (Boolean.TRUE.equals(context.ifBraceBelowLine())) {
-            return "\n";
-        }
-        return originalSeparator;
+        boolean belowLine =
+                Boolean.TRUE.equals(context.ifBraceBelowLine())
+                        && !Boolean.TRUE.equals(context.ifBraceSameLine());
+        return belowLine ? "\n" : " ";
     }
 }

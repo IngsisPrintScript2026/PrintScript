@@ -36,11 +36,11 @@ class SemanticCheckerIntegrationTest {
 
     @Test
     @DisplayName(
-            "What: SemanticChecker | When: validating declarations, assignments, and scoping |"
+            "Given: SemanticChecker | When: validating declarations, assignments, and scoping |"
                     + " Then: catches semantic errors and verifies valid operations")
     void
             semanticChecker_whenValidatingDeclarationsAndAssignments_thenCatchesErrorsAndPassesValid() {
-        // What: SemanticChecker and declaration nodes
+        // Given: SemanticChecker and declaration nodes
         SemanticChecker checker = new SemanticChecker();
 
         // Valid let declaration: let x: number = 10;
@@ -146,10 +146,10 @@ class SemanticCheckerIntegrationTest {
 
     @Test
     @DisplayName(
-            "What: SemanticChecker | When: validating if statements, function calls, and programs |"
-                    + " Then: validates conditions and expressions")
+            "Given: SemanticChecker | When: validating if statements, function calls, and programs"
+                    + " | Then: validates conditions and expressions")
     void semanticChecker_whenValidatingIfAndFunctionCalls_thenValidatesConditionsAndExpressions() {
-        // What: SemanticChecker
+        // Given: SemanticChecker
         SemanticChecker checker = new SemanticChecker();
 
         // When: checking valid if statement with boolean condition

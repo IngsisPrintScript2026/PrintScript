@@ -19,10 +19,10 @@ class TokenMatcherIntegrationTest {
 
     @Test
     @DisplayName(
-            "What: TokenMatcher chain | When: matching full suite of language lexemes | Then: maps"
+            "Given: TokenMatcher chain | When: matching full suite of language lexemes | Then: maps"
                     + " every lexeme to correct TokenType")
     void tokenMatcherChain_whenMatchingFullSuiteOfLexemes_thenMapsEveryLexemeAccurately() {
-        // What: map of expected lexemes to TokenTypes
+        // Given: map of expected lexemes to TokenTypes
         Map<String, TokenType> expectedMatches =
                 Map.ofEntries(
                         Map.entry("let", TokenType.LET),

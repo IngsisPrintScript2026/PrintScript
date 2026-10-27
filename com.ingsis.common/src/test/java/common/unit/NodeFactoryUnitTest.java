@@ -39,10 +39,10 @@ class NodeFactoryUnitTest {
 
     @Test
     @DisplayName(
-            "What: NodeFactory | When: creating AST nodes | Then: properties and hierarchies match"
+            "Given: NodeFactory | When: creating AST nodes | Then: properties and hierarchies match"
                     + " expectations")
     void nodeFactory_whenCreatingNodes_thenPropertiesAndHierarchiesMatchExpectations() {
-        // What: tokens for AST node creation
+        // Given: tokens for AST node creation
         Token idTok = new Token(TokenType.IDENTIFIER, "x", new Position(1, 1));
         Token numTok = new Token(TokenType.NUMBER_LITERAL, "42", new Position(1, 5));
         Token letTok = new Token(TokenType.LET, "let", new Position(1, 1));
@@ -161,10 +161,10 @@ class NodeFactoryUnitTest {
 
     @Test
     @DisplayName(
-            "What: DataType, DeclarationType, OperatorType | When: querying enums | Then:"
+            "Given: DataType, DeclarationType, OperatorType | When: querying enums | Then:"
                     + " conversions and predicates succeed")
     void enums_whenQueried_thenConversionsAndPredicatesSucceed() {
-        // What: tokens and strings for DataType, DeclarationType, OperatorType
+        // Given: tokens and strings for DataType, DeclarationType, OperatorType
         Token boolTok = new Token(TokenType.BOOLEAN, "boolean", new Position(1, 1));
         Token letTok = new Token(TokenType.LET, "let", new Position(1, 1));
 

@@ -17,7 +17,6 @@ import token.tokenizer.Tokenizer;
 
 public class PrintScriptTokenizer implements Tokenizer {
     private final TokenTypeMatcher tokenMatcher;
-    private TokenizeResult tokenizeResult;
 
     public PrintScriptTokenizer(TokenTypeMatcher tokenMatcher) {
         this.tokenMatcher = tokenMatcher;
@@ -41,7 +40,7 @@ public class PrintScriptTokenizer implements Tokenizer {
 
         return switch (matchResult) {
             case CorrectResult<TokenType>(TokenType value) -> {
-                Token token = new Token(value, text, sb.getStartPosition());
+                Token token = new Token(value, text, sb.getStartPosition(), sb.getEndPosition());
                 yield new TokenizeResult.Complete(token);
             }
             case IncorrectResult<TokenType> failure -> evaluateFailure(text, failure.error());

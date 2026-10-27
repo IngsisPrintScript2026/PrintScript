@@ -9,22 +9,25 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
+import java.io.FilterWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.Callable;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
+import progress.ConsoleProgressReporter;
+import progress.ProgressListener;
 import result.CorrectResult;
 import result.IncorrectResult;
 import result.Result;
 import service.ExecuteService;
 import service.ExecutionContext;
-import service.ValidationService;
 import version.Version;
 
 @Command(
@@ -34,8 +37,8 @@ import version.Version;
         description = "CLI wrapper around the Engine")
 public class CliEngine implements Callable<Integer>, Engine {
 
-    private final ExecuteService executeService = new ExecuteService();
-    private final ValidationService validationService = new ValidationService();
+    private ExecuteService executeService = new ExecuteService();
+    private BufferedReader stdin;
 
     @Parameters(
             index = "0",
@@ -63,23 +66,61 @@ public class CliEngine implements Callable<Integer>, Engine {
             description = "Version")
     private String versionString = "1.0";
 
+    @Option(
+            names = {"--no-progress"},
+            description = "Do not show the parsing progress on STDERR")
+    private boolean noProgress;
+
     @Override
     public Integer call() throws Exception {
         Version version = Version.fromString(versionString);
+        ProgressListener progress = createProgressListener();
+        executeService = new ExecuteService(progress);
         try (InputStream in = inputFile != null ? new FileInputStream(inputFile) : System.in;
                 InputStream config = configFile != null ? new FileInputStream(configFile) : null;
-                Writer writer =
-                        outputFile != null
-                                ? new FileWriter(outputFile)
-                                : new OutputStreamWriter(System.out)) {
-            OutputEmitter emitter = System.out::println;
-            CliStreams streams = new CliStreams(in, config, writer);
+                Writer writer = openOutput()) {
+            OutputEmitter emitter = message -> printClearingProgress(progress, message);
             if (inputFile == null && System.in.available() == 0) {
                 return runRepl(version, emitter) ? 0 : 1;
             }
-            Result<String> result = executeOperation(streams, version, emitter);
+            Result<String> result =
+                    executeOperation(new CliStreams(in, config, writer), version, emitter);
+            endProgress(progress, result);
             return handleResult(result, writer) ? 0 : 1;
         }
+    }
+
+    private ProgressListener createProgressListener() {
+        if (noProgress || inputFile == null) {
+            return ProgressListener.NONE;
+        }
+        return new ConsoleProgressReporter(System.err, inputFile.length());
+    }
+
+    private static void printClearingProgress(ProgressListener progress, String message) {
+        progress.clear();
+        System.out.println(message);
+    }
+
+    private static void endProgress(ProgressListener progress, Result<String> result) {
+        if (result.isCorrect()) {
+            progress.finish();
+        } else {
+            progress.clear();
+        }
+    }
+
+    /** The file given with -o, or STDOUT wrapped so that closing it does not close System.out. */
+    private Writer openOutput() throws IOException {
+        if (outputFile != null) {
+            return new FileWriter(outputFile, StandardCharsets.UTF_8);
+        }
+        return new FilterWriter(new OutputStreamWriter(System.out, StandardCharsets.UTF_8)) {
+            @Override
+            public void close() throws IOException {
+                flush();
+            }
+        };
     }
 
     private boolean runRepl(Version version, OutputEmitter emitter) {
@@ -151,9 +192,15 @@ public class CliEngine implements Callable<Integer>, Engine {
         return new IncorrectResult<>("Unknown operation: " + operation);
     }
 
+    // A single reader for the whole run: a new one per readInput would lose buffered lines.
     private String readLineFromStdin() {
         try {
-            return new BufferedReader(new InputStreamReader(System.in)).readLine();
+            if (stdin == null) {
+                stdin =
+                        new BufferedReader(
+                                new InputStreamReader(System.in, StandardCharsets.UTF_8));
+            }
+            return stdin.readLine();
         } catch (IOException e) {
             return "";
         }
@@ -225,7 +272,7 @@ public class CliEngine implements Callable<Integer>, Engine {
 
     @Override
     public Result<String> validate(Version version, InputStream in) {
-        return validationService.validate(version, in);
+        return executeService.validate(version, in);
     }
 
     @Override

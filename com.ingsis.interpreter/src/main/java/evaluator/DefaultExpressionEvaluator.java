@@ -22,9 +22,11 @@ import node.expression.literal.NumberLiteralNode;
 import node.expression.literal.StringLiteralNode;
 import node.expression.nullObject.NilExpressionNode;
 import node.expression.operator.OperatorNode;
+import node.expression.operator.OperatorType;
 import result.CorrectResult;
 import result.IncorrectResult;
 import result.Result;
+import value.PrintScriptValues;
 
 public class DefaultExpressionEvaluator implements ExpressionEvaluator {
     private final FunctionRegistry functionRegistry;
@@ -121,19 +123,28 @@ public class DefaultExpressionEvaluator implements ExpressionEvaluator {
         return applyOperator(op.operatorType(), left, right);
     }
 
-    private Result<Object> applyOperator(
-            node.expression.operator.OperatorType type, Object left, Object right) {
+    private Result<Object> applyArithmetic(OperatorType type, BigDecimal left, BigDecimal right) {
+        if (type == OperatorType.SLASH && right.signum() == 0) {
+            return Result.failure("Division by zero");
+        }
+        BigDecimal value =
+                switch (type) {
+                    case PLUS -> left.add(right);
+                    case MINUS -> left.subtract(right);
+                    case STAR -> left.multiply(right);
+                    case SLASH -> left.divide(right, PrintScriptValues.DIVISION_CONTEXT);
+                    case ASSIGNATION -> right;
+                };
+        return Result.success(PrintScriptValues.normalize(value));
+    }
+
+    private Result<Object> applyOperator(OperatorType type, Object left, Object right) {
         try {
-            return switch (type) {
-                case PLUS ->
-                        (left instanceof String || right instanceof String)
-                                ? Result.success(String.valueOf(left) + String.valueOf(right))
-                                : Result.success(((BigDecimal) left).add((BigDecimal) right));
-                case MINUS -> Result.success(((BigDecimal) left).subtract((BigDecimal) right));
-                case STAR -> Result.success(((BigDecimal) left).multiply((BigDecimal) right));
-                case SLASH -> Result.success(((BigDecimal) left).divide((BigDecimal) right));
-                case ASSIGNATION -> Result.success(right);
-            };
+            if (type == OperatorType.PLUS && (left instanceof String || right instanceof String)) {
+                return Result.success(
+                        PrintScriptValues.display(left) + PrintScriptValues.display(right));
+            }
+            return applyArithmetic(type, (BigDecimal) left, (BigDecimal) right);
         } catch (Exception e) {
             return Result.failure("Operator evaluation error: " + e.getMessage());
         }

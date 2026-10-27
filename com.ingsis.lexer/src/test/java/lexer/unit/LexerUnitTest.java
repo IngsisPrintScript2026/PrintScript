@@ -41,10 +41,10 @@ class LexerUnitTest {
 
     @Test
     @DisplayName(
-            "What: Lexer | When: stream contains single identifier with whitespace | Then: skips"
+            "Given: Lexer | When: stream contains single identifier with whitespace | Then: skips"
                     + " whitespace and produces token")
     void lexer_whenStreamContainsWhitespaceAndToken_thenSkipsWhitespaceAndEmitsToken() {
-        // What: CharStream with leading spaces "   let"
+        // Given: CharStream with leading spaces "   let"
         StreamCharReader reader = new StreamCharReader(new StringReader("   let"));
         CharStream charStream = new CharStream(reader);
         Lexer lexer = new Lexer(charStream);
@@ -60,9 +60,9 @@ class LexerUnitTest {
     }
 
     @Test
-    @DisplayName("What: Lexer | When: stream is empty | Then: returns failure result with EOF")
+    @DisplayName("Given: Lexer | When: stream is empty | Then: returns failure result with EOF")
     void lexer_whenStreamIsEmpty_thenReturnsFailureWithEof() {
-        // What: CharStream with empty string
+        // Given: CharStream with empty string
         StreamCharReader reader = new StreamCharReader(new StringReader(""));
         CharStream charStream = new CharStream(reader);
         Lexer lexer = new Lexer(charStream);
@@ -77,10 +77,10 @@ class LexerUnitTest {
 
     @Test
     @DisplayName(
-            "What: Lexer with FakeTokenizer | When: fake tokenizer returns Invalid | Then: returns"
+            "Given: Lexer with FakeTokenizer | When: fake tokenizer returns Invalid | Then: returns"
                     + " lexical error failure")
     void lexer_whenFakeTokenizerReturnsInvalid_thenReturnsLexicalErrorFailure() {
-        // What: Lexer using FakeTokenizer configured to return Invalid
+        // Given: Lexer using FakeTokenizer configured to return Invalid
         StreamCharReader reader = new StreamCharReader(new StringReader("x"));
         CharStream charStream = new CharStream(reader);
         FakeTokenizer fakeTokenizer =
@@ -92,6 +92,9 @@ class LexerUnitTest {
 
         // Then: returns failure with lexical error
         assertFalse(res.isCorrect());
-        assertTrue(((IncorrectResult<IterationStep<Token>>) res).error().contains("Error léxico"));
+        String error = ((IncorrectResult<IterationStep<Token>>) res).error();
+        assertTrue(error.startsWith("Lexical error"));
+        assertTrue(error.contains("'x'"));
+        assertTrue(error.contains("line 1, column 1"));
     }
 }

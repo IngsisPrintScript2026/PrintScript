@@ -26,10 +26,10 @@ class LexerIntegrationTest {
 
     @Test
     @DisplayName(
-            "What: Lexer | When: tokenizing full PrintScript program from PDF | Then: accurately"
+            "Given: Lexer | When: tokenizing full PrintScript program from PDF | Then: accurately"
                     + " extracts all 30 tokens in sequence")
     void lexer_whenTokenizingPrintScriptProgram_thenAccuratelyExtractsAllTokensInSequence() {
-        // What: multi-line PrintScript source snippet
+        // Given: multi-line PrintScript source snippet
         String code =
                 """
                 let a: number = 12;

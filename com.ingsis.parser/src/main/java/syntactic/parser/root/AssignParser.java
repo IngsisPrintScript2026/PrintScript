@@ -15,8 +15,9 @@ import syntactic.Parser;
 import token.Token;
 import token.TokenType;
 import tokenstream.TokenStream;
+import tokenstream.rules.TokenMatchers;
 
-public class AssignParser implements Parser<AssignNode> {
+public class AssignParser implements StatementParser<AssignNode> {
     private final Parser<IdentifierNode> identifierParser;
     private final Parser<ExpressionNode> expressionParser;
 
@@ -24,6 +25,12 @@ public class AssignParser implements Parser<AssignNode> {
             Parser<IdentifierNode> identifierParser, Parser<ExpressionNode> expressionParser) {
         this.identifierParser = identifierParser;
         this.expressionParser = expressionParser;
+    }
+
+    @Override
+    public boolean canStart(TokenStream stream) {
+        return StatementParser.peekMatches(stream, 0, TokenMatchers.isType(TokenType.IDENTIFIER))
+                && StatementParser.peekMatches(stream, 1, TokenMatchers.isType(TokenType.EQUAL));
     }
 
     @Override

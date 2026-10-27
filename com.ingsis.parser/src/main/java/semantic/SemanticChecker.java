@@ -17,11 +17,13 @@ import node.visitor.NodeVisitor;
 import result.CorrectResult;
 import result.Result;
 import semantic.environment.SemanticEnvironment;
+import semantic.evaluator.ExpressionTypeInference;
 import semantic.handler.AssignNodeSemanticHandler;
 import semantic.handler.CallFunctionNodeSemanticHandler;
 import semantic.handler.DeclarationNodeSemanticHandler;
 import semantic.handler.IfNodeSemanticHandler;
 import semantic.handler.SemanticNodeHandler;
+import version.Version;
 
 public class SemanticChecker
         implements NodeVisitor<Result<SemanticEnvironment>, SemanticEnvironment> {
@@ -32,13 +34,20 @@ public class SemanticChecker
                 handlers.stream().collect(Collectors.toMap(SemanticNodeHandler::nodeType, h -> h));
     }
 
+    public SemanticChecker(Version version) {
+        this(handlersFor(new ExpressionTypeInference(version)));
+    }
+
     public SemanticChecker() {
-        this(
-                List.of(
-                        new DeclarationNodeSemanticHandler(),
-                        new AssignNodeSemanticHandler(),
-                        new IfNodeSemanticHandler(),
-                        new CallFunctionNodeSemanticHandler()));
+        this(Version.V_1_1);
+    }
+
+    private static List<SemanticNodeHandler<?>> handlersFor(ExpressionTypeInference inference) {
+        return List.of(
+                new DeclarationNodeSemanticHandler(inference),
+                new AssignNodeSemanticHandler(inference),
+                new IfNodeSemanticHandler(inference),
+                new CallFunctionNodeSemanticHandler(inference));
     }
 
     public Result<SemanticEnvironment> check(ProgramNode program) {

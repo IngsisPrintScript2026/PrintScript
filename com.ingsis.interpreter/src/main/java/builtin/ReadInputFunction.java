@@ -49,7 +49,7 @@ public class ReadInputFunction implements BuiltInFunction {
 
     private Object coerce(String raw, DataType targetType) {
         if (raw == null) {
-            throw new RuntimeException("Runtime error: Input is null");
+            throw new RuntimeException("Input is null");
         }
         DataType type = (targetType == null) ? DataType.STRING : targetType;
         return switch (type) {
@@ -63,7 +63,7 @@ public class ReadInputFunction implements BuiltInFunction {
         try {
             return new BigDecimal(raw.trim());
         } catch (Exception e) {
-            throw new RuntimeException("Runtime error: Cannot parse input '" + raw + "' as number");
+            throw new RuntimeException("Cannot parse input '" + raw + "' as number");
         }
     }
 
@@ -75,6 +75,6 @@ public class ReadInputFunction implements BuiltInFunction {
         if (clean.equals("false")) {
             return Boolean.FALSE;
         }
-        throw new RuntimeException("Runtime error: Cannot parse input '" + raw + "' as boolean");
+        throw new RuntimeException("Cannot parse input '" + raw + "' as boolean");
     }
 }

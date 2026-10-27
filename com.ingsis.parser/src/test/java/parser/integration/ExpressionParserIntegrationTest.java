@@ -30,12 +30,12 @@ class ExpressionParserIntegrationTest {
 
     @Test
     @DisplayName(
-            "What: ExpressionParser in SyntacticParser | When: parsing binary expression with"
+            "Given: ExpressionParser in SyntacticParser | When: parsing binary expression with"
                     + " precedence (5 + 3 * 2) | Then: builds OperatorNode tree with '*' evaluated"
                     + " before '+'")
     void
             expressionParser_whenParsingBinaryExpressionWithPrecedence_thenBuildsOperatorTreeRespectingPrecedence() {
-        // What: tokens for "let x: number = 5 + 3 * 2;"
+        // Given: tokens for "let x: number = 5 + 3 * 2;"
         Position pos = new Position(1, 1);
         List<Token> tokens =
                 List.of(

@@ -62,10 +62,10 @@ class LiteralAndSymbolParsersUnitTest {
 
     @Test
     @DisplayName(
-            "What: Literal parsers | When: parsing boolean and string tokens | Then: parses correct"
-                    + " literal nodes")
+            "Given: Literal parsers | When: parsing boolean and string tokens | Then: parses"
+                    + " correct literal nodes")
     void literalParsers_whenParsingTokens_thenParsesCorrectLiteralNodes() {
-        // What: Boolean and String literal tokens
+        // Given: Boolean and String literal tokens
         BooleanLiteralParser boolParser = new BooleanLiteralParser();
         TokenStreamAdapter boolStream =
                 new TokenStreamAdapter(
@@ -83,7 +83,7 @@ class LiteralAndSymbolParsersUnitTest {
                         .value()
                         .rawValue());
 
-        // What: String literal with double quotes
+        // Given: String literal with double quotes
         StringLiteralParser strParser = new StringLiteralParser();
         TokenStreamAdapter strStream =
                 new TokenStreamAdapter(
@@ -101,7 +101,7 @@ class LiteralAndSymbolParsersUnitTest {
                         .value()
                         .rawValue());
 
-        // What: String literal with single quotes
+        // Given: String literal with single quotes
         StringLiteralParser strSingleQuoteParser = new StringLiteralParser();
         TokenStreamAdapter strSingleQuoteStream =
                 new TokenStreamAdapter(
@@ -120,7 +120,7 @@ class LiteralAndSymbolParsersUnitTest {
                         .value()
                         .rawValue());
 
-        // What: LineExpressionParser wrapping string parser
+        // Given: LineExpressionParser wrapping string parser
         LineExpressionParser lineExprParser = new LineExpressionParser(asExprParser(strParser));
         TokenStreamAdapter lineStream =
                 new TokenStreamAdapter(
@@ -135,10 +135,10 @@ class LiteralAndSymbolParsersUnitTest {
 
     @Test
     @DisplayName(
-            "What: EmptyDeclarationSymbolStrategy | When: parsing declaration ended with semicolon"
+            "Given: EmptyDeclarationSymbolStrategy | When: parsing declaration ended with semicolon"
                     + " | Then: emits DeclarationKeywordNode")
     void emptyDeclarationStrategy_whenParsingUnassignedDeclaration_thenEmitsNode() {
-        // What: EmptyDeclarationSymbolStrategy and tokens for declaration
+        // Given: EmptyDeclarationSymbolStrategy and tokens for declaration
         EmptyDeclarationSymbolStrategy emptyStrategy = new EmptyDeclarationSymbolStrategy();
         assertEquals(SymbolType.SEMICOLON, emptyStrategy.targetSymbol());
 
@@ -164,10 +164,10 @@ class LiteralAndSymbolParsersUnitTest {
 
     @Test
     @DisplayName(
-            "What: GrammarRules and TokenMatchers | When: checking tokens | Then: matches expected"
+            "Given: GrammarRules and TokenMatchers | When: checking tokens | Then: matches expected"
                     + " predicates")
     void grammarRulesAndTokenMatchers_whenCheckingTokens_thenMatchesExpectedPredicates() {
-        // What: GrammarRules and sample tokens
+        // Given: GrammarRules and sample tokens
         GrammarRules r10 = GrammarRules.fromVersion(Version.V_1_0);
         assertNotNull(r10);
         GrammarRules r11 = GrammarRules.fromVersion(Version.V_1_1);
@@ -187,10 +187,10 @@ class LiteralAndSymbolParsersUnitTest {
 
     @Test
     @DisplayName(
-            "What: ArgumentsParserUtils and BlockParserUtils | When: parsing separated list and"
+            "Given: ArgumentsParserUtils and BlockParserUtils | When: parsing separated list and"
                     + " block | Then: extracts elements correctly")
     void argumentsAndBlockParserUtils_whenParsingStreams_thenExtractsElementsCorrectly() {
-        // What: parsers and tokens for empty and multi argument lists
+        // Given: parsers and tokens for empty and multi argument lists
         Parser<StringLiteralNode> strParser = new StringLiteralParser();
         Parser<Node> stmtParser = ParserFactory.createParser(Version.V_1_0);
 
@@ -215,7 +215,7 @@ class LiteralAndSymbolParsersUnitTest {
                         .value()
                         .isEmpty());
 
-        // What: multi argument tokens ("a", "b")
+        // Given: multi argument tokens ("a", "b")
         List<Token> multiArgs =
                 List.of(
                         new Token(TokenType.LPAREN, "(", pos, pos),
@@ -241,7 +241,7 @@ class LiteralAndSymbolParsersUnitTest {
                         .value()
                         .size());
 
-        // What: block tokens { let x: number = 5; }
+        // Given: block tokens { let x: number = 5; }
         List<Token> blockTokens =
                 List.of(
                         new Token(TokenType.LBRACE, "{", pos, pos),

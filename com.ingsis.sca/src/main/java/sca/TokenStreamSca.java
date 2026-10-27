@@ -99,8 +99,10 @@ public class TokenStreamSca {
     }
 
     private boolean isCall(Token token, String name) {
-        return token.type() == TokenType.PRINTLN
-                || (token.type() == TokenType.IDENTIFIER && name.equalsIgnoreCase(token.value()));
+        if ("println".equals(name)) {
+            return token.type() == TokenType.PRINTLN;
+        }
+        return token.type() == TokenType.IDENTIFIER && name.equals(token.value());
     }
 
     private void validateCallArgs(

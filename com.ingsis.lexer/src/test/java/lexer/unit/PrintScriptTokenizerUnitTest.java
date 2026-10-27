@@ -20,10 +20,10 @@ class PrintScriptTokenizerUnitTest {
 
     @Test
     @DisplayName(
-            "What: PrintScriptTokenizer | When: tokenizing completed keyword | Then: returns"
+            "Given: PrintScriptTokenizer | When: tokenizing completed keyword | Then: returns"
                     + " TokenizeResult.Complete")
     void tokenizer_whenTokenizingCompleteKeyword_thenReturnsCompleteToken() {
-        // What: PrintScriptTokenizer and builder containing "let"
+        // Given: PrintScriptTokenizer and builder containing "let"
         PrintScriptTokenizer tokenizer = new PrintScriptTokenizer();
         MetaCharStringBuilder builder = new MetaCharStringBuilder();
         builder.append(new MetaCharacter('l', new Position(1, 1)));
@@ -42,10 +42,10 @@ class PrintScriptTokenizerUnitTest {
 
     @Test
     @DisplayName(
-            "What: PrintScriptTokenizer | When: tokenizing prefix of keyword | Then: returns"
+            "Given: PrintScriptTokenizer | When: tokenizing prefix of keyword | Then: returns"
                     + " TokenizeResult.Prefix")
     void tokenizer_whenTokenizingKeywordPrefix_thenReturnsPrefixResult() {
-        // What: PrintScriptTokenizer and builder containing "le"
+        // Given: PrintScriptTokenizer and builder containing "le"
         PrintScriptTokenizer tokenizer = new PrintScriptTokenizer();
         MetaCharStringBuilder builder = new MetaCharStringBuilder();
         builder.append(new MetaCharacter('l', new Position(1, 1)));
@@ -61,10 +61,10 @@ class PrintScriptTokenizerUnitTest {
 
     @Test
     @DisplayName(
-            "What: PrintScriptTokenizer | When: tokenizing invalid symbol | Then: returns"
+            "Given: PrintScriptTokenizer | When: tokenizing invalid symbol | Then: returns"
                     + " TokenizeResult.Invalid")
     void tokenizer_whenTokenizingInvalidSymbol_thenReturnsInvalidResult() {
-        // What: PrintScriptTokenizer and builder containing '@'
+        // Given: PrintScriptTokenizer and builder containing '@'
         PrintScriptTokenizer tokenizer = new PrintScriptTokenizer();
         MetaCharStringBuilder builder = new MetaCharStringBuilder();
         builder.append(new MetaCharacter('@', new Position(1, 1)));

@@ -22,10 +22,10 @@ class TokenAndSymbolUnitTest {
 
     @Test
     @DisplayName(
-            "What: Token | When: constructed with positions | Then: exposes positions, lines,"
+            "Given: Token | When: constructed with positions | Then: exposes positions, lines,"
                     + " columns, and properties")
     void token_whenConstructed_thenExposesPositionsAndProperties() {
-        // What: Positions and Token instance
+        // Given: Positions and Token instance
         Position p1 = new Position(1, 1);
         Position p2 = new Position(1, 4);
         Token tok = new Token(TokenType.LET, "let", p1, p2);
@@ -55,10 +55,10 @@ class TokenAndSymbolUnitTest {
 
     @Test
     @DisplayName(
-            "What: SymbolType | When: checking token against symbols | Then: identifies symbols"
+            "Given: SymbolType | When: checking token against symbols | Then: identifies symbols"
                     + " correctly")
     void symbolType_whenMatchingTokens_thenIdentifiesSymbolCorrectly() {
-        // What: EQUAL and COLON tokens
+        // Given: EQUAL and COLON tokens
         Token eqTok = new Token(TokenType.EQUAL, "=", new Position(1, 1));
         Token colonTok = new Token(TokenType.COLON, ":", new Position(1, 2));
 
@@ -91,10 +91,10 @@ class TokenAndSymbolUnitTest {
 
     @Test
     @DisplayName(
-            "What: TokenizeResult | When: instantiating Complete, Prefix, and Invalid | Then: holds"
-                    + " correct data")
+            "Given: TokenizeResult | When: instantiating Complete, Prefix, and Invalid | Then:"
+                    + " holds correct data")
     void tokenizeResult_whenInstantiated_thenContainsExpectedData() {
-        // What: Token and TokenizeResult variants
+        // Given: Token and TokenizeResult variants
         Token tok = new Token(TokenType.LET, "let", new Position(1, 1));
 
         // When: creating Complete, Prefix, and Invalid instances

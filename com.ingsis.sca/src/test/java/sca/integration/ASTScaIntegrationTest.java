@@ -5,216 +5,260 @@
 package sca.integration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.ByteArrayInputStream;
-import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import node.ProgramNode;
-import node.expression.Identifier.IdentifierNode;
-import node.expression.function.CallFunctionNode;
-import node.expression.literal.NumberLiteralNode;
-import node.expression.literal.StringLiteralNode;
-import node.expression.operator.OperatorNode;
-import node.expression.operator.OperatorType;
-import node.factory.NodeFactory;
-import node.keyword.DeclarationKeywordNode;
-import node.keyword.IfKeywordNode;
-import node.keyword.declaration.DeclarationType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import position.Position;
 import result.CorrectResult;
+import result.IncorrectResult;
 import result.Result;
 import sca.ASTSca;
-import sca.ScaContext;
-import sca.config.YamlScaRulesLoader;
 import semantic.environment.SemanticEnvironment;
-import token.Token;
-import token.TokenType;
 
 class ASTScaIntegrationTest {
-    private static final String PRINTLN = "println";
+    private static final String CAMEL = "identifier_format: \"camel case\"\n";
+    private static final String SNAKE = "identifier_format: \"snake case\"\n";
+    private static final String PRINTLN_RULE = "mandatory-variable-or-literal-in-println: true\n";
+    private static final String READ_INPUT_RULE =
+            "mandatory-variable-or-literal-in-readInput: true\n";
 
-    @Test
-    @DisplayName(
-            "What: ASTSca | When: program violates camel case convention | Then: reports camel case"
-                    + " format violation")
-    void astSca_whenProgramViolatesCamelCase_thenEmitsCamelCaseViolation() {
-        // What: ASTSca loaded with camel case rule
-        String yamlRules = "identifier_format: \"camel case\"\n";
-        ScaContext context =
-                YamlScaRulesLoader.loadFromYaml(
-                        new ByteArrayInputStream(yamlRules.getBytes(StandardCharsets.UTF_8)));
-        ASTSca sca = new ASTSca(context);
-
-        DeclarationKeywordNode badDecl =
-                NodeFactory.createDeclaration(
-                        DeclarationType.LET,
-                        new IdentifierNode("my_variable_name", 1, 1),
-                        new NumberLiteralNode(BigDecimal.TEN, 1, 1),
-                        new Token(TokenType.LET, "let", new Position(1, 1)));
-        ProgramNode program = NodeFactory.createProgram(List.of(badDecl));
-
-        // When: analyzing program
-        Result<List<String>> result = sca.analyze(program, new SemanticEnvironment());
-
-        // Then: emits 1 violation mentioning camel case
-        assertTrue(result.isCorrect());
-        List<String> violations = ((CorrectResult<List<String>>) result).value();
-        assertEquals(1, violations.size());
-        assertTrue(violations.get(0).contains("camel case"));
+    private static List<String> violations(String source, String yaml) {
+        Result<List<String>> result = LintRunner.lint(source, yaml);
+        assertTrue(result.isCorrect(), () -> ((IncorrectResult<List<String>>) result).error());
+        return ((CorrectResult<List<String>>) result).value();
     }
 
     @Test
     @DisplayName(
-            "What: ASTSca | When: program violates snake case convention | Then: reports snake case"
-                    + " format violation")
-    void astSca_whenProgramViolatesSnakeCase_thenEmitsSnakeCaseViolation() {
-        // What: ASTSca loaded with snake case rule
-        String yamlRules = "identifier_format: \"snake case\"\n";
-        ScaContext context =
-                YamlScaRulesLoader.loadFromYaml(
-                        new ByteArrayInputStream(yamlRules.getBytes(StandardCharsets.UTF_8)));
-        ASTSca sca = new ASTSca(context);
+            "Given: camel case config | When: linting camel case declarations | Then: reports no"
+                    + " violation")
+    void astSca_whenCamelCaseCodeUnderCamelCase_thenPasses() {
+        // Given
+        String source = "let myName: string = \"Joe\";\nconst maxValue: number = 3;";
 
-        DeclarationKeywordNode badDecl =
-                NodeFactory.createDeclaration(
-                        DeclarationType.LET,
-                        new IdentifierNode("myCamelCaseVar", 1, 1),
-                        new NumberLiteralNode(BigDecimal.TEN, 1, 1),
-                        new Token(TokenType.LET, "let", new Position(1, 1)));
-        DeclarationKeywordNode goodDecl =
-                NodeFactory.createDeclaration(
-                        DeclarationType.LET,
-                        new IdentifierNode("my_snake_case_var", 1, 1),
-                        new NumberLiteralNode(BigDecimal.TEN, 1, 1),
-                        new Token(TokenType.LET, "let", new Position(1, 1)));
+        // When
+        List<String> violations = violations(source, CAMEL);
 
-        ProgramNode program = NodeFactory.createProgram(List.of(badDecl, goodDecl));
+        // Then
+        assertTrue(violations.isEmpty());
+    }
 
-        // When: analyzing program
-        Result<List<String>> result = sca.analyze(program, new SemanticEnvironment());
+    @Test
+    @DisplayName(
+            "Given: camel case config | When: line 2 declares 'my_name' | Then: reports the name,"
+                    + " the convention and line 2")
+    void astSca_whenSnakeCaseNameUnderCamelCase_thenReportsViolationAtItsLine() {
+        // Given
+        String source = "let okName: number = 1;\nlet my_name: string = \"Joe\";";
 
-        // Then: emits 1 violation for badDecl mentioning snake case
-        assertTrue(result.isCorrect());
-        List<String> violations = ((CorrectResult<List<String>>) result).value();
+        // When
+        List<String> violations = violations(source, CAMEL);
+
+        // Then
         assertEquals(1, violations.size());
+        assertTrue(violations.get(0).contains("'my_name'"));
+        assertTrue(violations.get(0).contains("camel case"));
+        assertTrue(violations.get(0).contains("line 2"));
+    }
+
+    @Test
+    @DisplayName(
+            "Given: snake case config | When: a const is declared as 'maxValue' | Then: reports"
+                    + " the violation")
+    void astSca_whenConstViolatesSnakeCase_thenReportsViolation() {
+        // Given
+        String source = "const maxValue: number = 10;";
+
+        // When
+        List<String> violations = violations(source, SNAKE);
+
+        // Then
+        assertEquals(1, violations.size());
+        assertTrue(violations.get(0).contains("'maxValue'"));
         assertTrue(violations.get(0).contains("snake case"));
     }
 
     @Test
     @DisplayName(
-            "What: ASTSca | When: println contains complex expression | Then: reports"
-                    + " literal-or-variable rule violation")
-    void astSca_whenPrintlnContainsComplexExpression_thenEmitsPrintlnViolation() {
-        // What: ASTSca with mandatory-variable-or-literal-in-println enabled
-        String yamlRules = "mandatory-variable-or-literal-in-println: true\n";
-        ScaContext context =
-                YamlScaRulesLoader.loadFromYaml(
-                        new ByteArrayInputStream(yamlRules.getBytes(StandardCharsets.UTF_8)));
-        ASTSca sca = new ASTSca(context);
+            "Given: snake case config | When: linting snake case declarations | Then: reports no"
+                    + " violation")
+    void astSca_whenSnakeCaseCodeUnderSnakeCase_thenPasses() {
+        // Given
+        String source = "let my_name: string = \"Joe\";\nlet total_2: number = 2;";
 
-        OperatorNode expr =
-                NodeFactory.createOperator(
-                        OperatorType.PLUS,
-                        new NumberLiteralNode(BigDecimal.ONE, 1, 1),
-                        new NumberLiteralNode(BigDecimal.TEN, 1, 1),
-                        new Token(TokenType.PLUS, "+", new Position(1, 1)));
-        CallFunctionNode badCall =
-                NodeFactory.createCall(
-                        PRINTLN,
-                        List.of(expr),
-                        new Token(TokenType.IDENTIFIER, PRINTLN, new Position(1, 1)));
+        // When
+        List<String> violations = violations(source, SNAKE);
 
-        ProgramNode program = NodeFactory.createProgram(List.of(badCall));
-
-        // When: analyzing program
-        Result<List<String>> result = sca.analyze(program, new SemanticEnvironment());
-
-        // Then: emits violation mentioning literal or variable
-        assertTrue(result.isCorrect());
-        List<String> violations = ((CorrectResult<List<String>>) result).value();
-        assertEquals(1, violations.size());
-        assertTrue(violations.get(0).contains("must be a literal or variable"));
+        // Then
+        assertTrue(violations.isEmpty());
     }
 
     @Test
     @DisplayName(
-            "What: ASTSca | When: readInput contains complex expression | Then: reports"
-                    + " literal-or-variable rule violation")
-    void astSca_whenReadInputContainsComplexExpression_thenEmitsReadInputViolation() {
-        // What: ASTSca with mandatory-variable-or-literal-in-readInput enabled
-        String yamlRules = "mandatory-variable-or-literal-in-readInput: true\n";
-        ScaContext context =
-                YamlScaRulesLoader.loadFromYaml(
-                        new ByteArrayInputStream(yamlRules.getBytes(StandardCharsets.UTF_8)));
-        ASTSca sca = new ASTSca(context);
+            "Given: println rule enabled | When: println(1 + 2) on line 1 | Then: reports a"
+                    + " println argument violation")
+    void astSca_whenPrintlnHasExpressionAndRuleOn_thenReportsViolation() {
+        // Given
+        String source = "println(1 + 2);";
 
-        OperatorNode expr =
-                NodeFactory.createOperator(
-                        OperatorType.PLUS,
-                        new StringLiteralNode("Enter ", 1, 1),
-                        new StringLiteralNode("name: ", 1, 1),
-                        new Token(TokenType.PLUS, "+", new Position(1, 1)));
-        CallFunctionNode badCall =
-                NodeFactory.createCall(
-                        "readInput",
-                        List.of(expr),
-                        new Token(TokenType.IDENTIFIER, "readInput", new Position(1, 1)));
+        // When
+        List<String> violations = violations(source, PRINTLN_RULE);
 
-        ProgramNode program = NodeFactory.createProgram(List.of(badCall));
-
-        // When: analyzing program
-        Result<List<String>> result = sca.analyze(program, new SemanticEnvironment());
-
-        // Then: emits violation mentioning literal or variable
-        assertTrue(result.isCorrect());
-        List<String> violations = ((CorrectResult<List<String>>) result).value();
+        // Then
         assertEquals(1, violations.size());
-        assertTrue(violations.get(0).contains("must be a literal or variable"));
+        assertTrue(violations.get(0).contains("'println'"));
+        assertTrue(violations.get(0).contains("line 1"));
+    }
+
+    @Test
+    @DisplayName("Given: println rule disabled | When: println(1 + 2) | Then: reports no violation")
+    void astSca_whenPrintlnHasExpressionAndRuleOff_thenPasses() {
+        // Given
+        String source = "println(1 + 2);";
+
+        // When
+        List<String> violations =
+                violations(source, "mandatory-variable-or-literal-in-println: false\n");
+
+        // Then
+        assertTrue(violations.isEmpty());
     }
 
     @Test
     @DisplayName(
-            "What: ASTSca | When: if statement branches contain violations | Then: collects"
-                    + " violations from both branches")
-    void astSca_whenIfBranchesContainViolations_thenCollectsViolationsFromBothBranches() {
-        // What: ASTSca with println rule enabled
-        String yamlRules = "mandatory-variable-or-literal-in-println: true\n";
-        ScaContext context =
-                YamlScaRulesLoader.loadFromYaml(
-                        new ByteArrayInputStream(yamlRules.getBytes(StandardCharsets.UTF_8)));
-        ASTSca sca = new ASTSca(context);
+            "Given: println rule enabled | When: println receives a variable and a literal | Then:"
+                    + " reports no violation")
+    void astSca_whenPrintlnHasVariableOrLiteral_thenPasses() {
+        // Given
+        String source = "let x: number = 1 + 2;\nprintln(x);\nprintln(\"done\");";
 
-        OperatorNode expr =
-                NodeFactory.createOperator(
-                        OperatorType.PLUS,
-                        new NumberLiteralNode(BigDecimal.ONE, 1, 1),
-                        new NumberLiteralNode(BigDecimal.TEN, 1, 1),
-                        new Token(TokenType.PLUS, "+", new Position(1, 1)));
-        CallFunctionNode badCall =
-                NodeFactory.createCall(
-                        PRINTLN,
-                        List.of(expr),
-                        new Token(TokenType.IDENTIFIER, PRINTLN, new Position(1, 1)));
+        // When
+        List<String> violations = violations(source, PRINTLN_RULE);
 
-        IfKeywordNode ifNode =
-                NodeFactory.createIf(
-                        new StringLiteralNode("true", 1, 1),
-                        List.of(badCall),
-                        List.of(badCall),
-                        new Token(TokenType.IF, "if", new Position(1, 1)));
+        // Then
+        assertTrue(violations.isEmpty());
+    }
 
-        ProgramNode program = NodeFactory.createProgram(List.of(ifNode));
+    @Test
+    @DisplayName(
+            "Given: readInput rule enabled | When: a declaration uses readInput(\"a\" + \"b\") |"
+                    + " Then: reports a readInput violation")
+    void astSca_whenReadInputHasExpressionAndRuleOn_thenReportsViolation() {
+        // Given
+        String source = "let name: string = readInput(\"Your \" + \"name:\");";
 
-        // When: analyzing program with if statement
+        // When
+        List<String> violations = violations(source, READ_INPUT_RULE);
+
+        // Then
+        assertEquals(1, violations.size());
+        assertTrue(violations.get(0).contains("'readInput'"));
+    }
+
+    @Test
+    @DisplayName(
+            "Given: readInput rule disabled | When: a declaration uses readInput of an expression |"
+                    + " Then: reports no violation")
+    void astSca_whenReadInputHasExpressionAndRuleOff_thenPasses() {
+        // Given
+        String source = "let name: string = readInput(\"Your \" + \"name:\");";
+
+        // When
+        List<String> violations = violations(source, PRINTLN_RULE);
+
+        // Then
+        assertTrue(violations.isEmpty());
+    }
+
+    @Test
+    @DisplayName(
+            "Given: readInput rule enabled | When: readInput receives a literal | Then: reports no"
+                    + " violation")
+    void astSca_whenReadInputHasLiteral_thenPasses() {
+        // Given
+        String source = "let name: string = readInput(\"Name:\");";
+
+        // When
+        List<String> violations = violations(source, READ_INPUT_RULE);
+
+        // Then
+        assertTrue(violations.isEmpty());
+    }
+
+    @Test
+    @DisplayName(
+            "Given: snake case and println rules | When: violations live inside if and else bodies"
+                    + " | Then: both are reported")
+    void astSca_whenViolationsInsideIfAndElse_thenReportsBoth() {
+        // Given
+        String source = "if (true) {\n  let innerName: number = 1;\n} else {\n  println(2 * 3);\n}";
+
+        // When
+        List<String> violations = violations(source, SNAKE + PRINTLN_RULE);
+
+        // Then
+        assertEquals(2, violations.size());
+        assertTrue(violations.get(0).contains("'innerName'"));
+        assertTrue(violations.get(0).contains("line 2"));
+        assertTrue(violations.get(1).contains("'println'"));
+        assertTrue(violations.get(1).contains("line 4"));
+    }
+
+    @Test
+    @DisplayName(
+            "Given: all rules enabled | When: linting a fully compliant program | Then: reports no"
+                    + " violation")
+    void astSca_whenProgramIsCompliant_thenPasses() {
+        // Given
+        String source =
+                "let user_name: string = readInput(\"Name:\");\n"
+                        + "if (true) {\n  println(user_name);\n}";
+
+        // When
+        List<String> violations = violations(source, SNAKE + PRINTLN_RULE + READ_INPUT_RULE);
+
+        // Then
+        assertTrue(violations.isEmpty());
+    }
+
+    @Test
+    @DisplayName(
+            "Given: a source with a semantic error | When: linting it | Then: fails with a labelled"
+                    + " semantic error instead of violations")
+    void astSca_whenSourceHasSemanticError_thenFails() {
+        // Given
+        String source = "let x: number = \"text\";";
+
+        // When
+        Result<List<String>> result = LintRunner.lint(source, SNAKE);
+
+        // Then
+        assertFalse(result.isCorrect());
+        assertTrue(((IncorrectResult<List<String>>) result).error().contains("Semantic error"));
+    }
+
+    @Test
+    @DisplayName(
+            "Given: a whole parsed program and camel case config | When: analyzing the program at"
+                    + " once | Then: reports every offending declaration")
+    void astSca_whenAnalyzingWholeProgram_thenReportsAllViolations() {
+        // Given
+        ProgramNode program =
+                LintRunner.parseProgram(
+                        "let first_bad: number = 1;\nlet goodOne: number = 2;\n"
+                                + "let second_bad: number = 3;");
+        ASTSca sca = ASTSca.fromYamlConfig(LintRunner.stream(CAMEL));
+
+        // When
         Result<List<String>> result = sca.analyze(program, new SemanticEnvironment());
 
-        // Then: 2 violations collected (one from thenBody, one from elseBody)
-        assertTrue(result.isCorrect());
+        // Then
         List<String> violations = ((CorrectResult<List<String>>) result).value();
         assertEquals(2, violations.size());
+        assertTrue(violations.get(0).contains("line 1"));
+        assertTrue(violations.get(1).contains("line 3"));
     }
 }

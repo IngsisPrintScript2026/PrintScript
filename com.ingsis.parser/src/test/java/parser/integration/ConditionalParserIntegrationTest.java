@@ -47,11 +47,11 @@ class ConditionalParserIntegrationTest {
 
     @Test
     @DisplayName(
-            "What: ConditionalParser | When: parsing if with and without else clause | Then:"
+            "Given: ConditionalParser | When: parsing if with and without else clause | Then:"
                     + " creates IfKeywordNode with matching bodies")
     void
             conditionalParser_whenParsingIfWithAndWithoutElse_thenCreatesIfKeywordNodeWithMatchingBodies() {
-        // What: ConditionalParser configured for V1.1
+        // Given: ConditionalParser configured for V1.1
         Parser<Node> stmtParser = ParserFactory.createParser(Version.V_1_1);
         Parser<ExpressionNode> boolParser = asExprParser(new BooleanLiteralParser());
         ConditionalParser parserWithElse =

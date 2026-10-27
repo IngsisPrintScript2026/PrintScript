@@ -56,7 +56,12 @@ public class Lexer implements SafeIterator<Token> {
 
         MunchState state = executeMunch(initialResult);
         unreadLookaheadBuffer(curr, state.lookaheadBuffer);
-        return buildResult(state.lastValidToken, state.nextStreamAfterToken);
+        if (state.lastValidToken == null) {
+            return lexicalError(state.lookaheadBuffer);
+        }
+        return Result.success(
+                new IterationStep<>(
+                        state.lastValidToken, new Lexer(state.nextStreamAfterToken, tokenizer)));
     }
 
     private MunchState executeMunch(Result<IterationStep<MetaCharacter>> initialResult) {
@@ -102,11 +107,12 @@ public class Lexer implements SafeIterator<Token> {
         }
     }
 
-    private Result<IterationStep<Token>> buildResult(
-            Token token, SafeIterator<MetaCharacter> nextStream) {
-        if (token == null) {
-            return Result.failure("Error léxico: Imposible reconocer un token válido");
-        }
-        return Result.success(new IterationStep<>(token, new Lexer(nextStream, tokenizer)));
+    private Result<IterationStep<Token>> lexicalError(List<MetaCharacter> unrecognized) {
+        MetaCharacter first = unrecognized.get(0);
+        return Result.failure(
+                "Lexical error: unrecognized character '"
+                        + first.character()
+                        + "' at "
+                        + first.position().describe());
     }
 }

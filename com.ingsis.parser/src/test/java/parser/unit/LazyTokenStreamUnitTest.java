@@ -15,6 +15,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import position.Position;
 import result.CorrectResult;
+import result.IncorrectResult;
 import result.Result;
 import token.Token;
 import token.TokenType;
@@ -52,10 +53,10 @@ class LazyTokenStreamUnitTest {
 
     @Test
     @DisplayName(
-            "What: LazyTokenStream with FakeTokenIterator | When: peeking and consuming tokens |"
+            "Given: LazyTokenStream with FakeTokenIterator | When: peeking and consuming tokens |"
                     + " Then: navigates stream properly")
     void lazyTokenStream_whenPeekingAndConsuming_thenNavigatesStreamProperly() {
-        // What: tokens and LazyTokenStream initialized using FakeTokenIterator
+        // Given: tokens and LazyTokenStream initialized using FakeTokenIterator
         Token tokenLet = new Token(TokenType.LET, "let", new Position(1, 1));
         Token tokenIdent = new Token(TokenType.IDENTIFIER, "x", new Position(1, 5));
         SafeIterator<Token> fakeLexer = new FakeTokenIterator(List.of(tokenLet, tokenIdent), 0);
@@ -107,10 +108,10 @@ class LazyTokenStreamUnitTest {
 
     @Test
     @DisplayName(
-            "What: LazyTokenStream with FakeTokenIterator | When: fake lexer emits error | Then:"
-                    + " stream handles error gracefully")
+            "Given: LazyTokenStream with FakeTokenIterator | When: fake lexer emits error | Then:"
+                    + " the stream is not empty and consume/peek surface the lexical error")
     void lazyTokenStream_whenFakeLexerEmitsError_thenHandlesGracefully() {
-        // What: FakeTokenIterator reporting error
+        // Given: FakeTokenIterator reporting error
         SafeIterator<Token> errorLexer =
                 new FakeTokenIterator(List.of(), 0, "Lexical error: unexpected char '@'");
         LazyTokenStream stream = new LazyTokenStream(errorLexer);
@@ -120,9 +121,9 @@ class LazyTokenStreamUnitTest {
         Result<IterationStep<Token>> consumeRes = stream.consume();
         Result<Token> peekRes = stream.peek(0);
 
-        // Then: stream is empty and operations fail
-        assertTrue(empty);
-        assertFalse(consumeRes.isCorrect());
-        assertFalse(peekRes.isCorrect());
+        // Then: the pending error is not mistaken for the end of the stream
+        assertFalse(empty);
+        assertTrue(((IncorrectResult<IterationStep<Token>>) consumeRes).error().contains("'@'"));
+        assertTrue(((IncorrectResult<Token>) peekRes).error().startsWith("Lexical error"));
     }
 }

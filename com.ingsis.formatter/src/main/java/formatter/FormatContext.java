@@ -16,7 +16,37 @@ public record FormatContext(
         Boolean singleSpaceSeparation,
         Boolean ifBraceSameLine,
         Boolean ifBraceBelowLine,
-        Boolean spaceAfterComma) {
+        Boolean spaceAfterComma,
+        Integer lineBreaksBeforePrintln) {
+
+    public FormatContext(
+            int indentLevel,
+            Integer indentSpaces,
+            Boolean spaceBeforeColon,
+            Boolean spaceAfterColon,
+            Boolean spaceAroundEquals,
+            Boolean spaceAroundOperators,
+            Boolean lineBreakAfterStatement,
+            Integer lineBreaksAfterPrintln,
+            Boolean singleSpaceSeparation,
+            Boolean ifBraceSameLine,
+            Boolean ifBraceBelowLine,
+            Boolean spaceAfterComma) {
+        this(
+                indentLevel,
+                indentSpaces,
+                spaceBeforeColon,
+                spaceAfterColon,
+                spaceAroundEquals,
+                spaceAroundOperators,
+                lineBreakAfterStatement,
+                lineBreaksAfterPrintln,
+                singleSpaceSeparation,
+                ifBraceSameLine,
+                ifBraceBelowLine,
+                spaceAfterComma,
+                null);
+    }
 
     public FormatContext(
             int indentLevel,
@@ -98,6 +128,7 @@ public record FormatContext(
                 singleSpaceSeparation,
                 ifBraceSameLine,
                 ifBraceBelowLine,
-                spaceAfterComma);
+                spaceAfterComma,
+                lineBreaksBeforePrintln);
     }
 }

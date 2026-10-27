@@ -4,29 +4,34 @@
 
 package service;
 
-import charstream.CharStream;
-import charstream.StreamCharReader;
-import iterator.IterationStep;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import lexer.Lexer;
 import node.Node;
-import node.ProgramNode;
+import pipeline.StatementPipeline;
+import progress.ProgressListener;
 import result.CorrectResult;
 import result.IncorrectResult;
 import result.Result;
 import sca.ASTSca;
 import sca.Sca;
-import semantic.SemanticChecker;
 import semantic.environment.SemanticEnvironment;
-import tokenstream.LazyTokenStream;
-import tokenstream.TokenStream;
 import version.Version;
 
+/**
+ * Runs the static code analyzer as each statement is parsed, keeping only the violations (never the
+ * whole AST) in memory.
+ */
 public class LintService {
+    private final ProgressListener progress;
+
+    public LintService(ProgressListener progress) {
+        this.progress = progress;
+    }
+
+    public LintService() {
+        this(ProgressListener.NONE);
+    }
 
     public Result<String> analyze(Version version, InputStream in, InputStream config) {
         Sca scaAnalyzer = (config != null) ? ASTSca.fromYamlConfig(config) : new ASTSca();
@@ -39,80 +44,38 @@ public class LintService {
 
     public Result<String> analyzeWithSca(Version version, InputStream in, Sca scaAnalyzer) {
         try {
-            CharStream charStream =
-                    new CharStream(
-                            new StreamCharReader(
-                                    new InputStreamReader(in, StandardCharsets.UTF_8)));
-            TokenStream stream = new LazyTokenStream(new Lexer(charStream));
-            syntactic.Parser<Node> parser = syntactic.parser.ParserFactory.createParser(version);
-            Result<ParsedProgram> parseRes =
-                    parseAndCheckStatements(parser, new SemanticChecker(), stream);
-            if (!parseRes.isCorrect()) {
-                return Result.failure(((IncorrectResult<ParsedProgram>) parseRes).error());
+            List<String> violations = new ArrayList<>();
+            Result<SemanticEnvironment> res =
+                    new StatementPipeline(version)
+                            .run(
+                                    SourceStreams.tokens(in, progress),
+                                    new SemanticEnvironment(),
+                                    (statement, env) ->
+                                            collect(scaAnalyzer, statement, env, violations));
+            if (res instanceof IncorrectResult<SemanticEnvironment>(String err)) {
+                return Result.failure(err);
             }
-            ParsedProgram prog = ((CorrectResult<ParsedProgram>) parseRes).value();
-            ProgramNode programNode = new ProgramNode(prog.statements(), 1, 1);
-            return formatScaResult(scaAnalyzer.analyze(programNode, prog.semEnv()));
-        } catch (Exception e) {
+            return report(violations);
+        } catch (RuntimeException e) {
             return Result.failure("Analysis error: " + e.getMessage());
         }
     }
 
-    private Result<ParsedProgram> parseAndCheckStatements(
-            syntactic.Parser<Node> parser, SemanticChecker checker, TokenStream stream) {
-        List<Node> statements = new ArrayList<>();
-        SemanticEnvironment semEnv = new SemanticEnvironment();
-        TokenStream currentStream = stream;
-
-        while (!currentStream.isEmpty()) {
-            Result<IterationStep<Node>> parseResult = parser.parse(currentStream);
-            if (!parseResult.isCorrect()) {
-                return handleParseError(parseResult, statements, semEnv);
+    private static Result<Void> collect(
+            Sca sca, Node statement, SemanticEnvironment env, List<String> violations) {
+        return switch (sca.analyzeNode(statement, env)) {
+            case CorrectResult<List<String>>(List<String> found) -> {
+                violations.addAll(found);
+                yield Result.success(null);
             }
-            IterationStep<Node> step = ((CorrectResult<IterationStep<Node>>) parseResult).value();
-            currentStream = (TokenStream) step.next();
-            Result<SemanticEnvironment> semRes = checkStatement(checker, step.value(), semEnv);
-            if (!semRes.isCorrect()) {
-                return Result.failure(((IncorrectResult<SemanticEnvironment>) semRes).error());
-            }
-            semEnv = ((CorrectResult<SemanticEnvironment>) semRes).value();
-            statements.add(step.value());
-        }
-        return new CorrectResult<>(new ParsedProgram(statements, semEnv));
+            case IncorrectResult<List<String>>(String err) -> Result.failure(err);
+        };
     }
 
-    private Result<ParsedProgram> handleParseError(
-            Result<IterationStep<Node>> parseResult,
-            List<Node> statements,
-            SemanticEnvironment semEnv) {
-        String err = ((IncorrectResult<IterationStep<Node>>) parseResult).error();
-        if ("EOF".equalsIgnoreCase(err) || err.contains("EOF")) {
-            return new CorrectResult<>(new ParsedProgram(statements, semEnv));
+    private static Result<String> report(List<String> violations) {
+        if (violations.isEmpty()) {
+            return Result.success("SCA analysis passed with 0 violations");
         }
-        return Result.failure(err.startsWith("Syntactic error:") ? err : "Syntactic error: " + err);
+        return Result.failure(String.join("\n", violations));
     }
-
-    private Result<SemanticEnvironment> checkStatement(
-            SemanticChecker checker, Node node, SemanticEnvironment env) {
-        Result<SemanticEnvironment> res = checker.checkNode(node, env);
-        if (!res.isCorrect()) {
-            String err = ((IncorrectResult<SemanticEnvironment>) res).error();
-            return Result.failure(
-                    err.startsWith("Semantic error:") ? err : "Semantic error: " + err);
-        }
-        return res;
-    }
-
-    private Result<String> formatScaResult(Result<List<String>> scaResult) {
-        if (!scaResult.isCorrect()) {
-            return new IncorrectResult<>(((IncorrectResult<List<String>>) scaResult).error());
-        }
-        List<String> violations = ((CorrectResult<List<String>>) scaResult).value();
-        if (violations == null || violations.isEmpty()) {
-            return new CorrectResult<>("SCA analysis passed with 0 violations");
-        }
-        return new IncorrectResult<>(String.join("\n", violations));
-    }
-
-    private record ParsedProgram(List<Node> statements, SemanticEnvironment semEnv) {}
 }

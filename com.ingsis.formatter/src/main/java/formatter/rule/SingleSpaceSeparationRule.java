@@ -8,10 +8,11 @@ import formatter.FormatContext;
 import token.Token;
 import token.TokenType;
 
+/** Mandatory: at most one space between tokens on the same line, none before a ';'. */
 public class SingleSpaceSeparationRule implements FormattingRule {
     @Override
     public boolean applies(Token prev, Token current, FormatContext context) {
-        return Boolean.TRUE.equals(context.singleSpaceSeparation());
+        return true;
     }
 
     @Override
@@ -20,7 +21,8 @@ public class SingleSpaceSeparationRule implements FormattingRule {
         if (originalSeparator.contains("\n")) {
             return originalSeparator;
         }
-        if (current != null && current.type() == TokenType.SEMICOLON) {
+        if (originalSeparator.isEmpty()
+                || (current != null && current.type() == TokenType.SEMICOLON)) {
             return "";
         }
         return " ";

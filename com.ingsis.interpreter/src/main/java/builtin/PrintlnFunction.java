@@ -6,6 +6,7 @@ package builtin;
 
 import java.util.List;
 import java.util.function.Consumer;
+import value.PrintScriptValues;
 
 public class PrintlnFunction implements BuiltInFunction {
     @Override
@@ -17,7 +18,7 @@ public class PrintlnFunction implements BuiltInFunction {
     public void execute(List<Object> arguments, Consumer<String> outputEmitter) {
         if (!arguments.isEmpty() && outputEmitter != null) {
             Object value = arguments.get(0);
-            outputEmitter.accept(String.valueOf(value));
+            outputEmitter.accept(PrintScriptValues.display(value));
         }
     }
 }

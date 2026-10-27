@@ -33,15 +33,14 @@ public class ReadEnvFunction implements BuiltInFunction {
 
     public Object evaluate(List<Object> arguments, DataType targetType) {
         if (arguments.isEmpty()) {
-            throw new RuntimeException("Runtime error: readEnv requires 1 argument (env var name)");
+            throw new RuntimeException("readEnv requires 1 argument (env var name)");
         }
         String varName = String.valueOf(arguments.get(0));
         String envValue =
                 (envProvider != null) ? envProvider.getEnv(varName) : System.getenv(varName);
 
         if (envValue == null) {
-            throw new RuntimeException(
-                    "Runtime error: Environment variable '" + varName + "' is not set");
+            throw new RuntimeException("Environment variable '" + varName + "' is not set");
         }
 
         return coerce(envValue, targetType);
@@ -60,8 +59,7 @@ public class ReadEnvFunction implements BuiltInFunction {
         try {
             return new BigDecimal(raw.trim());
         } catch (Exception e) {
-            throw new RuntimeException(
-                    "Runtime error: Cannot parse env var value '" + raw + "' as number");
+            throw new RuntimeException("Cannot parse env var value '" + raw + "' as number");
         }
     }
 
@@ -73,7 +71,6 @@ public class ReadEnvFunction implements BuiltInFunction {
         if (clean.equals("false")) {
             return Boolean.FALSE;
         }
-        throw new RuntimeException(
-                "Runtime error: Cannot parse env var value '" + raw + "' as boolean");
+        throw new RuntimeException("Cannot parse env var value '" + raw + "' as boolean");
     }
 }

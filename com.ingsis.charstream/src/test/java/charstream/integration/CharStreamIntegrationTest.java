@@ -42,10 +42,10 @@ class CharStreamIntegrationTest {
 
     @Test
     @DisplayName(
-            "What: CharStream | When: reading multi-line stream | Then: integrates reader and"
+            "Given: CharStream | When: reading multi-line stream | Then: integrates reader and"
                     + " position tracking accurately")
     void charStream_whenReadingMultiLineStream_thenIntegratesReaderAndPositionTracking() {
-        // What: CharStream configured with multi-line input "hi\nworld"
+        // Given: CharStream configured with multi-line input "hi\nworld"
         String input = "hi\nworld";
         StreamCharReader reader = new StreamCharReader(new StringReader(input));
         CharStream stream = new CharStream(reader);
@@ -101,10 +101,10 @@ class CharStreamIntegrationTest {
 
     @Test
     @DisplayName(
-            "What: CharStream | When: stream reaches EOF | Then: returns failure result with EOF"
+            "Given: CharStream | When: stream reaches EOF | Then: returns failure result with EOF"
                     + " error message")
     void charStream_whenStreamReachesEof_thenReturnsFailureWithEof() {
-        // What: CharStream initialized with empty input
+        // Given: CharStream initialized with empty input
         StreamCharReader reader = new StreamCharReader(new StringReader(""));
         CharStream stream = new CharStream(reader);
 
@@ -120,10 +120,10 @@ class CharStreamIntegrationTest {
 
     @Test
     @DisplayName(
-            "What: CharStream | When: fake reader throws IOException | Then: returns failure result"
-                    + " with IO error")
+            "Given: CharStream | When: fake reader throws IOException | Then: returns failure"
+                    + " result with IO error")
     void charStream_whenReaderThrowsIoException_thenReturnsFailureWithIoError() {
-        // What: CharStream using a FakeFailingCharReader
+        // Given: CharStream using a FakeFailingCharReader
         CharReader failingReader = new FakeFailingCharReader("Simulated disk error");
         CharStream stream = new CharStream(failingReader);
 
