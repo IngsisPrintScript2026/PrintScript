@@ -61,7 +61,7 @@ class TokenStreamFormatterUnitTest {
         String output = formatTokens(formatter, gluedDeclaration());
 
         // Then
-        assertEquals("let x: number = 1;\n", output);
+        assertEquals("let x: number = 1;", output);
     }
 
     @Test
@@ -94,7 +94,7 @@ class TokenStreamFormatterUnitTest {
         String output = formatTokens(formatter, tokens);
 
         // Then
-        assertEquals("let   x\n", output);
+        assertEquals("let   x", output);
     }
 
     @Test
@@ -111,7 +111,7 @@ class TokenStreamFormatterUnitTest {
         String output = formatTokens(formatter, tokens);
 
         // Then
-        assertEquals(";\n\nlet\n", output);
+        assertEquals(";\n\nlet", output);
     }
 
     @Test
@@ -130,7 +130,7 @@ class TokenStreamFormatterUnitTest {
         String output = formatTokens(formatter, tokens);
 
         // Then
-        assertEquals("println(\n", output);
+        assertEquals("println(", output);
     }
 
     @Test
@@ -149,7 +149,7 @@ class TokenStreamFormatterUnitTest {
         String output = formatTokens(formatter, tokens);
 
         // Then
-        assertEquals("let_x\n", output);
+        assertEquals("let_x", output);
     }
 
     @Test
@@ -246,7 +246,7 @@ class TokenStreamFormatterUnitTest {
         String output = formatTokens(formatter, tokens);
 
         // Then
-        assertEquals("println(1);\n\n\nx\n", output);
+        assertEquals("println(1);\n\n\nx", output);
     }
 
     @Test

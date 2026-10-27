@@ -113,9 +113,6 @@ public class TokenStreamFormatter implements Formatter {
             writer.flush();
             return Result.failure("Formatting error: " + err);
         }
-        if (state.prev != null) {
-            writer.write("\n");
-        }
         writer.flush();
         return Result.success("Formatting completed");
     }

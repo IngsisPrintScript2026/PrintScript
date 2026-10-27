@@ -169,7 +169,7 @@ class CliContainerTest {
         // Then
         assertEquals(0, result.getExitCode());
         assertEquals(
-                "let a: number = 1;\nlet b: number = a + 2;\n\nprintln(b);\n",
+                "let a: number = 1;\nlet b: number = a + 2;\n\nprintln(b);",
                 cli.readFile(PrintScriptCli.OUTPUT));
     }
 

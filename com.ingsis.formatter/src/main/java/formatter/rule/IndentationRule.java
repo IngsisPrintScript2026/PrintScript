@@ -21,7 +21,8 @@ public class IndentationRule implements FormattingRule {
 
     @Override
     public boolean applies(Token prev, Token current, FormatContext context) {
-        return true;
+        // Unconfigured indentation keeps the author's own (the PrintScript TCK expects it).
+        return context.indentSpaces() != null;
     }
 
     @Override

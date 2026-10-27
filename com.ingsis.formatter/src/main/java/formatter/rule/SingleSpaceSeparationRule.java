@@ -8,7 +8,10 @@ import formatter.FormatContext;
 import token.Token;
 import token.TokenType;
 
-/** Mandatory: at most one space between tokens on the same line, none before a ';'. */
+/**
+ * Mandatory: at most one space between tokens on the same line, none before a ';'. With
+ * mandatory-single-space-separation enabled, exactly one space between every pair of tokens.
+ */
 public class SingleSpaceSeparationRule implements FormattingRule {
     @Override
     public boolean applies(Token prev, Token current, FormatContext context) {
@@ -21,10 +24,10 @@ public class SingleSpaceSeparationRule implements FormattingRule {
         if (originalSeparator.contains("\n")) {
             return originalSeparator;
         }
-        if (originalSeparator.isEmpty()
-                || (current != null && current.type() == TokenType.SEMICOLON)) {
+        if (current != null && current.type() == TokenType.SEMICOLON) {
             return "";
         }
-        return " ";
+        boolean exactlyOne = Boolean.TRUE.equals(context.singleSpaceSeparation());
+        return exactlyOne || !originalSeparator.isEmpty() ? " " : "";
     }
 }

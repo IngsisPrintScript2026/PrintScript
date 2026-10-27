@@ -329,7 +329,7 @@ class CliEndToEndTest {
         // Then
         assertEquals(0, run.exitCode(), run.stdout());
         assertEquals(
-                "let a : number=1;\nlet b : number=a * 2;\n\n\nprintln(b);\n",
+                "let a : number=1;\nlet b : number=a * 2;\n\n\nprintln(b);",
                 Files.readString(Path.of(output)));
     }
 
@@ -350,7 +350,7 @@ class CliEndToEndTest {
 
         // Then
         assertEquals(0, run.exitCode(), run.stdout());
-        assertEquals("let ok: boolean = true;\nif (ok) {\n  println(\"yes\");\n}\n", run.stdout());
+        assertEquals("let ok: boolean = true;\nif (ok) {\n  println(\"yes\");\n}", run.stdout());
     }
 
     @Test

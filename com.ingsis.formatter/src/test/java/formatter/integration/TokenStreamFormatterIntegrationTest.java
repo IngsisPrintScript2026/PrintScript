@@ -33,7 +33,7 @@ class TokenStreamFormatterIntegrationTest {
         Result<String> result = formatter.format(stream("let x:number=42;"));
 
         // Then
-        assertEquals("let x: number = 42;\n", ((CorrectResult<String>) result).value());
+        assertEquals("let x: number = 42;", ((CorrectResult<String>) result).value());
     }
 
     @Test
@@ -50,7 +50,7 @@ class TokenStreamFormatterIntegrationTest {
 
         // Then
         assertTrue(result.isCorrect());
-        assertEquals("let x: number = 42;\n", writer.toString());
+        assertEquals("let x: number = 42;", writer.toString());
     }
 
     @Test
@@ -67,7 +67,7 @@ class TokenStreamFormatterIntegrationTest {
         String output = format(yaml, "let x: number = 1;");
 
         // Then
-        assertEquals("let x :number = 1;\n", output);
+        assertEquals("let x :number = 1;", output);
     }
 
     @Test
@@ -84,7 +84,7 @@ class TokenStreamFormatterIntegrationTest {
         String output = format(yaml, "let x : number = 1;");
 
         // Then
-        assertEquals("let x:number = 1;\n", output);
+        assertEquals("let x:number = 1;", output);
     }
 
     @Test
@@ -99,7 +99,7 @@ class TokenStreamFormatterIntegrationTest {
         String output = format(yaml, "let x:number=1;");
 
         // Then
-        assertEquals("let x:number = 1;\n", output);
+        assertEquals("let x:number = 1;", output);
     }
 
     @Test
@@ -114,7 +114,7 @@ class TokenStreamFormatterIntegrationTest {
         String output = format(yaml, "let x: number = 1;");
 
         // Then
-        assertEquals("let x: number=1;\n", output);
+        assertEquals("let x: number=1;", output);
     }
 
     @Test
@@ -129,7 +129,7 @@ class TokenStreamFormatterIntegrationTest {
         String output = format(yaml, "let r:number=1*2+3/4-5;");
 
         // Then
-        assertEquals("let r:number=1 * 2 + 3 / 4 - 5;\n", output);
+        assertEquals("let r:number=1 * 2 + 3 / 4 - 5;", output);
     }
 
     @Test
@@ -144,7 +144,7 @@ class TokenStreamFormatterIntegrationTest {
         String output = format(NO_OPTIONS, source);
 
         // Then
-        assertEquals("let x: number = 1;\n", output);
+        assertEquals("let x: number = 1;", output);
     }
 
     @Test
@@ -157,7 +157,7 @@ class TokenStreamFormatterIntegrationTest {
         String output = format(NO_OPTIONS, source);
 
         // Then
-        assertEquals("println(1);\n", output);
+        assertEquals("println(1);", output);
     }
 
     @Test
@@ -172,7 +172,7 @@ class TokenStreamFormatterIntegrationTest {
         String output = format(NO_OPTIONS, source);
 
         // Then
-        assertEquals("let a: number = 1;\nlet b: number = 2;\n", output);
+        assertEquals("let a: number = 1;\nlet b: number = 2;", output);
     }
 
     @Test
@@ -187,7 +187,7 @@ class TokenStreamFormatterIntegrationTest {
         String output = format(NO_OPTIONS, source);
 
         // Then
-        assertEquals("let a: number = 1;\n\nlet b: number = 2;\n", output);
+        assertEquals("let a: number = 1;\n\nlet b: number = 2;", output);
     }
 
     @Test
@@ -202,7 +202,7 @@ class TokenStreamFormatterIntegrationTest {
         String output = format(NO_OPTIONS, source);
 
         // Then
-        assertEquals("let a: string = 'hi';\n", output);
+        assertEquals("let a: string = 'hi';", output);
     }
 
     @Test
@@ -217,7 +217,7 @@ class TokenStreamFormatterIntegrationTest {
         String output = format(yaml, "println(1,2);");
 
         // Then
-        assertEquals("println(1, 2);\n", output);
+        assertEquals("println(1, 2);", output);
     }
 
     @Test
@@ -232,13 +232,13 @@ class TokenStreamFormatterIntegrationTest {
         String output = format(yaml, "println(1,   2);");
 
         // Then
-        assertEquals("println(1,2);\n", output);
+        assertEquals("println(1,2);", output);
     }
 
     @Test
     @DisplayName(
             "Given: no options | When: formatting a compact if/else | Then: braces on the same"
-                    + " line, bodies indented 4 spaces and '} else {'")
+                    + " line, '} else {' and the author's (empty) indentation kept")
     void formatter_whenIfElseWithDefaults_thenBracesOnSameLine() {
         // Given
         String source = IF_ELSE;
@@ -247,13 +247,13 @@ class TokenStreamFormatterIntegrationTest {
         String output = format(NO_OPTIONS, source);
 
         // Then
-        assertEquals("if(true) {\n    println(\"a\");\n} else {\n    println(\"b\");\n}\n", output);
+        assertEquals("if(true) {\nprintln(\"a\");\n} else {\nprintln(\"b\");\n}", output);
     }
 
     @Test
     @DisplayName(
             "Given: no options | When: the '{' is on the line below the if | Then: moves it to the"
-                    + " same line")
+                    + " same line and keeps the author's indentation")
     void formatter_whenBraceBelowInSource_thenMovesItUp() {
         // Given
         String source = "if (true)\n{\n  println(1);\n}";
@@ -262,13 +262,13 @@ class TokenStreamFormatterIntegrationTest {
         String output = format(NO_OPTIONS, source);
 
         // Then
-        assertEquals("if (true) {\n    println(1);\n}\n", output);
+        assertEquals("if (true) {\n  println(1);\n}", output);
     }
 
     @Test
     @DisplayName(
             "Given: if-brace-below-line true | When: formatting a compact if/else | Then: each"
-                    + " brace and the else go on their own line")
+                    + " brace and the else go on their own line, with no indentation added")
     void formatter_whenBraceBelowLine_thenBracesOnOwnLines() {
         // Given
         String yaml = "if-brace-below-line: true";
@@ -277,8 +277,7 @@ class TokenStreamFormatterIntegrationTest {
         String output = format(yaml, IF_ELSE);
 
         // Then
-        assertEquals(
-                "if(true)\n{\n    println(\"a\");\n}\nelse\n{\n    println(\"b\");\n}\n", output);
+        assertEquals("if(true)\n{\nprintln(\"a\");\n}\nelse\n{\nprintln(\"b\");\n}", output);
     }
 
     @Test
@@ -293,7 +292,7 @@ class TokenStreamFormatterIntegrationTest {
         String output = format(yaml, "if(true){println(\"a\");}");
 
         // Then
-        assertEquals("if(true) {\n  println(\"a\");\n}\n", output);
+        assertEquals("if(true) {\n  println(\"a\");\n}", output);
     }
 
     @Test
@@ -308,7 +307,7 @@ class TokenStreamFormatterIntegrationTest {
         String output = format(yaml, "if(true){\n println(\"a\");\n          }");
 
         // Then
-        assertEquals("if(true) {\n    println(\"a\");\n}\n", output);
+        assertEquals("if(true) {\n    println(\"a\");\n}", output);
     }
 
     @Test
@@ -323,7 +322,7 @@ class TokenStreamFormatterIntegrationTest {
         String output = format(yaml, "if(true){if(false){println(\"a\");}}");
 
         // Then
-        assertEquals("if(true) {\n  if(false) {\n    println(\"a\");\n  }\n}\n", output);
+        assertEquals("if(true) {\n  if(false) {\n    println(\"a\");\n  }\n}", output);
     }
 
     @Test
@@ -337,7 +336,7 @@ class TokenStreamFormatterIntegrationTest {
         String output = format(NO_OPTIONS, source);
 
         // Then
-        assertEquals("if(true) {}\n", output);
+        assertEquals("if(true) {}", output);
     }
 
     @Test
@@ -352,7 +351,7 @@ class TokenStreamFormatterIntegrationTest {
         String output = format(yaml, "let a: number = 1;\n\n\nprintln(a);");
 
         // Then
-        assertEquals("let a: number = 1;\nprintln(a);\n", output);
+        assertEquals("let a: number = 1;\nprintln(a);", output);
     }
 
     @Test
@@ -367,7 +366,7 @@ class TokenStreamFormatterIntegrationTest {
         String output = format(yaml, "let a: number = 1;println(a);");
 
         // Then
-        assertEquals("let a: number = 1;\n\nprintln(a);\n", output);
+        assertEquals("let a: number = 1;\n\nprintln(a);", output);
     }
 
     @Test
@@ -382,7 +381,7 @@ class TokenStreamFormatterIntegrationTest {
         String output = format(yaml, "let a: number = 1;println(a);");
 
         // Then
-        assertEquals("let a: number = 1;\n\n\nprintln(a);\n", output);
+        assertEquals("let a: number = 1;\n\n\nprintln(a);", output);
     }
 
     @Test
@@ -397,7 +396,7 @@ class TokenStreamFormatterIntegrationTest {
         String output = format(yaml, "println(1);");
 
         // Then
-        assertEquals("println(1);\n", output);
+        assertEquals("println(1);", output);
     }
 
     @Test
@@ -412,7 +411,7 @@ class TokenStreamFormatterIntegrationTest {
         String output = format(yaml, "println(1);let a: number = 1;");
 
         // Then
-        assertEquals("println(1);\n\nlet a: number = 1;\n", output);
+        assertEquals("println(1);\n\nlet a: number = 1;", output);
     }
 
     @Test
@@ -427,7 +426,7 @@ class TokenStreamFormatterIntegrationTest {
         String output = format(yaml, "println(1);\n\n\nlet a: number = 1;");
 
         // Then
-        assertEquals("println(1);\nlet a: number = 1;\n", output);
+        assertEquals("println(1);\nlet a: number = 1;", output);
     }
 
     @Test
@@ -479,6 +478,6 @@ class TokenStreamFormatterIntegrationTest {
 
         // Then
         assertEquals(
-                "let x : number = 2 * 3;\nif(true) {\n  x = x + 1;\n\n  println(x);\n}\n", output);
+                "let x : number = 2 * 3;\nif(true) {\n  x = x + 1;\n\n  println(x);\n}", output);
     }
 }
