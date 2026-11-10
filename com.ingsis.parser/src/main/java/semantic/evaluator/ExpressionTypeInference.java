@@ -18,7 +18,7 @@ import node.expression.nullObject.NilExpressionNode;
 import node.expression.operator.OperatorNode;
 import result.Result;
 import semantic.environment.SemanticEnvironment;
-import syntactic.version.VersionStrategyRegistry;
+import syntactic.version.LanguageFeatures;
 import version.Version;
 
 public class ExpressionTypeInference {
@@ -27,8 +27,7 @@ public class ExpressionTypeInference {
 
     public ExpressionTypeInference(Version version) {
         this.version = version;
-        this.builtInFunctions =
-                new VersionStrategyRegistry().getStrategy(version).builtInFunctions();
+        this.builtInFunctions = LanguageFeatures.forVersion(version).builtInFunctions();
     }
 
     public ExpressionTypeInference() {
