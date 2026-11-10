@@ -51,6 +51,9 @@ tasks.register('containerTest', Test) {
     inputs.dir(distDir)
     systemProperty 'printscript.dist', distDir.get().asFile.absolutePath
     shouldRunAfter tasks.named('test')
+    jacoco {
+        enabled = false
+    }
 }
 
 tasks.named('check') {
