@@ -45,7 +45,7 @@ El archivo [`build.gradle`](file:///home/elchurro274/Faculty/ingsis/PrintScript/
    Agrupa la ejecución de tests de todos los submódulos y construye un informe combinado:
    - Configura la tarea `jacocoTestReport` para recolectar los archivos `.exec` de cada submódulo (`executionData`).
    - Filtra clases generadas, de configuración o de pruebas (`**/config/**`, `**/*Application*`, `**/*Test*`).
-   - Exporta el reporte HTML a `build/reports/jacoco/html` y XML a `build/reports/jacoco/jacoco.xml`.
+   - Exporta el reporte HTML a `build/reports/jacoco-aggregate/html` y XML a `build/reports/jacoco-aggregate/jacoco.xml`.
    - Provee el alias `tasks.register('jacocoRootReport')`.
 
 3. **Instalación de Git Hooks Versionados:**
@@ -145,7 +145,7 @@ A continuación se detallan las tareas principales que se corren en el flujo dia
 | Comando | Descripción |
 | :--- | :--- |
 | `./gradlew test` | Ejecuta las pruebas unitarias e integración de todos los módulos y genera el reporte individual de cobertura. |
-| `./gradlew jacocoRootReport` | Genera el reporte de cobertura HTML y XML consolidado de todo el proyecto en `build/reports/jacoco/html/index.html`. |
+| `./gradlew jacocoRootReport` | Genera el reporte de cobertura HTML y XML consolidado de todo el proyecto en `build/reports/jacoco-aggregate/html/index.html`. |
 | `./gradlew spotlessCheck` | Verifica si el código fuente respeta las reglas de formateo sin modificar los archivos. |
 | `./gradlew spotlessApply` | **Aplica el formateo automático:** sangría AOSP de 4 espacios, reordenamiento de imports y licencia. |
 | `./gradlew checkstyleMain` | Ejecuta exclusivamente la verificación de Checkstyle sobre las clases principales. |
@@ -465,7 +465,7 @@ Cada tarea de análisis y verificación vuelca sus informes en carpetas personal
 - **PMD:** `<subproject>/build/custom-reports/pmd/pmdMain.html`
 - **SpotBugs:** `<subproject>/build/custom-reports/spotbugs/spotbugsMain.html`
 - **JaCoCo (Cobertura individual):** `<subproject>/build/reports/jacoco/test/html/index.html`
-- **JaCoCo Agregado (Todo el proyecto):** `build/reports/jacoco/html/index.html` (generado vía `./gradlew jacocoRootReport`).
+- **JaCoCo Agregado (Todo el proyecto):** `build/reports/jacoco-aggregate/html/index.html` (generado vía `./gradlew jacocoRootReport`).
 
 ### 7.2. Consumo en Proyectos Externos
 Para consumir los artefactos publicados en GitHub Packages desde otro proyecto (por ejemplo, una UI web o un servicio backend en Spring Boot):
