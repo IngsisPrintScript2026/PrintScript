@@ -9,7 +9,6 @@ import pipeline.StatementAction;
 import result.Result;
 import semantic.environment.SemanticEnvironment;
 
-/** Action that always fails with the given message, like a runtime error while executing. */
 public final class StubFailingStatementAction implements StatementAction {
     private final String message;
 

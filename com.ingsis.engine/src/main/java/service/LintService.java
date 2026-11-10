@@ -18,10 +18,6 @@ import sca.Sca;
 import semantic.environment.SemanticEnvironment;
 import version.Version;
 
-/**
- * Runs the static code analyzer as each statement is parsed, keeping only the violations (never the
- * whole AST) in memory.
- */
 public class LintService {
     private final ProgressListener progress;
 

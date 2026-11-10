@@ -18,11 +18,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
-/**
- * Black-box tests of the installed CLI distribution running on a clean JRE 21 container: the same
- * launcher a user would run, isolated from the developer's machine (no IDE, no Gradle, no local
- * environment variables).
- */
 @Testcontainers(disabledWithoutDocker = true)
 class CliContainerTest {
     private static final String DISTRIBUTION = System.getProperty("printscript.dist");

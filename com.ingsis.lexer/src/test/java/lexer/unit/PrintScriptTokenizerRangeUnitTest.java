@@ -21,7 +21,6 @@ import token.tokenize.TokenizeResult;
 
 class PrintScriptTokenizerRangeUnitTest {
 
-    /** Matcher that always answers the same, to isolate the tokenizer from the real chain. */
     private static final class StubTokenTypeMatcher implements TokenTypeMatcher {
         private final Result<TokenType> answer;
 

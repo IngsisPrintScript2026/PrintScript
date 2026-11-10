@@ -10,7 +10,6 @@ import java.util.List;
 import result.Result;
 import token.Token;
 
-/** Lexer double: yields the given tokens and then fails with {@code endMessage}. */
 public final class FakeTokenIterator implements SafeIterator<Token> {
     private final List<Token> tokens;
     private final int index;

@@ -19,9 +19,6 @@ import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-/**
- * End-to-end: a source file on disk, the CLI arguments of the assignment, and what the user sees.
- */
 class CliEndToEndTest {
     @TempDir Path dir;
 

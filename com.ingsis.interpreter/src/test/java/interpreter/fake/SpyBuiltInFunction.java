@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-/** Built-in function that records the arguments of every call, optionally failing. */
 public final class SpyBuiltInFunction implements BuiltInFunction {
     private final String name;
     private final String failure;

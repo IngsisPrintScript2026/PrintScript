@@ -22,7 +22,6 @@ import result.Result;
 import semantic.environment.SemanticEnvironment;
 import version.Version;
 
-/** readInput / readEnv (PrintScript 1.1) with type coercion to the declared type. */
 class InputAndEnvIntegrationTest {
 
     private final SpyOutput output = new SpyOutput();

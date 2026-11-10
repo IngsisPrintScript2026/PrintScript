@@ -14,6 +14,7 @@ import node.expression.operator.OperatorNode;
 import node.keyword.AssignNode;
 import node.keyword.DeclarationKeywordNode;
 import node.keyword.IfKeywordNode;
+import node.keyword.WhileKeywordNode;
 import node.keyword.declaration.DeclarationType;
 import token.Token;
 
@@ -87,5 +88,11 @@ public final class NodeFactory {
 
     public static ProgramNode createProgram(List<Node> statements) {
         return new ProgramNode(statements, 1, 1);
+    }
+
+    public static WhileKeywordNode createWhile(
+            ExpressionNode cond, List<Node> body, Token whileToken) {
+        return new WhileKeywordNode(
+                cond, body, whileToken.startPosition().line(), whileToken.startPosition().column());
     }
 }

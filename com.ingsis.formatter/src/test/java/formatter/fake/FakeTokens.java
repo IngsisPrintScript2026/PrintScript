@@ -8,7 +8,6 @@ import position.Position;
 import token.Token;
 import token.TokenType;
 
-/** Builds tokens with consistent start and (inclusive) end positions, as the lexer does. */
 public final class FakeTokens {
     private FakeTokens() {}
 

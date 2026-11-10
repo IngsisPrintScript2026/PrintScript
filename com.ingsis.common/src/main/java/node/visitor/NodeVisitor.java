@@ -10,6 +10,7 @@ import node.expression.function.CallFunctionNode;
 import node.keyword.AssignNode;
 import node.keyword.DeclarationKeywordNode;
 import node.keyword.IfKeywordNode;
+import node.keyword.WhileKeywordNode;
 
 public interface NodeVisitor<R, C> {
     R visit(DeclarationKeywordNode decl, C context);
@@ -21,6 +22,8 @@ public interface NodeVisitor<R, C> {
     R visit(CallFunctionNode call, C context);
 
     R visit(ProgramNode program, C context);
+
+    R visit(WhileKeywordNode whileNode, C context);
 
     R visitDefault(Node node, C context);
 }

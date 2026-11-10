@@ -30,5 +30,6 @@ public enum TokenType {
     RBRACE,
     COLON,
     SEMICOLON,
-    COMMA
+    COMMA,
+    WHILE
 }

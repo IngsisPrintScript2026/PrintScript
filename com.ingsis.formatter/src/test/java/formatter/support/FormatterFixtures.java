@@ -27,7 +27,6 @@ import tokenstream.LazyTokenStream;
 import tokenstream.TokenStream;
 import version.Version;
 
-/** Wires the real pipeline (chars, lexer, parser, YAML loader) for integration tests. */
 public final class FormatterFixtures {
     private FormatterFixtures() {}
 
@@ -39,7 +38,6 @@ public final class FormatterFixtures {
         return YamlFormatRulesLoader.loadFromYaml(stream(yaml));
     }
 
-    /** Formats the source with a YAML configuration; returns the text or the failure message. */
     public static String format(String yaml, String source) {
         Result<String> result = new TokenStreamFormatter(context(yaml)).format(stream(source));
         return switch (result) {
@@ -48,7 +46,6 @@ public final class FormatterFixtures {
         };
     }
 
-    /** Parses every statement of a PrintScript 1.1 source into a program node. */
     public static ProgramNode parse(String source) {
         Parser<Node> parser = ParserFactory.createParser(Version.V_1_1);
         TokenStream stream =

@@ -12,7 +12,6 @@ import sca.ScaContext;
 import sca.handler.ScaNodeHandler;
 import semantic.environment.SemanticEnvironment;
 
-/** Handler stub that answers a fixed list of violations and records the contexts it received. */
 public final class StubScaNodeHandler<T extends Node> implements ScaNodeHandler<T> {
     private final Class<T> type;
     private final List<String> answer;

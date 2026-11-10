@@ -6,7 +6,6 @@ package formatter.support;
 
 import formatter.FormatContext;
 
-/** Fluent builder for {@link FormatContext}: every option starts unset (null). */
 public final class FormatContextBuilder {
     private Integer indentSpaces;
     private Boolean spaceBeforeColon;

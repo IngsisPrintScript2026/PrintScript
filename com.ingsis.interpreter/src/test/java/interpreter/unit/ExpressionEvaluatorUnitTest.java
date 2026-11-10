@@ -522,7 +522,6 @@ class ExpressionEvaluatorUnitTest {
         assertTrue(errorOf(result).contains("Unsupported expression node"));
     }
 
-    /** Expression node the evaluator does not know about. */
     private static final class UnknownExpressionNode implements ExpressionNode {
         @Override
         public Integer line() {

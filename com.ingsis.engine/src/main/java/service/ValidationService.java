@@ -13,7 +13,6 @@ import result.Result;
 import semantic.environment.SemanticEnvironment;
 import version.Version;
 
-/** Checks syntax and semantics statement by statement, without executing anything. */
 public class ValidationService {
     static final String SUCCESS_MESSAGE = "Validation successful: Syntax and semantics are valid.";
 

@@ -18,7 +18,7 @@ import node.expression.nullObject.NilExpressionNode;
 import node.expression.operator.OperatorNode;
 import result.Result;
 import semantic.environment.SemanticEnvironment;
-import syntactic.version.VersionStrategyRegistry;
+import syntactic.version.LanguageFeatures;
 import version.Version;
 
 public class ExpressionTypeInference {
@@ -27,8 +27,7 @@ public class ExpressionTypeInference {
 
     public ExpressionTypeInference(Version version) {
         this.version = version;
-        this.builtInFunctions =
-                new VersionStrategyRegistry().getStrategy(version).builtInFunctions();
+        this.builtInFunctions = LanguageFeatures.forVersion(version).builtInFunctions();
     }
 
     public ExpressionTypeInference() {
@@ -99,10 +98,7 @@ public class ExpressionTypeInference {
         String fnName = call.identifierNode().name();
         if (!builtInFunctions.contains(fnName)) {
             return Result.failure(
-                    "Function '"
-                            + fnName
-                            + "' is not supported in PrintScript "
-                            + (version == Version.V_1_0 ? "1.0" : "1.1"));
+                    "Function '" + fnName + "' is not supported in PrintScript " + version.label());
         }
         Result<DataType> argsRes = checkArguments(call.argumentNodes(), env);
         if (!argsRes.isCorrect()) {

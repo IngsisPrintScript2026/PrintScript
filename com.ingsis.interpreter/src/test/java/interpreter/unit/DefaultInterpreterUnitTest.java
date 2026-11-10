@@ -58,7 +58,6 @@ class DefaultInterpreterUnitTest {
         return new ProgramNode(List.of(statements), 1, 1);
     }
 
-    /** One placeholder token per statement, each on its own line. */
     private static TokenStream tokens(int count) {
         List<Token> tokens = new ArrayList<>();
         for (int i = 1; i <= count; i++) {

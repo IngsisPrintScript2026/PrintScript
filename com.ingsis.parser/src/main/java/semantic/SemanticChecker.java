@@ -13,6 +13,7 @@ import node.expression.function.CallFunctionNode;
 import node.keyword.AssignNode;
 import node.keyword.DeclarationKeywordNode;
 import node.keyword.IfKeywordNode;
+import node.keyword.WhileKeywordNode;
 import node.visitor.NodeVisitor;
 import result.CorrectResult;
 import result.Result;
@@ -23,6 +24,7 @@ import semantic.handler.CallFunctionNodeSemanticHandler;
 import semantic.handler.DeclarationNodeSemanticHandler;
 import semantic.handler.IfNodeSemanticHandler;
 import semantic.handler.SemanticNodeHandler;
+import semantic.handler.WhileNodeSemanticHandler;
 import version.Version;
 
 public class SemanticChecker
@@ -47,6 +49,7 @@ public class SemanticChecker
                 new DeclarationNodeSemanticHandler(inference),
                 new AssignNodeSemanticHandler(inference),
                 new IfNodeSemanticHandler(inference),
+                new WhileNodeSemanticHandler(inference),
                 new CallFunctionNodeSemanticHandler(inference));
     }
 
@@ -122,6 +125,21 @@ public class SemanticChecker
             currentEnv = ((CorrectResult<SemanticEnvironment>) stepRes).value();
         }
         return Result.success(currentEnv);
+    }
+
+    @Override
+    public Result<SemanticEnvironment> visit(WhileKeywordNode whileNode, SemanticEnvironment env) {
+        SemanticNodeHandler<?> handler = handlers.get(WhileKeywordNode.class);
+        Result<SemanticEnvironment> condRes =
+                handler != null ? handler.checkUntyped(whileNode, env) : Result.success(env);
+        if (!condRes.isCorrect()) {
+            return condRes;
+        }
+        Result<Void> bodyRes = checkBlock(whileNode.body(), env);
+        if (!bodyRes.isCorrect()) {
+            return Result.failure(((result.IncorrectResult<Void>) bodyRes).error());
+        }
+        return Result.success(env);
     }
 
     @Override

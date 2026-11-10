@@ -13,7 +13,6 @@ import progress.ProgressListener;
 import result.Result;
 import version.Version;
 
-/** Streams the formatted source to the writer, configured by an optional YAML file. */
 public class FormatService {
     private final ProgressListener progress;
 

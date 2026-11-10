@@ -77,10 +77,15 @@ class PositionAndMetaCharUnitTest {
         // When: parsing version from string
         Version v10 = Version.fromString("1.0");
         Version v11 = Version.fromString("1.1");
+        Version v12 = Version.fromString("1.2");
 
         // Then: versions match enums and invalid strings throw IllegalArgumentException
         assertEquals(Version.V_1_0, v10);
         assertEquals(Version.V_1_1, v11);
+        assertEquals(Version.V_1_2, v12);
+        assertEquals("1.0", v10.label());
+        assertEquals("1.1", v11.label());
+        assertEquals("1.2", v12.label());
         assertThrows(IllegalArgumentException.class, () -> Version.fromString(null));
         assertThrows(IllegalArgumentException.class, () -> Version.fromString("2.0"));
     }

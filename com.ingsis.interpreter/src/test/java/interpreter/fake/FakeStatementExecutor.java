@@ -11,7 +11,6 @@ import java.util.List;
 import node.Node;
 import result.Result;
 
-/** Statement executor that records statements and answers with a fixed result. */
 public final class FakeStatementExecutor implements StatementExecutor {
     private final Result<Void> answer;
     private final List<Node> executed = new ArrayList<>();

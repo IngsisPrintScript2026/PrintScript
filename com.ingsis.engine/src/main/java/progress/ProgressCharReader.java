@@ -7,10 +7,6 @@ package progress;
 import charstream.CharReader;
 import java.io.IOException;
 
-/**
- * Decorator that counts the characters actually consumed by the lexer. Because tokens are pulled
- * lazily by the parser, this count follows the parsing progress, not just the file reads.
- */
 public final class ProgressCharReader implements CharReader {
     private final CharReader delegate;
     private final ProgressListener listener;

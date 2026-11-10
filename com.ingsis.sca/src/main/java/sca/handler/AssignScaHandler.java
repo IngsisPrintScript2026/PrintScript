@@ -10,7 +10,6 @@ import sca.ASTSca;
 import sca.ScaContext;
 import semantic.environment.SemanticEnvironment;
 
-/** Analyzes the assigned expression, e.g. a readInput call in {@code x = readInput(...);}. */
 public class AssignScaHandler implements ScaNodeHandler<AssignNode> {
     @Override
     public Class<AssignNode> nodeType() {

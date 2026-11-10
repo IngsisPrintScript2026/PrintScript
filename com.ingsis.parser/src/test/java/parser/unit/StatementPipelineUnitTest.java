@@ -33,7 +33,6 @@ import tokenstream.TokenStreamAdapter;
 
 class StatementPipelineUnitTest {
 
-    /** Two statements on line 1: {@code ok ;} (cols 1-3) and {@code bad ;} (cols 5-8). */
     private static TokenStream okThenBad() {
         return new TokenStreamAdapter(
                 List.of(

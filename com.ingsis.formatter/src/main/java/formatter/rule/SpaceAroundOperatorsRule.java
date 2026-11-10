@@ -8,7 +8,6 @@ import formatter.FormatContext;
 import token.Token;
 import token.TokenType;
 
-/** Mandatory: exactly one space before and after every arithmetic operator. */
 public class SpaceAroundOperatorsRule implements FormattingRule {
     private boolean isOperator(Token token) {
         if (token == null) {

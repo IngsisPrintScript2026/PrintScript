@@ -10,7 +10,6 @@ import java.util.List;
 import result.Result;
 import token.Token;
 
-/** List-backed token iterator; once the tokens run out it fails with the configured error. */
 public final class FakeTokenIterator implements SafeIterator<Token> {
     private final List<Token> tokens;
     private final int index;

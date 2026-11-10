@@ -1,0 +1,3 @@
+identifier_format: "snake case"
+mandatory-variable-or-literal-in-println: false
+mandatory-variable-or-literal-in-readInput: false

@@ -23,6 +23,7 @@ import node.expression.operator.OperatorNode;
 import node.keyword.AssignNode;
 import node.keyword.DeclarationKeywordNode;
 import node.keyword.IfKeywordNode;
+import node.keyword.WhileKeywordNode;
 import node.visitor.NodeVisitor;
 import result.Result;
 
@@ -42,6 +43,7 @@ public class ASTFormatter implements NodeVisitor<String, FormatContext>, Formatt
                         new DeclarationNodeFormatHandler(),
                         new AssignNodeFormatHandler(),
                         new IfNodeFormatHandler(),
+                        new WhileNodeFormatHandler(),
                         new CallFunctionNodeFormatHandler(),
                         new ProgramNodeFormatHandler()),
                 defaultContext);
@@ -155,6 +157,12 @@ public class ASTFormatter implements NodeVisitor<String, FormatContext>, Formatt
     public String visit(IfKeywordNode ifNode, FormatContext context) {
         FormatNodeHandler<?> handler = handlers.get(IfKeywordNode.class);
         return handler != null ? handler.formatUntyped(ifNode, context, this) : "";
+    }
+
+    @Override
+    public String visit(WhileKeywordNode whileNode, FormatContext context) {
+        FormatNodeHandler<?> handler = handlers.get(WhileKeywordNode.class);
+        return handler != null ? handler.formatUntyped(whileNode, context, this) : "";
     }
 
     @Override

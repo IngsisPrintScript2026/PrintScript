@@ -11,7 +11,6 @@ import org.testcontainers.containers.Container.ExecResult;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.images.builder.Transferable;
 
-/** Drives the PrintScript launcher installed inside a running container. */
 final class PrintScriptCli {
     static final String PROGRAM = "/work/program.ps";
     static final String CONFIG = "/work/config.yaml";
@@ -35,7 +34,6 @@ final class PrintScriptCli {
         return this;
     }
 
-    /** Runs the CLI with the given arguments, feeding {@code stdin} as standard input. */
     ExecResult run(String stdin, String... args) throws IOException, InterruptedException {
         container.copyFileToContainer(Transferable.of(stdin), STDIN);
         String command = LAUNCHER + " " + quote(args) + " < " + STDIN;

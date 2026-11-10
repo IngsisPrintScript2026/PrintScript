@@ -19,7 +19,6 @@ import result.Result;
 import semantic.environment.SemanticEnvironment;
 import version.Version;
 
-/** PrintScript 1.1 features: const, booleans and if/else, run from source text. */
 class ControlFlowIntegrationTest {
 
     private final SpyOutput output = new SpyOutput();

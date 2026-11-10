@@ -18,7 +18,6 @@ import token.Token;
 import tokenstream.LazyTokenStream;
 import tokenstream.TokenStream;
 
-/** Builds the lazy char → token pipeline over a source, reporting progress as it is consumed. */
 final class SourceStreams {
     private SourceStreams() {}
 

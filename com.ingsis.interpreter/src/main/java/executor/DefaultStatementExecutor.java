@@ -20,6 +20,7 @@ import node.expression.literal.DataType;
 import node.keyword.AssignNode;
 import node.keyword.DeclarationKeywordNode;
 import node.keyword.IfKeywordNode;
+import node.keyword.WhileKeywordNode;
 import result.CorrectResult;
 import result.IncorrectResult;
 import result.Result;
@@ -56,6 +57,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
             case DeclarationKeywordNode decl -> executeDeclaration(decl, env);
             case AssignNode assign -> executeAssign(assign, env);
             case IfKeywordNode ifNode -> executeIf(ifNode, env);
+            case WhileKeywordNode whileNode -> executeWhile(whileNode, env);
             case CallFunctionNode call -> executeCall(call, env);
             default -> Result.failure("Unsupported statement node: " + statement);
         };
@@ -94,6 +96,15 @@ public class DefaultStatementExecutor implements StatementExecutor {
         }
     }
 
+    private Result<Void> executeBlock(List<Node> body, Environment env) {
+        Environment blockEnv = new Environment(env);
+        for (Node stmt : body) {
+            Result<Void> execRes = execute(stmt, blockEnv);
+            if (!execRes.isCorrect()) return execRes;
+        }
+        return Result.success(null);
+    }
+
     private Result<Void> executeIf(IfKeywordNode ifNode, Environment env) {
         Result<Object> condRes = expressionEvaluator.evaluate(ifNode.condition(), env);
         if (!condRes.isCorrect())
@@ -104,11 +115,25 @@ public class DefaultStatementExecutor implements StatementExecutor {
             return Result.failure("Condition of 'if' statement must evaluate to a boolean value");
         }
 
-        Environment blockEnv = new Environment(env);
         List<Node> bodyToExecute = boolCond ? ifNode.thenBody() : ifNode.elseBody();
-        for (Node stmt : bodyToExecute) {
-            Result<Void> execRes = execute(stmt, blockEnv);
-            if (!execRes.isCorrect()) return execRes;
+        return executeBlock(bodyToExecute, env);
+    }
+
+    private Result<Void> executeWhile(WhileKeywordNode whileNode, Environment env) {
+        while (true) {
+            Result<Object> condRes = expressionEvaluator.evaluate(whileNode.condition(), env);
+            if (!condRes.isCorrect())
+                return Result.failure(((IncorrectResult<Object>) condRes).error());
+
+            Object conditionValue = ((CorrectResult<Object>) condRes).value();
+            if (!(conditionValue instanceof Boolean boolCond)) {
+                return Result.failure(
+                        "Condition of 'while' statement must evaluate to a boolean value");
+            }
+            if (!boolCond) break;
+
+            Result<Void> blockRes = executeBlock(whileNode.body(), env);
+            if (!blockRes.isCorrect()) return blockRes;
         }
         return Result.success(null);
     }

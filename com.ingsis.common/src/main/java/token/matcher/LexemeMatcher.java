@@ -30,6 +30,7 @@ public class LexemeMatcher extends AbstractTokenTypeMatcher {
                     Map.entry("}", TokenType.RBRACE),
                     Map.entry(":", TokenType.COLON),
                     Map.entry(";", TokenType.SEMICOLON),
+                    Map.entry("while", TokenType.WHILE),
                     Map.entry(",", TokenType.COMMA));
 
     @Override

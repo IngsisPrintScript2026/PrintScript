@@ -20,12 +20,6 @@ import token.Token;
 import tokenstream.TokenStream;
 import version.Version;
 
-/**
- * Drives the streaming flow shared by every tool: parse one statement, check it semantically, hand
- * it to a {@link StatementAction} and move on. Only one statement is alive at a time, so sources of
- * any size can be processed. Every error is labelled (syntactic, semantic, runtime) and carries the
- * position where it happened.
- */
 public final class StatementPipeline {
     private final Parser<Node> parser;
     private final SemanticChecker checker;
@@ -103,7 +97,6 @@ public final class StatementPipeline {
         return message + " [" + location + "]";
     }
 
-    /** Range from the first token of the statement to the last one it consumed. */
     private static SourceRange statementRange(TokenStream before, TokenStream after) {
         Result<Token> first = before.peek(0);
         Result<Token> last = before.peek(Math.max(0, after.pointer() - before.pointer() - 1));

@@ -15,6 +15,7 @@ import node.expression.function.CallFunctionNode;
 import node.keyword.AssignNode;
 import node.keyword.DeclarationKeywordNode;
 import node.keyword.IfKeywordNode;
+import node.keyword.WhileKeywordNode;
 import node.visitor.NodeVisitor;
 import result.Result;
 import sca.config.YamlScaRulesLoader;
@@ -24,6 +25,7 @@ import sca.handler.DeclarationScaHandler;
 import sca.handler.IfScaHandler;
 import sca.handler.ProgramScaHandler;
 import sca.handler.ScaNodeHandler;
+import sca.handler.WhileScaHandler;
 import semantic.environment.SemanticEnvironment;
 
 public class ASTSca implements NodeVisitor<List<String>, ScaContext>, Sca {
@@ -43,6 +45,7 @@ public class ASTSca implements NodeVisitor<List<String>, ScaContext>, Sca {
                         new DeclarationScaHandler(),
                         new CallFunctionScaHandler(),
                         new IfScaHandler(),
+                        new WhileScaHandler(),
                         new AssignScaHandler(),
                         new ProgramScaHandler()),
                 defaultContext);
@@ -127,6 +130,14 @@ public class ASTSca implements NodeVisitor<List<String>, ScaContext>, Sca {
         ScaNodeHandler<?> handler = handlers.get(ProgramNode.class);
         return handler != null
                 ? handler.checkUntyped(program, currentEnv, context, this)
+                : Collections.emptyList();
+    }
+
+    @Override
+    public List<String> visit(WhileKeywordNode whileNode, ScaContext context) {
+        ScaNodeHandler<?> handler = handlers.get(WhileKeywordNode.class);
+        return handler != null
+                ? handler.checkUntyped(whileNode, currentEnv, context, this)
                 : Collections.emptyList();
     }
 

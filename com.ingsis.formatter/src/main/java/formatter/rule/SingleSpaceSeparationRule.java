@@ -8,10 +8,6 @@ import formatter.FormatContext;
 import token.Token;
 import token.TokenType;
 
-/**
- * Mandatory: at most one space between tokens on the same line, none before a ';'. With
- * mandatory-single-space-separation enabled, exactly one space between every pair of tokens.
- */
 public class SingleSpaceSeparationRule implements FormattingRule {
     @Override
     public boolean applies(Token prev, Token current, FormatContext context) {

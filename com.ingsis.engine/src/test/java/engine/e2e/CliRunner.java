@@ -12,7 +12,6 @@ import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import picocli.CommandLine;
 
-/** Runs the real CLI entry point with redirected standard streams. */
 final class CliRunner {
     record CliRun(int exitCode, String stdout, String stderr) {}
 

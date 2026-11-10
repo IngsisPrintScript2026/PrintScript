@@ -13,12 +13,14 @@ import node.Node;
 import node.ProgramNode;
 import node.expression.literal.BooleanLiteralNode;
 import node.keyword.IfKeywordNode;
+import node.keyword.WhileKeywordNode;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import sca.ASTSca;
 import sca.ScaContext;
 import sca.handler.IfScaHandler;
 import sca.handler.ProgramScaHandler;
+import sca.handler.WhileScaHandler;
 import semantic.environment.SemanticEnvironment;
 
 class BlockScaHandlersUnitTest {
@@ -141,19 +143,42 @@ class BlockScaHandlersUnitTest {
 
     @Test
     @DisplayName(
-            "Given: the block handlers | When: asking their node types | Then: they handle if and"
-                    + " program nodes")
+            "Given: the block handlers | When: asking their node types | Then: they handle if,"
+                    + " while and program nodes")
     void blockHandlers_whenAskingNodeTypes_thenAreIfAndProgram() {
         // Given
         IfScaHandler ifHandler = new IfScaHandler();
+        WhileScaHandler whileHandler = new WhileScaHandler();
         ProgramScaHandler programHandler = new ProgramScaHandler();
 
         // When
         Class<?> ifType = ifHandler.nodeType();
+        Class<?> whileType = whileHandler.nodeType();
         Class<?> programType = programHandler.nodeType();
 
         // Then
         assertEquals(IfKeywordNode.class, ifType);
+        assertEquals(WhileKeywordNode.class, whileType);
         assertEquals(ProgramNode.class, programType);
+    }
+
+    @Test
+    @DisplayName(
+            "Given: a while whose body declares 'badName' | When: checking the while | Then:"
+                    + " reports the violation of the inner statement")
+    void whileHandler_whenBodyViolates_thenReportsIt() {
+        // Given
+        WhileKeywordNode node =
+                new WhileKeywordNode(
+                        new BooleanLiteralNode(true, 1, 7), List.of(let("badName", 2, 9)), 1, 1);
+
+        // When
+        List<String> violations =
+                new WhileScaHandler()
+                        .check(node, new SemanticEnvironment(), SNAKE, new ASTSca(SNAKE));
+
+        // Then
+        assertEquals(1, violations.size());
+        assertTrue(violations.get(0).contains("'badName'"));
     }
 }

@@ -16,7 +16,6 @@ import org.junit.jupiter.api.Test;
 import result.CorrectResult;
 import result.Result;
 
-/** Real source → lexer → TokenStreamFormatter, configured from a YAML string. */
 class TokenStreamFormatterIntegrationTest {
     private static final String NO_OPTIONS = "{}";
     private static final String IF_ELSE = "if(true){println(\"a\");}else{println(\"b\");}";

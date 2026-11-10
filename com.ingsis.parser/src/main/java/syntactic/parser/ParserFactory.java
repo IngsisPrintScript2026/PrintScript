@@ -5,6 +5,7 @@
 package syntactic.parser;
 
 import iterator.IterationStep;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
@@ -26,9 +27,9 @@ import syntactic.parser.root.DeclarationParser;
 import syntactic.parser.root.FunctionParser;
 import syntactic.parser.root.LineExpressionParser;
 import syntactic.parser.root.StatementParser;
-import syntactic.version.LiteralParsers;
-import syntactic.version.VersionStrategy;
-import syntactic.version.VersionStrategyRegistry;
+import syntactic.parser.root.WhileParser;
+import syntactic.version.LanguageFeatures;
+import syntactic.version.LanguageFeatures.Feature;
 import token.Token;
 import tokenstream.TokenStream;
 import version.Version;
@@ -37,36 +38,51 @@ public final class ParserFactory {
     private ParserFactory() {}
 
     public static Parser<Node> createParser(Version version) {
-        VersionStrategy strategy =
-                new VersionStrategyRegistry()
-                        .getStrategy(version != null ? version : Version.V_1_0);
+        LanguageFeatures features =
+                LanguageFeatures.forVersion(version != null ? version : Version.V_1_0);
         Parser<IdentifierNode> identifierParser = new IdentifierParser();
-        Parser<ExpressionNode> prattParser = getExpressionNodeParser(identifierParser, strategy);
+        Parser<ExpressionNode> prattParser = getExpressionNodeParser(identifierParser, features);
         AtomicReference<Parser<Node>> stmtParserRef = new AtomicReference<>();
         List<StatementParser<? extends Node>> parsers =
-                buildStatementParsers(strategy, identifierParser, prattParser, stmtParserRef);
-        Parser<Node> statementParser = buildCompositeParser(parsers, strategy.version());
+                buildStatementParsers(features, identifierParser, prattParser, stmtParserRef);
+        Parser<Node> statementParser = buildCompositeParser(parsers, features.version());
         stmtParserRef.set(statementParser);
         return statementParser;
     }
 
+    // Order matters: the line-expression parser accepts any expression, so it goes last.
     private static List<StatementParser<? extends Node>> buildStatementParsers(
-            VersionStrategy strategy,
+            LanguageFeatures features,
             Parser<IdentifierNode> identifierParser,
             Parser<ExpressionNode> prattParser,
             AtomicReference<Parser<Node>> stmtParserRef) {
-        DeclarationParser declarationParser =
+        List<StatementParser<? extends Node>> parsers = new ArrayList<>();
+        parsers.add(
                 new DeclarationParser(
                         identifierParser,
                         prattParser,
-                        strategy.declarationKeywords(),
-                        strategy.supportedDataTypes());
-        AssignParser assignParser = new AssignParser(identifierParser, prattParser);
-        LineExpressionParser lineExprParser = new LineExpressionParser(prattParser);
-        ConditionalParser conditionalParser =
-                new ConditionalParser(prattParser, stream -> stmtParserRef.get().parse(stream));
-        return strategy.statementParsers(
-                declarationParser, assignParser, conditionalParser, lineExprParser);
+                        features.declarationKeywordMatcher(),
+                        features.dataTypeMatcher()));
+        parsers.add(new AssignParser(identifierParser, prattParser));
+        parsers.addAll(blockStatementParsers(features, prattParser, stmtParserRef));
+        parsers.add(new LineExpressionParser(prattParser));
+        return parsers;
+    }
+
+    // Statements that own a block: their body is parsed with the full statement parser.
+    private static List<StatementParser<? extends Node>> blockStatementParsers(
+            LanguageFeatures features,
+            Parser<ExpressionNode> prattParser,
+            AtomicReference<Parser<Node>> stmtParserRef) {
+        Parser<Node> statementParser = stream -> stmtParserRef.get().parse(stream);
+        List<StatementParser<? extends Node>> parsers = new ArrayList<>();
+        if (features.supports(Feature.IF_STATEMENT)) {
+            parsers.add(new ConditionalParser(prattParser, statementParser));
+        }
+        if (features.supports(Feature.WHILE_STATEMENT)) {
+            parsers.add(new WhileParser(prattParser, statementParser));
+        }
+        return parsers;
     }
 
     // Predictive dispatch: the first parser whose lookahead accepts the stream owns the statement,
@@ -104,22 +120,18 @@ public final class ParserFactory {
                             + "' "
                             + token.range()
                             + " (not valid in PrintScript "
-                            + versionLabel(version)
+                            + version.label()
                             + ")";
             case IncorrectResult<Token>(String err) ->
                     err.startsWith("Lexical error") ? err : "Unexpected end of file";
         };
     }
 
-    private static String versionLabel(Version version) {
-        return version == Version.V_1_0 ? "1.0" : "1.1";
-    }
-
     private static Parser<ExpressionNode> getExpressionNodeParser(
-            Parser<IdentifierNode> identifierParser, VersionStrategy strategy) {
+            Parser<IdentifierNode> identifierParser, LanguageFeatures features) {
         AtomicReference<Parser<ExpressionNode>> exprParserRef = new AtomicReference<>();
         Parser<ExpressionNode> primaryParser =
-                createPrimaryParser(identifierParser, strategy, exprParserRef::get);
+                createPrimaryParser(identifierParser, features, exprParserRef::get);
         Parser<ExpressionNode> prattParser = new OperatorParser(() -> primaryParser);
         exprParserRef.set(prattParser);
         return prattParser;
@@ -127,20 +139,31 @@ public final class ParserFactory {
 
     private static Parser<ExpressionNode> createPrimaryParser(
             Parser<IdentifierNode> identifierParser,
-            VersionStrategy strategy,
+            LanguageFeatures features,
             Supplier<Parser<ExpressionNode>> exprParserSupplier) {
-        LiteralParsers literalParsers =
-                new LiteralParsers(
-                        new NumberLiteralParser(),
-                        new StringLiteralParser(),
-                        new BooleanLiteralParser());
         return stream -> {
             FunctionParser functionParser =
                     new FunctionParser(identifierParser, exprParserSupplier.get());
             List<Parser<? extends ExpressionNode>> primaryList =
-                    strategy.primaryParsers(literalParsers, functionParser, identifierParser);
-            return parseFirstMatching(primaryList, stream, strategy.version());
+                    primaryParsers(features, functionParser, identifierParser);
+            return parseFirstMatching(primaryList, stream, features.version());
         };
+    }
+
+    // Order matters: a function call must be tried before a plain identifier.
+    private static List<Parser<? extends ExpressionNode>> primaryParsers(
+            LanguageFeatures features,
+            FunctionParser functionParser,
+            Parser<IdentifierNode> identifierParser) {
+        List<Parser<? extends ExpressionNode>> parsers = new ArrayList<>();
+        parsers.add(new NumberLiteralParser());
+        parsers.add(new StringLiteralParser());
+        if (features.supports(Feature.BOOLEAN_LITERAL)) {
+            parsers.add(new BooleanLiteralParser());
+        }
+        parsers.add(functionParser);
+        parsers.add(identifierParser);
+        return parsers;
     }
 
     private static Result<IterationStep<ExpressionNode>> parseFirstMatching(

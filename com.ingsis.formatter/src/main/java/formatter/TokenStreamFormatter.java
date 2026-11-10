@@ -36,11 +36,6 @@ import result.Result;
 import token.Token;
 import token.TokenType;
 
-/**
- * Formats source code as a stream of tokens: each token is written as soon as it is read, so the
- * whole program never has to fit in memory. The whitespace between two tokens is rebuilt from their
- * positions and then rewritten by the {@link FormattingRule}s, applied in order.
- */
 public class TokenStreamFormatter implements Formatter {
     private final List<FormattingRule> rules;
     private final FormatContext context;
@@ -79,7 +74,6 @@ public class TokenStreamFormatter implements Formatter {
         return Result.failure("TokenStreamFormatter formats directly from input stream");
     }
 
-    /** Convenience for small inputs: returns the formatted source as a string. */
     public Result<String> format(InputStream in) {
         StringWriter writer = new StringWriter();
         Result<String> res = format(in, writer);
@@ -128,7 +122,6 @@ public class TokenStreamFormatter implements Formatter {
         state.prev = current;
     }
 
-    /** Rebuilds the whitespace the lexer skipped between two tokens from their positions. */
     static String separatorBetween(Token prev, Token current) {
         Position end = prev.range().end();
         Position start = current.startPosition();
