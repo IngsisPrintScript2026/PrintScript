@@ -9,7 +9,6 @@ import result.Result;
 import semantic.environment.SemanticEnvironment;
 import semantic.handler.SemanticNodeHandler;
 
-/** Semantic handler for calls that rejects one specific function name and accepts the rest. */
 public final class StubCallSemanticHandler implements SemanticNodeHandler<CallFunctionNode> {
     private final String rejectedName;
     private final String message;

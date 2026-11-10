@@ -98,10 +98,7 @@ public class ExpressionTypeInference {
         String fnName = call.identifierNode().name();
         if (!builtInFunctions.contains(fnName)) {
             return Result.failure(
-                    "Function '"
-                            + fnName
-                            + "' is not supported in PrintScript "
-                            + (version == Version.V_1_0 ? "1.0" : "1.1"));
+                    "Function '" + fnName + "' is not supported in PrintScript " + version.label());
         }
         Result<DataType> argsRes = checkArguments(call.argumentNodes(), env);
         if (!argsRes.isCorrect()) {

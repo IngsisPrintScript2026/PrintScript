@@ -26,6 +26,7 @@ import node.factory.NodeFactory;
 import node.keyword.AssignNode;
 import node.keyword.DeclarationKeywordNode;
 import node.keyword.IfKeywordNode;
+import node.keyword.WhileKeywordNode;
 import node.keyword.declaration.DeclarationType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -48,6 +49,7 @@ class NodeFactoryUnitTest {
         Token letTok = new Token(TokenType.LET, "let", new Position(1, 1));
         Token assignTok = new Token(TokenType.EQUAL, "=", new Position(1, 3));
         Token ifTok = new Token(TokenType.IF, "if", new Position(2, 1));
+        Token whileTok = new Token(TokenType.WHILE, "while", new Position(3, 1));
         Token opTok = new Token(TokenType.PLUS, "+", new Position(1, 7));
 
         // When: creating nodes through NodeFactory and direct constructors
@@ -69,6 +71,7 @@ class NodeFactoryUnitTest {
         CallFunctionNode call = NodeFactory.createCall("println", List.of(idNode, numNode), idTok);
         IfKeywordNode ifNode =
                 NodeFactory.createIf(boolNode, List.of(decl1), List.of(assign), ifTok);
+        WhileKeywordNode whileNode = NodeFactory.createWhile(boolNode, List.of(decl1), whileTok);
         OperatorNode opNode =
                 NodeFactory.createOperator(OperatorType.PLUS, numNode, numNode, opTok);
         ProgramNode prog = NodeFactory.createProgram(List.of(decl1, assign, ifNode));
@@ -143,6 +146,13 @@ class NodeFactoryUnitTest {
         assertEquals(2, ifNode.line());
         assertEquals(1, ifNode.column());
         assertEquals(3, ifNode.children().size());
+
+        assertEquals("while", whileNode.symbol());
+        assertEquals(boolNode, whileNode.condition());
+        assertEquals(1, whileNode.body().size());
+        assertEquals(3, whileNode.line());
+        assertEquals(1, whileNode.column());
+        assertEquals(2, whileNode.children().size());
 
         assertEquals("+", opNode.symbol());
         assertEquals(OperatorType.PLUS, opNode.operatorType());

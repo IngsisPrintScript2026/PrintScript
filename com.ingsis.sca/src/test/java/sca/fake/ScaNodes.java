@@ -17,7 +17,6 @@ import node.expression.operator.OperatorType;
 import node.keyword.DeclarationKeywordNode;
 import node.keyword.declaration.DeclarationType;
 
-/** Small builders for hand-made AST nodes used by the SCA unit tests. */
 public final class ScaNodes {
     private ScaNodes() {}
 

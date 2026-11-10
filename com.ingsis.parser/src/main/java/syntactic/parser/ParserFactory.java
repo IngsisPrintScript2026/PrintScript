@@ -27,6 +27,7 @@ import syntactic.parser.root.DeclarationParser;
 import syntactic.parser.root.FunctionParser;
 import syntactic.parser.root.LineExpressionParser;
 import syntactic.parser.root.StatementParser;
+import syntactic.parser.root.WhileParser;
 import syntactic.version.LanguageFeatures;
 import syntactic.version.LanguageFeatures.Feature;
 import token.Token;
@@ -63,12 +64,24 @@ public final class ParserFactory {
                         features.declarationKeywordMatcher(),
                         features.dataTypeMatcher()));
         parsers.add(new AssignParser(identifierParser, prattParser));
-        if (features.supports(Feature.IF_STATEMENT)) {
-            parsers.add(
-                    new ConditionalParser(
-                            prattParser, stream -> stmtParserRef.get().parse(stream)));
-        }
+        parsers.addAll(blockStatementParsers(features, prattParser, stmtParserRef));
         parsers.add(new LineExpressionParser(prattParser));
+        return parsers;
+    }
+
+    // Statements that own a block: their body is parsed with the full statement parser.
+    private static List<StatementParser<? extends Node>> blockStatementParsers(
+            LanguageFeatures features,
+            Parser<ExpressionNode> prattParser,
+            AtomicReference<Parser<Node>> stmtParserRef) {
+        Parser<Node> statementParser = stream -> stmtParserRef.get().parse(stream);
+        List<StatementParser<? extends Node>> parsers = new ArrayList<>();
+        if (features.supports(Feature.IF_STATEMENT)) {
+            parsers.add(new ConditionalParser(prattParser, statementParser));
+        }
+        if (features.supports(Feature.WHILE_STATEMENT)) {
+            parsers.add(new WhileParser(prattParser, statementParser));
+        }
         return parsers;
     }
 
@@ -107,15 +120,11 @@ public final class ParserFactory {
                             + "' "
                             + token.range()
                             + " (not valid in PrintScript "
-                            + versionLabel(version)
+                            + version.label()
                             + ")";
             case IncorrectResult<Token>(String err) ->
                     err.startsWith("Lexical error") ? err : "Unexpected end of file";
         };
-    }
-
-    private static String versionLabel(Version version) {
-        return version == Version.V_1_0 ? "1.0" : "1.1";
     }
 
     private static Parser<ExpressionNode> getExpressionNodeParser(

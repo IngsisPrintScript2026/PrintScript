@@ -17,7 +17,6 @@ import result.Result;
 import semantic.environment.SemanticEnvironment;
 import version.Version;
 
-/** Whole programs from the assignment, run from source text through the real pipeline. */
 class DefaultInterpreterIntegrationTest {
 
     private static List<String> printedBy(String source) {

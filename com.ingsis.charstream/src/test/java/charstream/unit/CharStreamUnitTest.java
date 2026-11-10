@@ -23,7 +23,6 @@ import result.Result;
 
 class CharStreamUnitTest {
 
-    /** In-memory reader that supports pushing chars back, like a PushbackReader. */
     private static final class FakeCharReader implements CharReader {
         private final Deque<Integer> pending = new ArrayDeque<>();
 
@@ -45,7 +44,6 @@ class CharStreamUnitTest {
         public void close() {}
     }
 
-    /** Reader whose unread always fails, to check that the stream swallows the failure. */
     private static final class StubFailingUnreadReader implements CharReader {
         @Override
         public int readNextChar() {

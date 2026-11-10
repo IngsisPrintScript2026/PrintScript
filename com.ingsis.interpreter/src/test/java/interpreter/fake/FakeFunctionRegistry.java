@@ -9,7 +9,6 @@ import builtin.FunctionRegistry;
 import java.util.HashMap;
 import java.util.Map;
 
-/** Function registry backed by a map keyed by the exact function name. */
 public final class FakeFunctionRegistry implements FunctionRegistry {
     private final Map<String, BuiltInFunction> functions = new HashMap<>();
 

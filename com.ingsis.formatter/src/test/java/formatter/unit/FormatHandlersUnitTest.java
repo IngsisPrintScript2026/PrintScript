@@ -13,6 +13,7 @@ import formatter.handler.CallFunctionNodeFormatHandler;
 import formatter.handler.DeclarationNodeFormatHandler;
 import formatter.handler.IfNodeFormatHandler;
 import formatter.handler.ProgramNodeFormatHandler;
+import formatter.handler.WhileNodeFormatHandler;
 import formatter.support.FormatContextBuilder;
 import java.math.BigDecimal;
 import java.util.List;
@@ -29,6 +30,7 @@ import node.expression.nullObject.NilExpressionNode;
 import node.keyword.AssignNode;
 import node.keyword.DeclarationKeywordNode;
 import node.keyword.IfKeywordNode;
+import node.keyword.WhileKeywordNode;
 import node.keyword.declaration.DeclarationType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -260,6 +262,41 @@ class FormatHandlersUnitTest {
 
         // Then
         assertEquals("if (true) {\n    x = 1;\n}", text);
+    }
+
+    @Test
+    @DisplayName(
+            "Given: default rules | When: formatting while | Then: braces on the same line, body"
+                    + " indented")
+    void whileHandler_whenBraceSameLine_thenWritesCompactWhile() {
+        // Given
+        WhileKeywordNode node =
+                new WhileKeywordNode(
+                        new BooleanLiteralNode(true, 1, 1), List.of(println(one())), 1, 1);
+
+        // When
+        String text = new WhileNodeFormatHandler().format(node, DEFAULTS, FORMATTER);
+
+        // Then
+        assertEquals("while (true) {\n    println(1);\n}", text);
+    }
+
+    @Test
+    @DisplayName(
+            "Given: if-brace-same-line false | When: formatting while | Then: braces go on their"
+                    + " own lines")
+    void whileHandler_whenBraceBelowLine_thenBracesOnOwnLines() {
+        // Given
+        FormatContext ctx = FormatContextBuilder.unset().ifBraceSameLine(false).build();
+        WhileKeywordNode node =
+                new WhileKeywordNode(
+                        new BooleanLiteralNode(true, 1, 1), List.of(println(one())), 1, 1);
+
+        // When
+        String text = new WhileNodeFormatHandler().format(node, ctx, FORMATTER);
+
+        // Then
+        assertEquals("while (true)\n{\n    println(1);\n}", text);
     }
 
     @Test

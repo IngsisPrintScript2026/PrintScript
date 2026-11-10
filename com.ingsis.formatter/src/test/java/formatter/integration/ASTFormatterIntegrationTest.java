@@ -17,7 +17,6 @@ import org.junit.jupiter.api.Test;
 import result.CorrectResult;
 import result.Result;
 
-/** Real source → lexer → parser (1.1) → ASTFormatter, configured from a YAML string. */
 class ASTFormatterIntegrationTest {
 
     private static String formatWith(ASTFormatter formatter, String source) {

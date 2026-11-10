@@ -110,7 +110,6 @@ public class CliEngine implements Callable<Integer>, Engine {
         }
     }
 
-    /** The file given with -o, or STDOUT wrapped so that closing it does not close System.out. */
     private Writer openOutput() throws IOException {
         if (outputFile != null) {
             return new FileWriter(outputFile, StandardCharsets.UTF_8);

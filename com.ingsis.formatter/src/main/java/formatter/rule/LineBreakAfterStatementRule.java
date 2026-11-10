@@ -8,10 +8,6 @@ import formatter.FormatContext;
 import token.Token;
 import token.TokenType;
 
-/**
- * Mandatory: every statement ends its line after the ';', and block contents start and end on their
- * own lines (so they can be indented).
- */
 public class LineBreakAfterStatementRule implements FormattingRule {
     @Override
     public boolean applies(Token prev, Token current, FormatContext context) {

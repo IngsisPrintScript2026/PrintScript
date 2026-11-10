@@ -9,7 +9,6 @@ import result.Result;
 import semantic.SemanticChecker;
 import semantic.environment.SemanticEnvironment;
 
-/** Semantic checker that accepts every statement, or rejects all of them with a fixed error. */
 public final class StubSemanticChecker extends SemanticChecker {
     private final String error;
 

@@ -28,6 +28,7 @@ import node.expression.operator.OperatorType;
 import node.keyword.AssignNode;
 import node.keyword.DeclarationKeywordNode;
 import node.keyword.IfKeywordNode;
+import node.keyword.WhileKeywordNode;
 import node.keyword.declaration.DeclarationType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -280,6 +281,8 @@ class ASTFormatterUnitTest {
         FormatContext ctx = new FormatContext();
         IfKeywordNode ifNode =
                 new IfKeywordNode(new BooleanLiteralNode(true, 1, 1), List.of(), List.of(), 1, 1);
+        WhileKeywordNode whileNode =
+                new WhileKeywordNode(new BooleanLiteralNode(true, 1, 1), List.of(), 1, 1);
 
         // When
         String text =
@@ -287,6 +290,7 @@ class ASTFormatterUnitTest {
                         + formatter.formatStatement(
                                 new AssignNode(new IdentifierNode("x", 1, 1), num("1"), 1, 1), ctx)
                         + formatter.formatStatement(ifNode, ctx)
+                        + formatter.formatStatement(whileNode, ctx)
                         + formatter.formatStatement(call("println"), ctx)
                         + formatter.formatStatement(new ProgramNode(List.of(), 1, 1), ctx);
 

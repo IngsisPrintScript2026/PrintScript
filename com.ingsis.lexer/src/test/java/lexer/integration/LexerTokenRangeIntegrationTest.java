@@ -27,7 +27,6 @@ import token.TokenType;
 
 class LexerTokenRangeIntegrationTest {
 
-    /** Outcome of lexing a whole source: tokens read before the first failure, and the failure. */
     private record Lexed(List<Token> tokens, String failure) {}
 
     private static Lexed lex(String source) {

@@ -6,7 +6,6 @@ package progress;
 
 import java.io.PrintStream;
 
-/** Draws "Parsing: NN%" on a single, constantly rewritten line of the given stream. */
 public final class ConsoleProgressReporter implements ProgressListener {
     private static final String LABEL = "Parsing: ";
     private static final int MAX_PERCENT = 100;

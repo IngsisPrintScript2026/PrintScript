@@ -13,7 +13,6 @@ import token.TokenType;
 import tokenstream.rules.TokenMatchers;
 import version.Version;
 
-/** What a PrintScript version supports. Parsers and semantic checks are built from this. */
 public record LanguageFeatures(
         Version version,
         Set<TokenType> declarationKeywords,
@@ -21,10 +20,10 @@ public record LanguageFeatures(
         Set<String> builtInFunctions,
         Set<Feature> features) {
 
-    /** Optional constructs: a version supports one only if it lists it. */
     public enum Feature {
         BOOLEAN_LITERAL,
-        IF_STATEMENT
+        IF_STATEMENT,
+        WHILE_STATEMENT
     }
 
     public LanguageFeatures {
@@ -41,6 +40,7 @@ public record LanguageFeatures(
         return switch (version) {
             case V_1_0 -> v10();
             case V_1_1 -> v11();
+            case V_1_2 -> v11().extendedWith(Version.V_1_2, Feature.WHILE_STATEMENT);
         };
     }
 
@@ -62,7 +62,6 @@ public record LanguageFeatures(
                 Set.of(Feature.BOOLEAN_LITERAL, Feature.IF_STATEMENT));
     }
 
-    /** Same language under a new version, plus the given constructs. */
     public LanguageFeatures extendedWith(Version newVersion, Feature... extra) {
         Set<Feature> all = new HashSet<>(features);
         all.addAll(List.of(extra));

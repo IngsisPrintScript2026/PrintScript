@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import progress.ProgressListener;
 
-/** Records every progress notification it receives. */
 public final class SpyProgressListener implements ProgressListener {
     private final List<Long> reported = new ArrayList<>();
     private int clears;

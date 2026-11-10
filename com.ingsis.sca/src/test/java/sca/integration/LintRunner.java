@@ -26,7 +26,6 @@ import tokenstream.LazyTokenStream;
 import tokenstream.TokenStream;
 import version.Version;
 
-/** Wires the real pipeline: source → chars → lexer → parser + semantic checker → SCA. */
 final class LintRunner {
     private LintRunner() {}
 
@@ -39,7 +38,6 @@ final class LintRunner {
                 new Lexer(new CharStream(new StreamCharReader(new StringReader(source)))));
     }
 
-    /** Analyzes each statement as soon as it is parsed, like the CLI does. */
     static Result<List<String>> lint(String source, String yamlConfig) {
         Sca sca = ASTSca.fromYamlConfig(stream(yamlConfig));
         List<String> violations = new ArrayList<>();
@@ -55,7 +53,6 @@ final class LintRunner {
         return Result.success(violations);
     }
 
-    /** Parses the whole source into a ProgramNode (statements are semantically checked). */
     static ProgramNode parseProgram(String source) {
         List<Node> statements = new ArrayList<>();
         new StatementPipeline(Version.V_1_1)

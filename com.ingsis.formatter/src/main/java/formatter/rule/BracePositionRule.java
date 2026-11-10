@@ -8,10 +8,6 @@ import formatter.FormatContext;
 import token.Token;
 import token.TokenType;
 
-/**
- * The '{' of an if/else block goes on the same line as its header (default), unless
- * if-brace-below-line is explicitly enabled. "} else" follows the same placement.
- */
 public class BracePositionRule implements FormattingRule {
     @Override
     public boolean applies(Token prev, Token current, FormatContext context) {

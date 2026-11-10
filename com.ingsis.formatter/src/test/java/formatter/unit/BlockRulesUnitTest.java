@@ -18,7 +18,6 @@ import org.junit.jupiter.api.Test;
 import token.Token;
 import token.TokenType;
 
-/** Rules for if/else blocks: brace placement and indentation. */
 class BlockRulesUnitTest {
     private static final Token RPAREN = at(TokenType.RPAREN, ")");
     private static final Token LBRACE = at(TokenType.LBRACE, "{");

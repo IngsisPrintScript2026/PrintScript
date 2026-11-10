@@ -22,7 +22,6 @@ import tokenstream.LazyTokenStream;
 import tokenstream.TokenStream;
 import version.Version;
 
-/** Runs real PrintScript source through lexer, parser, semantic checker and interpreter. */
 final class PrintScriptRunner {
     private final Version version;
     private final InputProvider input;

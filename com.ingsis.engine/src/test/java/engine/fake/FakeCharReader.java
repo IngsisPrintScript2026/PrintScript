@@ -8,7 +8,6 @@ import charstream.CharReader;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-/** In-memory CharReader over a string that supports unread, like the real pushback reader. */
 public final class FakeCharReader implements CharReader {
     private final Deque<Integer> pending = new ArrayDeque<>();
     private boolean closed;

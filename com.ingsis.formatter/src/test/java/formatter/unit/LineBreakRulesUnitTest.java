@@ -19,7 +19,6 @@ import org.junit.jupiter.api.Test;
 import token.Token;
 import token.TokenType;
 
-/** Rules that decide where line breaks go between statements. */
 class LineBreakRulesUnitTest {
     private static final Token LET = at(TokenType.LET, "let");
     private static final Token ID = at(TokenType.IDENTIFIER, "x");

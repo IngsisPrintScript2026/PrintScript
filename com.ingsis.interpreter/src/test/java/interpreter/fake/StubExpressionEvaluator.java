@@ -13,7 +13,6 @@ import node.expression.ExpressionNode;
 import node.expression.literal.DataType;
 import result.Result;
 
-/** Expression evaluator that always answers the same result and records target types. */
 public final class StubExpressionEvaluator implements ExpressionEvaluator {
     private final Result<Object> answer;
     private final List<DataType> targetTypes = new ArrayList<>();

@@ -26,7 +26,6 @@ import result.Result;
 import semantic.environment.SemanticEnvironment;
 import version.Version;
 
-/** Real CharStream + Lexer + LazyTokenStream + ParserFactory + SemanticChecker on source text. */
 class StatementPipelineIntegrationTest {
 
     private static Result<SemanticEnvironment> run(

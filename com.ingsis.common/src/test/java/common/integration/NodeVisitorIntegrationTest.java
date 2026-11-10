@@ -18,6 +18,7 @@ import node.factory.NodeFactory;
 import node.keyword.AssignNode;
 import node.keyword.DeclarationKeywordNode;
 import node.keyword.IfKeywordNode;
+import node.keyword.WhileKeywordNode;
 import node.keyword.declaration.DeclarationType;
 import node.visitor.NodeVisitor;
 import org.junit.jupiter.api.DisplayName;
@@ -46,6 +47,7 @@ class NodeVisitorIntegrationTest {
         AssignNode assign = NodeFactory.createAssign(id, num, tok);
         CallFunctionNode call = NodeFactory.createCall("print", List.of(num), tok);
         IfKeywordNode ifNode = NodeFactory.createIf(num, List.of(), List.of(), tok);
+        WhileKeywordNode whileNode = NodeFactory.createWhile(num, List.of(), tok);
         ProgramNode prog = NodeFactory.createProgram(List.of(decl));
 
         NodeVisitor<String, Void> visitor =
@@ -63,6 +65,11 @@ class NodeVisitorIntegrationTest {
                     @Override
                     public String visit(IfKeywordNode node, Void context) {
                         return "if";
+                    }
+
+                    @Override
+                    public String visit(WhileKeywordNode node, Void context) {
+                        return "while";
                     }
 
                     @Override
@@ -85,6 +92,7 @@ class NodeVisitorIntegrationTest {
         String declResult = decl.accept(visitor, null);
         String assignResult = assign.accept(visitor, null);
         String ifResult = ifNode.accept(visitor, null);
+        String whileResult = whileNode.accept(visitor, null);
         String callResult = call.accept(visitor, null);
         String progResult = prog.accept(visitor, null);
         String defaultResult = id.accept(visitor, null);
@@ -93,6 +101,7 @@ class NodeVisitorIntegrationTest {
         assertEquals("decl", declResult);
         assertEquals("assign", assignResult);
         assertEquals("if", ifResult);
+        assertEquals("while", whileResult);
         assertEquals("call", callResult);
         assertEquals("prog", progResult);
         assertEquals("default", defaultResult);

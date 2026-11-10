@@ -30,7 +30,6 @@ import semantic.environment.SemanticEnvironment;
 import syntactic.parser.ParserFactory;
 import version.Version;
 
-/** Language rules of PrintScript 1.0, checked through the real lexer, parser and checker. */
 class PrintScript10RulesIntegrationTest {
 
     private static Result<SemanticEnvironment> check(String source) {

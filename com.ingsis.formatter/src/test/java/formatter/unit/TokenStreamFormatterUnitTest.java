@@ -31,7 +31,6 @@ import token.TokenType;
 class TokenStreamFormatterUnitTest {
     private static final List<FormattingRule> NO_RULES = List.of();
 
-    /** Tokens of {@code let x:number=1;} written without spaces on line 1. */
     private static List<Token> gluedDeclaration() {
         return List.of(
                 token(TokenType.LET, "let", 1, 1),

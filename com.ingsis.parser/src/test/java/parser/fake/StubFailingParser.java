@@ -10,7 +10,6 @@ import result.Result;
 import syntactic.Parser;
 import tokenstream.TokenStream;
 
-/** Parser that always fails with a fixed message, whatever the stream holds. */
 public final class StubFailingParser<T extends Node> implements Parser<T> {
     private final String error;
 

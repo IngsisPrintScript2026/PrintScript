@@ -22,7 +22,6 @@ import org.junit.jupiter.api.Test;
 import token.Token;
 import token.TokenType;
 
-/** Spacing rules: what separator each rule produces between two tokens on the same line. */
 class FormattingRulesUnitTest {
     private static final Token LET = at(TokenType.LET, "let");
     private static final Token ID = at(TokenType.IDENTIFIER, "x");

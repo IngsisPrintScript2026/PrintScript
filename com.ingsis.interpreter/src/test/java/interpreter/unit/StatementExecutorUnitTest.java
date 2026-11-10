@@ -32,6 +32,7 @@ import node.expression.literal.StringLiteralNode;
 import node.keyword.AssignNode;
 import node.keyword.DeclarationKeywordNode;
 import node.keyword.IfKeywordNode;
+import node.keyword.WhileKeywordNode;
 import node.keyword.declaration.DeclarationType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -60,6 +61,10 @@ class StatementExecutorUnitTest {
     private static IfKeywordNode ifNode(
             ExpressionNode condition, List<Node> thenBody, List<Node> elseBody) {
         return new IfKeywordNode(condition, thenBody, elseBody, 1, 1);
+    }
+
+    private static WhileKeywordNode whileNode(ExpressionNode condition, List<Node> body) {
+        return new WhileKeywordNode(condition, body, 1, 1);
     }
 
     private static NumberLiteralNode num(String value) {
@@ -393,6 +398,62 @@ class StatementExecutorUnitTest {
         // Then
         assertTrue(errorOf(result).contains("ghost"));
         assertTrue(output.lines().isEmpty());
+    }
+
+    @Test
+    @DisplayName("Given: while (false) | When: executing | Then: body does not run")
+    void executor_whenWhileConditionFalse_thenBodyDoesNotRun() {
+        SpyOutput output = new SpyOutput();
+        WhileKeywordNode statement =
+                whileNode(new BooleanLiteralNode(false, 1, 1), List.of(println("never")));
+        Result<Void> result = printing(output).execute(statement, new Environment());
+        assertTrue(result.isCorrect());
+        assertTrue(output.lines().isEmpty());
+    }
+
+    @Test
+    @DisplayName(
+            "Given: while loop with variable condition | When: variable updated | Then: terminates")
+    void executor_whenWhileConditionUpdates_thenLoopTerminates() {
+        SpyOutput output = new SpyOutput();
+        Environment env = new Environment();
+        env.declare("running", true, DataType.BOOLEAN, true);
+        WhileKeywordNode statement =
+                whileNode(
+                        new IdentifierNode("running", 1, 1),
+                        List.of(
+                                println("looped"),
+                                assign("running", new BooleanLiteralNode(false, 1, 1))));
+        Result<Void> result = printing(output).execute(statement, env);
+        assertTrue(result.isCorrect());
+        assertEquals(List.of("looped"), output.lines());
+    }
+
+    @Test
+    @DisplayName("Given: while with non-boolean condition | When: executing | Then: fails")
+    void executor_whenWhileConditionNotBoolean_thenFails() {
+        WhileKeywordNode statement = whileNode(num("1"), List.of());
+        Result<Void> result = printing(new SpyOutput()).execute(statement, new Environment());
+        assertTrue(errorOf(result).contains("must evaluate to a boolean"));
+    }
+
+    @Test
+    @DisplayName("Given: while whose condition fails | When: executing | Then: returns error")
+    void executor_whenWhileConditionFails_thenReturnsError() {
+        StubExpressionEvaluator evaluator = new StubExpressionEvaluator(Result.failure("cond"));
+        WhileKeywordNode statement = whileNode(num("1"), List.of());
+        Result<Void> result = stubbed(evaluator).execute(statement, new Environment());
+        assertEquals("cond", errorOf(result));
+    }
+
+    @Test
+    @DisplayName("Given: while whose body fails | When: executing | Then: returns error")
+    void executor_whenWhileBodyFails_thenReturnsError() {
+        SpyOutput output = new SpyOutput();
+        WhileKeywordNode statement =
+                whileNode(new BooleanLiteralNode(true, 1, 1), List.of(assign("ghost", num("1"))));
+        Result<Void> result = printing(output).execute(statement, new Environment());
+        assertTrue(errorOf(result).contains("ghost"));
     }
 
     @Test

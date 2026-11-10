@@ -16,10 +16,6 @@ import syntactic.Parser;
 import token.Token;
 import tokenstream.TokenStream;
 
-/**
- * Simplified statement parser: each statement is a fixed number of tokens and becomes a call node
- * named after the first token, e.g. tokens {@code foo ;} become {@code foo()}.
- */
 public final class FakeCallPerTokensParser implements Parser<Node> {
     private final int tokensPerStatement;
 

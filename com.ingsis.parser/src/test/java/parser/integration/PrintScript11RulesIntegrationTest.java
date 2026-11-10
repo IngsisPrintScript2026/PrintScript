@@ -27,7 +27,6 @@ import semantic.environment.SemanticEnvironment;
 import syntactic.parser.ParserFactory;
 import version.Version;
 
-/** Language rules added in PrintScript 1.1, checked through the real lexer, parser and checker. */
 class PrintScript11RulesIntegrationTest {
 
     private static Result<SemanticEnvironment> check(String source) {

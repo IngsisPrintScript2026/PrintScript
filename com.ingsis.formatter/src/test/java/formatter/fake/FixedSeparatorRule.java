@@ -8,7 +8,6 @@ import formatter.FormatContext;
 import formatter.rule.FormattingRule;
 import token.Token;
 
-/** Rule stub that always applies and replaces every separator with a fixed text. */
 public record FixedSeparatorRule(String separator) implements FormattingRule {
     @Override
     public boolean applies(Token prev, Token current, FormatContext context) {

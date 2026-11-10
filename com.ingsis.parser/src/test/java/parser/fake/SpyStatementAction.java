@@ -11,7 +11,6 @@ import pipeline.StatementAction;
 import result.Result;
 import semantic.environment.SemanticEnvironment;
 
-/** Records every statement (and the environment it was checked against) in arrival order. */
 public final class SpyStatementAction implements StatementAction {
     private final List<Node> statements = new ArrayList<>();
     private final List<SemanticEnvironment> environments = new ArrayList<>();

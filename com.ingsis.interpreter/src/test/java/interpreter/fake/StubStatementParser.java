@@ -12,10 +12,6 @@ import result.Result;
 import syntactic.Parser;
 import tokenstream.TokenStream;
 
-/**
- * Parser that answers the i-th canned statement for the i-th token of the stream (one token per
- * statement), or a fixed error when one is configured.
- */
 public final class StubStatementParser implements Parser<Node> {
     private final List<Node> statements;
     private final String error;

@@ -8,7 +8,6 @@ import formatter.FormatContext;
 import token.Token;
 import token.TokenType;
 
-/** Configurable: number of empty lines (0, 1 or 2) before a statement that calls println. */
 public class LinesBeforePrintlnRule implements FormattingRule {
     @Override
     public boolean applies(Token prev, Token current, FormatContext context) {

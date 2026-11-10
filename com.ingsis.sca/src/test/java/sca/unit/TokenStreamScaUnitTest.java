@@ -40,7 +40,6 @@ class TokenStreamScaUnitTest {
                 tok(TokenType.SEMICOLON, ";", 13 + name.length()));
     }
 
-    /** println(1 + 2); with the '+' at column 11. */
     private static List<Token> printlnOfSum() {
         return List.of(
                 tok(TokenType.PRINTLN, "println", 1),

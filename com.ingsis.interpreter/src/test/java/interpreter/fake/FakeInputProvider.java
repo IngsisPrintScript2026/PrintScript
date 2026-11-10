@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 
-/** Input provider backed by a queue of lines; records every prompt it receives. */
 public final class FakeInputProvider implements InputProvider {
     private final Deque<String> lines;
     private final List<String> prompts = new ArrayList<>();

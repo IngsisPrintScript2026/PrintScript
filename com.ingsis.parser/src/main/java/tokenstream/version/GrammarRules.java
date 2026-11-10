@@ -17,7 +17,7 @@ public record GrammarRules(
     public static GrammarRules fromVersion(Version version) {
         return switch (version) {
             case V_1_0 -> forV10();
-            case V_1_1 -> forV11();
+            case V_1_1, V_1_2 -> forV11();
         };
     }
 

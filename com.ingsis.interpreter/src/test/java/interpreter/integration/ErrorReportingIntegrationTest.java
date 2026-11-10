@@ -19,7 +19,6 @@ import result.Result;
 import semantic.environment.SemanticEnvironment;
 import version.Version;
 
-/** Syntactic, semantic and runtime errors are labelled and located. */
 class ErrorReportingIntegrationTest {
 
     private final SpyOutput output = new SpyOutput();

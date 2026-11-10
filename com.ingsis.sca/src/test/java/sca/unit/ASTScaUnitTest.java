@@ -24,6 +24,7 @@ import node.expression.literal.BooleanLiteralNode;
 import node.keyword.AssignNode;
 import node.keyword.DeclarationKeywordNode;
 import node.keyword.IfKeywordNode;
+import node.keyword.WhileKeywordNode;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import result.CorrectResult;
@@ -234,10 +235,13 @@ class ASTScaUnitTest {
         ASTSca sca = new ASTSca(List.of(), SNAKE);
         IfKeywordNode ifNode =
                 new IfKeywordNode(new BooleanLiteralNode(true, 1, 1), List.of(), List.of(), 1, 1);
+        WhileKeywordNode whileNode =
+                new WhileKeywordNode(new BooleanLiteralNode(true, 1, 1), List.of(), 1, 1);
         AssignNode assign = new AssignNode(variable("x"), number(1), 1, 1);
 
         // When
-        List<Node> nodes = List.of(let("badName", 1, 1), ifNode, assign, call("println"));
+        List<Node> nodes =
+                List.of(let("badName", 1, 1), ifNode, whileNode, assign, call("println"));
         long withViolations =
                 nodes.stream().filter(n -> !violations(sca.analyzeNode(n, null)).isEmpty()).count();
 
