@@ -59,16 +59,16 @@ gradle.projectsEvaluated {
 
         reports {
             xml.required = true
-            xml.outputLocation.set(layout.buildDirectory.file("custom-reports/jacoco/jacoco.xml"))
+            xml.outputLocation.set(layout.buildDirectory.file("custom-reports/jacoco-aggregate/jacoco.xml"))
             html.required = true
-            html.outputLocation.set(layout.buildDirectory.dir("custom-reports/jacoco/html"))
+            html.outputLocation.set(layout.buildDirectory.dir("custom-reports/jacoco-aggregate/html"))
             csv.required = false
         }
 
         doLast {
             copy {
-                from layout.buildDirectory.dir("custom-reports/jacoco")
-                into layout.buildDirectory.dir("reports/jacoco")
+                from layout.buildDirectory.dir("custom-reports/jacoco-aggregate")
+                into layout.buildDirectory.dir("reports/jacoco-aggregate")
             }
         }
     }
