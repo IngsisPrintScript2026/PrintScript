@@ -261,4 +261,40 @@ class ASTScaIntegrationTest {
         assertTrue(violations.get(0).contains("line 1"));
         assertTrue(violations.get(1).contains("line 3"));
     }
+
+    @Test
+    @DisplayName(
+            "Given: camel case config | When: line 2 declares 'my_name' | Then: reports where the"
+                    + " identifier starts and ends")
+    void astSca_whenIdentifierViolates_thenReportsItsFullRange() {
+        // Given
+        String source = "let okName: number = 1;\nlet my_name: string = \"Joe\";";
+
+        // When
+        List<String> violations = violations(source, CAMEL);
+
+        // Then
+        assertEquals(1, violations.size());
+        assertTrue(
+                violations.get(0).contains("from line 2, column 5 to line 2, column 11"),
+                violations.get(0));
+    }
+
+    @Test
+    @DisplayName(
+            "Given: println rule enabled | When: println(\"Hi \" + name) | Then: reports the range"
+                    + " of the whole argument expression")
+    void astSca_whenPrintlnHasExpression_thenReportsTheExpressionRange() {
+        // Given
+        String source = "let name: string = \"Joe\";\nprintln(\"Hi \" + name);";
+
+        // When
+        List<String> violations = violations(source, PRINTLN_RULE);
+
+        // Then
+        assertEquals(1, violations.size());
+        assertTrue(
+                violations.get(0).contains("from line 2, column 9 to line 2, column 20"),
+                violations.get(0));
+    }
 }

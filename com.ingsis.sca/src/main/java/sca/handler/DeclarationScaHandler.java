@@ -38,9 +38,8 @@ public class DeclarationScaHandler implements ScaNodeHandler<DeclarationKeywordN
         if (!matchesConvention(idNode.name(), format.trim().toLowerCase(Locale.ROOT))) {
             violations.add(
                     String.format(
-                            "Identifier '%s' does not respect %s naming convention at line %d,"
-                                    + " column %d",
-                            idNode.name(), format, idNode.line(), idNode.column()));
+                            "Identifier '%s' does not respect %s naming convention %s",
+                            idNode.name(), format, idNode.range()));
         }
     }
 

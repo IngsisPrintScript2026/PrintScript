@@ -81,8 +81,8 @@ class TokenStreamScaIntegrationTest {
 
     @Test
     @DisplayName(
-            "Given: println rule enabled | When: println(1 + 2) | Then: reports the operator"
-                    + " position")
+            "Given: println rule enabled | When: println(1 + 2) | Then: reports where the"
+                    + " expression starts and ends")
     void tokenStreamSca_whenPrintlnHasExpression_thenReportsViolation() {
         // Given
         String source = "println(1 + 2);";
@@ -94,7 +94,9 @@ class TokenStreamScaIntegrationTest {
         // Then
         assertEquals(1, violations.size());
         assertTrue(violations.get(0).contains("'println'"));
-        assertTrue(violations.get(0).contains("line 1, column 11"));
+        assertTrue(
+                violations.get(0).contains("from line 1, column 9 to line 1, column 13"),
+                violations.get(0));
     }
 
     @Test

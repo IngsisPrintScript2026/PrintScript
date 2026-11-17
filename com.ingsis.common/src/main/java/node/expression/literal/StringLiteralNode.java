@@ -8,6 +8,8 @@ import java.util.Collections;
 import java.util.List;
 import node.expression.ExpressionNode;
 import node.expression.LiteralNode;
+import position.Position;
+import position.SourceRange;
 import result.Result;
 
 public final record StringLiteralNode(String rawValue, Integer line, Integer column)
@@ -16,6 +18,11 @@ public final record StringLiteralNode(String rawValue, Integer line, Integer col
     @Override
     public Result<String> value() {
         return Result.success(rawValue);
+    }
+
+    @Override
+    public SourceRange range() {
+        return SourceRange.spanning(new Position(line, column), "\"" + rawValue + "\"");
     }
 
     @Override

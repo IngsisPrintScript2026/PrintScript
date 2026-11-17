@@ -39,8 +39,14 @@ public final class ScaNodes {
         return new CallFunctionNode(new IdentifierNode(function, 1, 1), List.of(args), 1, 1);
     }
 
+    /** {@code 1 + 2} con el '+' en (line, column): ocupa de column - 2 a column + 2. */
     public static OperatorNode sumAt(int line, int column) {
-        return new OperatorNode(OperatorType.PLUS, number(1), number(2), line, column);
+        return new OperatorNode(
+                OperatorType.PLUS,
+                new NumberLiteralNode(BigDecimal.valueOf(1), line, column - 2),
+                new NumberLiteralNode(BigDecimal.valueOf(2), line, column + 2),
+                line,
+                column);
     }
 
     public static NumberLiteralNode number(int value) {

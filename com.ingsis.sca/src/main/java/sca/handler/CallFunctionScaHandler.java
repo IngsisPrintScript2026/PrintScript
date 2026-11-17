@@ -54,7 +54,7 @@ public class CallFunctionScaHandler implements ScaNodeHandler<CallFunctionNode> 
     private String formatViolation(String functionName, int index, ExpressionNode arg) {
         return String.format(
                 "Function '%s' argument at index %d must be a literal or"
-                        + " variable, found expression at line %d, column %d",
-                functionName, index, arg.line(), arg.column());
+                        + " variable, found expression %s",
+                functionName, index, arg.range());
     }
 }
