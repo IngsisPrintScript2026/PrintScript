@@ -285,37 +285,22 @@ Si se ejecuta el motor sin proveer el parámetro `-i` ni enviar datos por `STDIN
 - **Git Tag:** Es un puntero inmutable en el historial de Git a un commit concreto. Se usa para fijar versiones semánticas (por ejemplo `v1.1.0` o `1.1.0`).
 - **GitHub Release:** Es una capa sobre el tag que permite describir los cambios (*release notes*), adjuntar binarios y gatillar pipelines de CI/CD.
 
-### 6.2. Pipeline de Publicación en GitHub Actions ([`.github/workflows/publish.yml`](file:///home/elchurro274/Faculty/ingsis/PrintScript/.github/workflows/publish.yml))
+### 6.2. Pipeline de Publicación en GitHub Actions ([`.github/workflows/publish.yml`](.github/workflows/publish.yml))
 
-El workflow de publicación del proyecto cuenta con validación previa y resolución dinámica de versiones:
+1. **Evento disparador:** únicamente la publicación de una GitHub Release (`release: types: [published]`). Un push a `main`, un push de tag o un release en *draft* **no** publican nada; el CI de cada push/PR lo corre `ci.yml`.
 
-1. **Eventos Disparadores:**
-   - Creación de Release en GitHub (`release: [published]`).
-   - Push directo de un Tag de versión (`v*`, `*.*`, `[0-9]*`).
-   - Push a la rama principal (`main`).
-   - Disparo manual (`workflow_dispatch`) permitiendo ingresar la versión deseada.
+2. **Control de calidad previo (`needs: ci`):** antes de publicar corre `./gradlew check` (Spotless, Checkstyle, PMD, SpotBugs, tests y umbral de cobertura de JaCoCo). Si falla, no se publica.
 
-2. **Control de Calidad Previo (`needs: ci`):**
-   A diferencia de flujos simples, este workflow no publica ningún paquete sin antes ejecutar satisfactoriamente la verificación completa:
-   - `spotlessCheck` (formato impecable).
-   - `./gradlew check -x test` (Checkstyle, PMD, SpotBugs).
-   - `./gradlew test` (todos los tests unitarios e integración).
+3. **Versión inmutable:** sale del tag del release, sin la `v` inicial (`v1.3.0` → `1.3.0`). Si el tag no tiene forma de versión (`MAYOR.MENOR[.PARCHE][-sufijo]`), el job falla.
 
-3. **Determinación de Versión Inmutable:**
-   - Si se publica desde un tag (ej: `v1.2.0`), elimina automáticamente la `v` inicial (`1.2.0`).
-   - Si se hace push a `main`, autogenera `1.0.<run_number>`.
-   - **Garantía de Inmutabilidad:** Falla explícitamente si la versión contiene `SNAPSHOT`. Los paquetes en GitHub Packages no deben reescribirse nunca.
-   - Valida la nomenclatura de Versionado Semántico (SemVer).
-
-4. **Publicación (`gradlew publish`):**
-   Invoca el plugin [`PublishingConventionPlugin.groovy`](file:///home/elchurro274/Faculty/ingsis/PrintScript/buildSrc/src/main/groovy/PublishingConventionPlugin.groovy) que empaqueta cada submódulo en un artefacto Maven y lo sube al registro de **GitHub Packages** (`maven.pkg.github.com`).
+4. **Publicación (`./gradlew publish`):** con `permissions: packages: write` y las credenciales por ambiente (`GITHUB_ACTOR`, `GITHUB_TOKEN`), el plugin [`PublishingConventionPlugin.groovy`](buildSrc/src/main/groovy/PublishingConventionPlugin.groovy) sube cada submódulo a **GitHub Packages** (`maven.pkg.github.com`).
 
 ---
 
-### 6.3. Diferencia Crucial entre Git Tag y GitHub Release
+### 6.3. Git Tag vs GitHub Release
 
-- **`git push origin <tag>` (Git Tag):** Sube el puntero al repositorio de Git y dispara automáticamente la Action `publish.yml` para compilar y publicar los paquetes a **GitHub Packages**. Sin embargo, **no crea automáticamente una GitHub Release en la interfaz web de GitHub**.
-- **GitHub Release:** Es la entidad visible en la sección *Releases* del repositorio. Contiene el título formal, el *Changelog* o notas de versión, los binarios adjuntos descargables y la marca de versión más reciente (*Latest*). Debe crearse apuntando al tag existente.
+- **`git push origin <tag>`:** solo sube el puntero. **No publica paquetes.**
+- **GitHub Release:** es lo que dispara `publish.yml`. Se crea sobre un tag (existente o nuevo) y lleva título y notas de versión.
 
 ---
 
@@ -354,7 +339,7 @@ gh release list --limit 3
 
 La versión sigue **SemVer** (`MAYOR.MENOR.PARCHE`): PARCHE para correcciones (`v1.2.1`), MENOR para funcionalidad nueva compatible (`v1.3.0`), MAYOR para cambios incompatibles (`v2.0.0`). El workflow quita la `v` inicial, así que el tag `v1.3.0` publica los paquetes con versión `1.3.0`.
 
-#### 6.4.3. Flujo completo: Tag → Paquetes → Release
+#### 6.4.3. Flujo completo: Tag → Release → Paquetes
 
 ```bash
 VERSION=1.3.0
@@ -365,15 +350,14 @@ git tag -a "v$VERSION" -m "Release $VERSION: <resumen de los cambios>"
 # 2. Revisar a qué commit apunta antes de subirlo (todavía se puede borrar local: git tag -d "v$VERSION")
 git show "v$VERSION" --stat | head -15
 
-# 3. Subir SOLO ese tag. Esto dispara publish.yml, que corre los chequeos y publica en GitHub Packages
+# 3. Subir SOLO ese tag (esto todavía no publica nada)
 git push origin "v$VERSION"
 
-# 4. Seguir la corrida hasta que termine (debe quedar en verde)
-gh run list --workflow publish.yml --limit 3
-gh run watch "$(gh run list --workflow publish.yml --limit 1 --json databaseId --jq '.[0].databaseId')"
-
-# 5. Crear la GitHub Release sobre el tag ya existente, con notas generadas desde los commits y PRs
+# 4. Crear la GitHub Release sobre el tag. Esto dispara publish.yml: corre ./gradlew check y publica
 gh release create "v$VERSION" --verify-tag --title "Release $VERSION" --generate-notes
+
+# 5. Seguir la corrida hasta que termine (debe quedar en verde)
+gh run watch "$(gh run list --workflow publish.yml --limit 1 --json databaseId --jq '.[0].databaseId')"
 
 # 6. (Opcional) Adjuntar la CLI empaquetada para que se pueda descargar desde la release
 ./gradlew :com.ingsis.engine:distZip -Pversion="$VERSION"
@@ -389,18 +373,7 @@ gh api "/orgs/IngsisPrintScript2026/packages?package_type=maven" --jq '.[].name'
 - Para dejar la release como borrador y publicarla después: `--draft`, y luego `gh release edit "v$VERSION" --draft=false`.
 - Para marcar una versión de prueba: `--prerelease`.
 
-> **⚠️ Doble disparo de `publish.yml`.** El workflow escucha tanto el push del tag (paso 3) como la publicación de la release (paso 5), y las dos corridas intentan publicar la misma versión. La segunda falla con `Received status code 409 from server: Conflict`. Ya pasó con `v1.2.0` el 29/09/2026: la corrida del tag publicó bien y la de la release quedó en rojo. Los paquetes quedan publicados igual (por la primera corrida); la corrida en rojo de la release se puede ignorar. Para eliminarlo, ver 6.4.6.
-
-#### 6.4.4. Publicar sin tag (disparo manual)
-
-El workflow también acepta un disparo manual con la versión como parámetro, útil para re-publicar si la corrida del tag falló por un problema externo (red, credenciales) **antes** de subir paquetes:
-
-```bash
-gh workflow run publish.yml --ref main -f version=1.3.0
-gh run watch "$(gh run list --workflow publish.yml --limit 1 --json databaseId --jq '.[0].databaseId')"
-```
-
-#### 6.4.5. Corregir errores
+#### 6.4.4. Corregir errores
 
 ```bash
 # El tag apunta al commit equivocado y TODAVÍA no se publicó nada:
@@ -417,33 +390,14 @@ gh release delete "v$VERSION" --cleanup-tag --yes
 
 Si los paquetes de esa versión ya se publicaron, **no se reutiliza el número**: se corrige en `main` y se saca la siguiente versión de parche (`1.3.1`).
 
-#### 6.4.6. Evitar el doble disparo (cambio sugerido, no aplicado)
+#### 6.4.5. Alternativa desde la interfaz web
 
-Para que cada versión dispare una sola publicación, alcanza con que `publish.yml` no escuche las releases y deje que el tag sea el único disparador:
-
-```yaml
-on:
-  push:
-    branches: [ main ]
-    tags:
-      - 'v*'
-      - '*.*'
-      - '[0-9]*'
-  # release:            ← quitar este disparador
-  #   types: [ published ]
-  workflow_dispatch:
-```
-
-Con ese cambio, el paso 5 de 6.4.3 solo crea la página de la release y no vuelve a publicar.
-
-#### 6.4.7. Alternativa desde la interfaz web
-
-1. Subir el tag desde la terminal (pasos 1 a 4 de 6.4.3).
+1. Subir el tag desde la terminal (pasos 1 a 3 de 6.4.3), o crearlo directamente desde la web en el paso 3.
 2. Entrar a `https://github.com/IngsisPrintScript2026/PrintScript/releases` y presionar **"Draft a new release"**.
 3. En **"Choose a tag"**, elegir el tag subido (ej: `v1.3.0`).
 4. Completar el título, presionar **"Generate release notes"** y luego **"Publish release"**.
 
-El aviso de doble disparo de 6.4.3 aplica igual: publicar la release desde la web también dispara `publish.yml`.
+Al presionar **"Publish release"** se dispara `publish.yml` y se publican los paquetes. Guardarla como *draft* no publica nada hasta que se publique.
 
 #### Resumen rápido
 
@@ -451,8 +405,8 @@ El aviso de doble disparo de 6.4.3 aplica igual: publicar la release desde la we
 VERSION=1.3.0
 git checkout main && git pull origin main && ./gradlew clean check
 git tag -a "v$VERSION" -m "Release $VERSION"
-git push origin "v$VERSION"                                   # publica los paquetes
-gh release create "v$VERSION" --verify-tag --title "Release $VERSION" --generate-notes
+git push origin "v$VERSION"
+gh release create "v$VERSION" --verify-tag --title "Release $VERSION" --generate-notes   # publica los paquetes
 ```
 
 ---

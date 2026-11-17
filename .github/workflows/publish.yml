@@ -1,20 +1,11 @@
-name: CI & Publish Packages
+name: Publish
 
+# Publica PrintScript en GitHub Packages solo cuando se publica un release,
+# nunca en cada push. La versión del artefacto sale del tag del release
+# (v1.3.0 -> 1.3.0), así cada versión publicada es inmutable.
 on:
-  push:
-    branches: [ main ]
-    tags:
-      - 'v*'
-      - '*.*'
-      - '[0-9]*'
   release:
     types: [ published ]
-  workflow_dispatch:
-    inputs:
-      version:
-        description: 'Immutable release version to publish (e.g. 1.0.0, 1.0.1, 1.1)'
-        required: false
-        default: ''
 
 jobs:
   ci:
@@ -22,97 +13,57 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
+      - uses: actions/setup-java@v4
         with:
+          distribution: temurin
           java-version: '21'
-          distribution: 'temurin'
-          cache: 'gradle'
+          cache: gradle
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Check Code Formatting (Spotless)
-        run: ./gradlew spotlessCheck
-
-      - name: Run Linters & Static Analysis (Checkstyle, PMD, SpotBugs)
-        run: ./gradlew check -x test
-
-      - name: Run Tests
-        run: ./gradlew test
+      - name: Check (format, linters, tests, coverage)
+        run: ./gradlew check
 
   publish:
-    name: Publish Packages to GitHub Packages
+    name: Publish to GitHub Packages
     needs: ci
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'release'
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write
+      packages: write # sin esto, el publish falla con 403
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
+      - uses: actions/setup-java@v4
         with:
+          distribution: temurin
           java-version: '21'
-          distribution: 'temurin'
-          cache: 'gradle'
+          cache: gradle
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Determine Immutable Release Version
-        id: release_version
-        run: |
-          VERSION=""
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ github.event.inputs.version }}" ]; then
-            VERSION="${{ github.event.inputs.version }}"
-          elif [ "${{ github.event_name }}" = "release" ] && [ -n "${{ github.event.release.tag_name }}" ]; then
-            VERSION="${{ github.event.release.tag_name }}"
-          elif [[ "${{ github.ref }}" == refs/tags/* ]]; then
-            VERSION="${GITHUB_REF#refs/tags/}"
-          elif [ "${{ github.event_name }}" = "push" ]; then
-            VERSION="1.0.${{ github.run_number }}"
-          fi
-
-          # Strip leading 'v' or 'V' if present (e.g. v1.0.0 -> 1.0.0, v1.1 -> 1.1)
-          VERSION="${VERSION#v}"
-          VERSION="${VERSION#V}"
-          VERSION=$(echo "${VERSION}" | xargs)
-
-          if [ -z "$VERSION" ]; then
-            echo "::error::Release version could not be determined."
-            exit 1
-          fi
-
-          if [[ "$VERSION" == *"-SNAPSHOT"* ]] || [[ "$VERSION" == *"SNAPSHOT"* ]]; then
-            echo "::error::Version cannot be a SNAPSHOT ($VERSION). Releases must be immutable."
-            exit 1
-          fi
-
-          if ! [[ "$VERSION" =~ ^[0-9]+(\.[0-9]+)+(-[a-zA-Z0-9.]+)?$ ]]; then
-            echo "::warning::Version '$VERSION' does not strictly follow standard semver/numeric format (e.g. 1.0.0, 1.1), proceeding anyway..."
-          fi
-
-          echo "version=${VERSION}" >> $GITHUB_OUTPUT
-          echo "Selected immutable release version: ${VERSION}"
-
-      - name: Publish to GitHub Packages
-        run: ./gradlew publish -Pversion=${{ steps.release_version.outputs.version }} -PgprUser=${{ github.actor }} -PgprToken=${{ secrets.GITHUB_TOKEN }}
+      - name: Resolve version from release tag
+        id: version
         env:
-          RELEASE_VERSION: ${{ steps.release_version.outputs.version }}
-          gprUser: ${{ github.actor }}
-          gprToken: ${{ secrets.GITHUB_TOKEN }}
-          ORG_GRADLE_PROJECT_gprUser: ${{ github.actor }}
-          ORG_GRADLE_PROJECT_gprToken: ${{ secrets.GITHUB_TOKEN }}
-          USERNAME: ${{ github.actor }}
-          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          VERSION="${TAG#v}"
+          VERSION="${VERSION#V}"
+          if ! [[ "$VERSION" =~ ^[0-9]+(\.[0-9]+)+(-[0-9A-Za-z.]+)?$ ]]; then
+            echo "::error::El tag '$TAG' no es una versión válida (ej: v1.3.0)."
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Publish package
+        run: ./gradlew publish -Pversion=${{ steps.version.outputs.version }}
+        env: # las credenciales entran por el ambiente
+          RELEASE_VERSION: ${{ steps.version.outputs.version }}
           GITHUB_ACTOR: ${{ github.actor }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
