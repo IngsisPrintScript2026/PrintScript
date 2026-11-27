@@ -6,8 +6,8 @@ package sca.handler;
 
 import java.util.ArrayList;
 import java.util.List;
-import node.Node;
-import node.keyword.IfKeywordNode;
+import node.IfKeywordNode;
+import node.StatementNode;
 import sca.ASTSca;
 import sca.ScaContext;
 import semantic.environment.SemanticEnvironment;
@@ -22,10 +22,10 @@ public class IfScaHandler implements ScaNodeHandler<IfKeywordNode> {
     public List<String> check(
             IfKeywordNode ifNode, SemanticEnvironment env, ScaContext context, ASTSca sca) {
         List<String> violations = new ArrayList<>();
-        for (Node stmt : ifNode.thenBody()) {
+        for (StatementNode stmt : ifNode.thenBody()) {
             violations.addAll(sca.analyzeStatement(stmt, env, context));
         }
-        for (Node stmt : ifNode.elseBody()) {
+        for (StatementNode stmt : ifNode.elseBody()) {
             violations.addAll(sca.analyzeStatement(stmt, env, context));
         }
         return violations;

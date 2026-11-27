@@ -10,25 +10,24 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import formatter.ASTFormatter;
 import formatter.FormatContext;
-import formatter.fake.FakeNode;
 import formatter.support.FormatContextBuilder;
 import java.math.BigDecimal;
 import java.util.List;
+import node.AssignNode;
+import node.BooleanLiteralNode;
+import node.CallFunctionNode;
+import node.DeclarationKeywordNode;
+import node.ExpressionNode;
+import node.IdentifierNode;
+import node.IfKeywordNode;
+import node.NilExpressionNode;
+import node.NumberLiteralNode;
+import node.OperatorNode;
 import node.ProgramNode;
-import node.expression.ExpressionNode;
-import node.expression.Identifier.IdentifierNode;
-import node.expression.function.CallFunctionNode;
-import node.expression.literal.BooleanLiteralNode;
+import node.StringLiteralNode;
+import node.WhileKeywordNode;
 import node.expression.literal.DataType;
-import node.expression.literal.NumberLiteralNode;
-import node.expression.literal.StringLiteralNode;
-import node.expression.nullObject.NilExpressionNode;
-import node.expression.operator.OperatorNode;
 import node.expression.operator.OperatorType;
-import node.keyword.AssignNode;
-import node.keyword.DeclarationKeywordNode;
-import node.keyword.IfKeywordNode;
-import node.keyword.WhileKeywordNode;
 import node.keyword.declaration.DeclarationType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -250,25 +249,10 @@ class ASTFormatterUnitTest {
         FormatContext nested = new FormatContext().incrementIndent();
 
         // When
-        String text = formatter.visitDefault(new IdentifierNode("x", 1, 1), nested);
+        String text = formatter.formatStatement(new IdentifierNode("x", 1, 1), nested);
 
         // Then
         assertEquals("    x;", text);
-    }
-
-    @Test
-    @DisplayName(
-            "Given: ASTFormatter | When: formatting a node it has no handler for | Then: writes the"
-                    + " node symbol")
-    void astFormatter_whenUnknownStatement_thenWritesSymbol() {
-        // Given
-        ASTFormatter formatter = new ASTFormatter();
-
-        // When
-        String text = formatter.formatStatement(new FakeNode("custom"), new FormatContext());
-
-        // Then
-        assertEquals("custom", text);
     }
 
     @Test

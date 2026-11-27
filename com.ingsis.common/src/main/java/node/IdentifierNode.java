@@ -2,11 +2,10 @@
  * My Project
  */
 
-package node.expression.Identifier;
+package node;
 
 import java.util.Collections;
 import java.util.List;
-import node.expression.ExpressionNode;
 import position.Position;
 import position.SourceRange;
 

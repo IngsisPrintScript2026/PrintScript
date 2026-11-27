@@ -6,7 +6,7 @@ package pipeline;
 
 import iterator.IterationStep;
 import java.util.Locale;
-import node.Node;
+import node.StatementNode;
 import position.Position;
 import position.SourceRange;
 import result.CorrectResult;
@@ -21,10 +21,10 @@ import tokenstream.TokenStream;
 import version.Version;
 
 public final class StatementPipeline {
-    private final Parser<Node> parser;
+    private final Parser<StatementNode> parser;
     private final SemanticChecker checker;
 
-    public StatementPipeline(Parser<Node> parser, SemanticChecker checker) {
+    public StatementPipeline(Parser<StatementNode> parser, SemanticChecker checker) {
         this.parser = parser;
         this.checker = checker;
     }
@@ -38,11 +38,11 @@ public final class StatementPipeline {
         TokenStream current = stream;
         SemanticEnvironment currentEnv = env;
         while (!current.isEmpty()) {
-            Result<IterationStep<Node>> parsed = parser.parse(current);
-            if (parsed instanceof IncorrectResult<IterationStep<Node>>(String err)) {
+            Result<IterationStep<StatementNode>> parsed = parser.parse(current);
+            if (parsed instanceof IncorrectResult<IterationStep<StatementNode>>(String err)) {
                 return endOfInputOrSyntacticError(err, current, currentEnv);
             }
-            IterationStep<Node> step = ((CorrectResult<IterationStep<Node>>) parsed).value();
+            var step = ((CorrectResult<IterationStep<StatementNode>>) parsed).value();
             TokenStream next = (TokenStream) step.next();
             Result<SemanticEnvironment> processed =
                     process(step.value(), currentEnv, action, statementRange(current, next));
@@ -56,7 +56,10 @@ public final class StatementPipeline {
     }
 
     private Result<SemanticEnvironment> process(
-            Node statement, SemanticEnvironment env, StatementAction action, SourceRange range) {
+            StatementNode statement,
+            SemanticEnvironment env,
+            StatementAction action,
+            SourceRange range) {
         SemanticEnvironment nextEnv = env;
         if (checker != null) {
             Result<SemanticEnvironment> checked = checker.checkNode(statement, env);

@@ -8,12 +8,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.math.BigDecimal;
 import java.util.List;
-import node.expression.Identifier.IdentifierNode;
-import node.expression.function.CallFunctionNode;
-import node.expression.literal.BooleanLiteralNode;
-import node.expression.literal.NumberLiteralNode;
-import node.expression.literal.StringLiteralNode;
-import node.expression.operator.OperatorNode;
+import node.BooleanLiteralNode;
+import node.CallFunctionNode;
+import node.IdentifierNode;
+import node.NumberLiteralNode;
+import node.OperatorNode;
+import node.StringLiteralNode;
 import node.expression.operator.OperatorType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

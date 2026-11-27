@@ -10,9 +10,10 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import iterator.IterationStep;
+import node.IdentifierNode;
 import node.Node;
-import node.expression.Identifier.IdentifierNode;
-import node.keyword.WhileKeywordNode;
+import node.StatementNode;
+import node.WhileKeywordNode;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import parser.support.Sources;
@@ -50,12 +51,12 @@ class PrintScript12RulesIntegrationTest {
         String source = "while (go) {\n  println(\"x\");\n  go = false;\n}";
 
         // When
-        Result<IterationStep<Node>> parsed =
+        Result<IterationStep<StatementNode>> parsed =
                 ParserFactory.createParser(Version.V_1_2).parse(Sources.tokens(source));
 
         // Then
         assertTrue(parsed.isCorrect());
-        Node statement = ((CorrectResult<IterationStep<Node>>) parsed).value().value();
+        Node statement = ((CorrectResult<IterationStep<StatementNode>>) parsed).value().value();
         WhileKeywordNode whileNode = assertInstanceOf(WhileKeywordNode.class, statement);
         assertEquals("go", assertInstanceOf(IdentifierNode.class, whileNode.condition()).name());
         assertEquals(2, whileNode.body().size());

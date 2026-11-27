@@ -7,15 +7,17 @@ package semantic;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import node.AssignNode;
+import node.CallFunctionNode;
+import node.DeclarationKeywordNode;
+import node.ExpressionNode;
+import node.IfKeywordNode;
 import node.Node;
 import node.ProgramNode;
-import node.expression.function.CallFunctionNode;
-import node.keyword.AssignNode;
-import node.keyword.DeclarationKeywordNode;
-import node.keyword.IfKeywordNode;
-import node.keyword.WhileKeywordNode;
-import node.visitor.NodeVisitor;
+import node.StatementNode;
+import node.WhileKeywordNode;
 import result.CorrectResult;
+import result.IncorrectResult;
 import result.Result;
 import semantic.environment.SemanticEnvironment;
 import semantic.evaluator.ExpressionTypeInference;
@@ -27,8 +29,7 @@ import semantic.handler.SemanticNodeHandler;
 import semantic.handler.WhileNodeSemanticHandler;
 import version.Version;
 
-public class SemanticChecker
-        implements NodeVisitor<Result<SemanticEnvironment>, SemanticEnvironment> {
+public class SemanticChecker {
     private final Map<Class<? extends Node>, SemanticNodeHandler<?>> handlers;
 
     public SemanticChecker(List<SemanticNodeHandler<?>> handlers) {
@@ -58,92 +59,88 @@ public class SemanticChecker
     }
 
     public Result<SemanticEnvironment> check(ProgramNode program, SemanticEnvironment initialEnv) {
-        return visit(program, initialEnv);
+        return checkProgram(program, initialEnv);
     }
 
     public Result<SemanticEnvironment> checkNode(Node node, SemanticEnvironment env) {
-        return node.accept(this, env);
+        return switch (node) {
+            case ProgramNode program -> checkProgram(program, env);
+            case StatementNode statement -> checkStatement(statement, env);
+        };
     }
 
-    @Override
-    public Result<SemanticEnvironment> visit(DeclarationKeywordNode decl, SemanticEnvironment env) {
-        SemanticNodeHandler<?> handler = handlers.get(DeclarationKeywordNode.class);
-        return handler != null ? handler.checkUntyped(decl, env) : Result.success(env);
+    public Result<SemanticEnvironment> checkStatement(
+            StatementNode statement, SemanticEnvironment env) {
+        return switch (statement) {
+            case DeclarationKeywordNode decl -> runHandler(DeclarationKeywordNode.class, decl, env);
+            case AssignNode assign -> runHandler(AssignNode.class, assign, env);
+            case IfKeywordNode ifNode -> checkIf(ifNode, env);
+            case WhileKeywordNode whileNode -> checkWhile(whileNode, env);
+            case CallFunctionNode call -> runHandler(CallFunctionNode.class, call, env);
+                // Una expresión suelta como sentencia no introduce ni modifica símbolos.
+            case ExpressionNode expression -> Result.success(env);
+        };
     }
 
-    @Override
-    public Result<SemanticEnvironment> visit(AssignNode assign, SemanticEnvironment env) {
-        SemanticNodeHandler<?> handler = handlers.get(AssignNode.class);
-        return handler != null ? handler.checkUntyped(assign, env) : Result.success(env);
+    private <T extends Node> Result<SemanticEnvironment> runHandler(
+            Class<T> type, T node, SemanticEnvironment env) {
+        SemanticNodeHandler<?> handler = handlers.get(type);
+        return handler != null ? handler.checkUntyped(node, env) : Result.success(env);
     }
 
-    @Override
-    public Result<SemanticEnvironment> visit(IfKeywordNode ifNode, SemanticEnvironment env) {
-        SemanticNodeHandler<?> handler = handlers.get(IfKeywordNode.class);
-        Result<SemanticEnvironment> condRes =
-                handler != null ? handler.checkUntyped(ifNode, env) : Result.success(env);
-        if (!condRes.isCorrect()) {
-            return condRes;
-        }
-        Result<Void> thenRes = checkBlock(ifNode.thenBody(), env);
-        if (!thenRes.isCorrect()) {
-            return Result.failure(((result.IncorrectResult<Void>) thenRes).error());
-        }
-        Result<Void> elseRes = checkBlock(ifNode.elseBody(), env);
-        if (!elseRes.isCorrect()) {
-            return Result.failure(((result.IncorrectResult<Void>) elseRes).error());
-        }
-        return Result.success(env);
-    }
-
-    private Result<Void> checkBlock(List<Node> stmts, SemanticEnvironment parentEnv) {
-        SemanticEnvironment blockEnv = new SemanticEnvironment(parentEnv);
-        for (Node stmt : stmts) {
-            Result<SemanticEnvironment> res = checkNode(stmt, blockEnv);
-            if (!res.isCorrect()) {
-                return Result.failure(((result.IncorrectResult<SemanticEnvironment>) res).error());
-            }
-            blockEnv = ((CorrectResult<SemanticEnvironment>) res).value();
-        }
-        return Result.success(null);
-    }
-
-    @Override
-    public Result<SemanticEnvironment> visit(CallFunctionNode call, SemanticEnvironment env) {
-        SemanticNodeHandler<?> handler = handlers.get(CallFunctionNode.class);
-        return handler != null ? handler.checkUntyped(call, env) : Result.success(env);
-    }
-
-    @Override
-    public Result<SemanticEnvironment> visit(ProgramNode program, SemanticEnvironment initialEnv) {
+    private Result<SemanticEnvironment> checkProgram(
+            ProgramNode program, SemanticEnvironment initialEnv) {
         SemanticEnvironment currentEnv = initialEnv;
-        for (Node statement : program.statements()) {
+        for (StatementNode statement : program.statements()) {
             Result<SemanticEnvironment> stepRes = checkNode(statement, currentEnv);
-            if (!stepRes.isCorrect()) {
+            if (!(stepRes instanceof CorrectResult<SemanticEnvironment>(var updated))) {
                 return stepRes;
             }
-            currentEnv = ((CorrectResult<SemanticEnvironment>) stepRes).value();
+            currentEnv = updated;
         }
         return Result.success(currentEnv);
     }
 
-    @Override
-    public Result<SemanticEnvironment> visit(WhileKeywordNode whileNode, SemanticEnvironment env) {
-        SemanticNodeHandler<?> handler = handlers.get(WhileKeywordNode.class);
-        Result<SemanticEnvironment> condRes =
-                handler != null ? handler.checkUntyped(whileNode, env) : Result.success(env);
+    private Result<SemanticEnvironment> checkIf(IfKeywordNode ifNode, SemanticEnvironment env) {
+        Result<SemanticEnvironment> condRes = runHandler(IfKeywordNode.class, ifNode, env);
         if (!condRes.isCorrect()) {
             return condRes;
         }
-        Result<Void> bodyRes = checkBlock(whileNode.body(), env);
-        if (!bodyRes.isCorrect()) {
-            return Result.failure(((result.IncorrectResult<Void>) bodyRes).error());
+        Result<Void> thenRes = checkBlock(ifNode.thenBody(), env);
+        if (thenRes instanceof IncorrectResult<Void>(String err)) {
+            return Result.failure(err);
+        }
+        Result<Void> elseRes = checkBlock(ifNode.elseBody(), env);
+        if (elseRes instanceof IncorrectResult<Void>(String err)) {
+            return Result.failure(err);
         }
         return Result.success(env);
     }
 
-    @Override
-    public Result<SemanticEnvironment> visitDefault(Node node, SemanticEnvironment env) {
+    private Result<SemanticEnvironment> checkWhile(
+            WhileKeywordNode whileNode, SemanticEnvironment env) {
+        Result<SemanticEnvironment> condRes = runHandler(WhileKeywordNode.class, whileNode, env);
+        if (!condRes.isCorrect()) {
+            return condRes;
+        }
+        Result<Void> bodyRes = checkBlock(whileNode.body(), env);
+        if (bodyRes instanceof IncorrectResult<Void>(String err)) {
+            return Result.failure(err);
+        }
         return Result.success(env);
+    }
+
+    private Result<Void> checkBlock(List<StatementNode> stmts, SemanticEnvironment parentEnv) {
+        SemanticEnvironment blockEnv = new SemanticEnvironment(parentEnv);
+        for (StatementNode stmt : stmts) {
+            Result<SemanticEnvironment> res = checkNode(stmt, blockEnv);
+            switch (res) {
+                case CorrectResult<SemanticEnvironment>(var updated) -> blockEnv = updated;
+                case IncorrectResult<SemanticEnvironment>(String err) -> {
+                    return Result.failure(err);
+                }
+            }
+        }
+        return Result.success(null);
     }
 }

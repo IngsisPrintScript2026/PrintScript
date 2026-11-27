@@ -5,9 +5,9 @@
 package syntactic.strategy;
 
 import iterator.IterationStep;
-import node.expression.ExpressionNode;
-import node.expression.Identifier.IdentifierNode;
-import node.keyword.DeclarationKeywordNode;
+import node.DeclarationKeywordNode;
+import node.ExpressionNode;
+import node.IdentifierNode;
 import result.Result;
 import syntactic.Parser;
 import token.SymbolType;

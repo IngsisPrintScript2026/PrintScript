@@ -9,9 +9,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static parser.support.Sources.token;
 
 import java.util.List;
-import node.Node;
-import node.expression.ExpressionNode;
-import node.expression.Identifier.IdentifierNode;
+import node.ExpressionNode;
+import node.IdentifierNode;
+import node.StatementNode;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import parser.fake.StubFailingParser;
@@ -32,7 +32,7 @@ class StatementParserCanStartUnitTest {
             new StubFailingParser<>("not used by canStart");
     private static final StubFailingParser<IdentifierNode> NO_IDENTIFIER =
             new StubFailingParser<>("not used by canStart");
-    private static final StubFailingParser<Node> NO_STATEMENT =
+    private static final StubFailingParser<StatementNode> NO_STATEMENT =
             new StubFailingParser<>("not used by canStart");
 
     private static TokenStream streamOf(Token... tokens) {

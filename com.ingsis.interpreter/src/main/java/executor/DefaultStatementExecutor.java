@@ -13,14 +13,14 @@ import evaluator.ExpressionEvaluator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-import node.Node;
-import node.expression.ExpressionNode;
-import node.expression.function.CallFunctionNode;
+import node.AssignNode;
+import node.CallFunctionNode;
+import node.DeclarationKeywordNode;
+import node.ExpressionNode;
+import node.IfKeywordNode;
+import node.StatementNode;
+import node.WhileKeywordNode;
 import node.expression.literal.DataType;
-import node.keyword.AssignNode;
-import node.keyword.DeclarationKeywordNode;
-import node.keyword.IfKeywordNode;
-import node.keyword.WhileKeywordNode;
 import result.CorrectResult;
 import result.IncorrectResult;
 import result.Result;
@@ -52,14 +52,14 @@ public class DefaultStatementExecutor implements StatementExecutor {
     }
 
     @Override
-    public Result<Void> execute(Node statement, Environment env) {
+    public Result<Void> execute(StatementNode statement, Environment env) {
         return switch (statement) {
             case DeclarationKeywordNode decl -> executeDeclaration(decl, env);
             case AssignNode assign -> executeAssign(assign, env);
             case IfKeywordNode ifNode -> executeIf(ifNode, env);
             case WhileKeywordNode whileNode -> executeWhile(whileNode, env);
             case CallFunctionNode call -> executeCall(call, env);
-            default -> Result.failure("Unsupported statement node: " + statement);
+            case ExpressionNode expr -> Result.failure("Unsupported statement node: " + expr);
         };
     }
 
@@ -96,9 +96,9 @@ public class DefaultStatementExecutor implements StatementExecutor {
         }
     }
 
-    private Result<Void> executeBlock(List<Node> body, Environment env) {
+    private Result<Void> executeBlock(List<StatementNode> body, Environment env) {
         Environment blockEnv = new Environment(env);
-        for (Node stmt : body) {
+        for (StatementNode stmt : body) {
             Result<Void> execRes = execute(stmt, blockEnv);
             if (!execRes.isCorrect()) return execRes;
         }
@@ -115,7 +115,7 @@ public class DefaultStatementExecutor implements StatementExecutor {
             return Result.failure("Condition of 'if' statement must evaluate to a boolean value");
         }
 
-        List<Node> bodyToExecute = boolCond ? ifNode.thenBody() : ifNode.elseBody();
+        List<StatementNode> bodyToExecute = boolCond ? ifNode.thenBody() : ifNode.elseBody();
         return executeBlock(bodyToExecute, env);
     }
 

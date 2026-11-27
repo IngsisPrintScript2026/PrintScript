@@ -15,6 +15,7 @@ import java.util.List;
 import lexer.Lexer;
 import node.Node;
 import node.ProgramNode;
+import node.StatementNode;
 import pipeline.StatementPipeline;
 import result.CorrectResult;
 import result.IncorrectResult;
@@ -54,7 +55,7 @@ final class LintRunner {
     }
 
     static ProgramNode parseProgram(String source) {
-        List<Node> statements = new ArrayList<>();
+        List<StatementNode> statements = new ArrayList<>();
         new StatementPipeline(Version.V_1_1)
                 .run(
                         tokens(source),

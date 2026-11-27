@@ -11,13 +11,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import iterator.IterationStep;
 import java.math.BigDecimal;
+import node.DeclarationKeywordNode;
 import node.Node;
+import node.NumberLiteralNode;
+import node.OperatorNode;
+import node.StatementNode;
+import node.StringLiteralNode;
 import node.expression.literal.DataType;
-import node.expression.literal.NumberLiteralNode;
-import node.expression.literal.StringLiteralNode;
-import node.expression.operator.OperatorNode;
 import node.expression.operator.OperatorType;
-import node.keyword.DeclarationKeywordNode;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import parser.support.Sources;
@@ -44,10 +45,10 @@ class PrintScript10RulesIntegrationTest {
     }
 
     private static Node firstStatement(String source) {
-        Result<IterationStep<Node>> parsed =
+        Result<IterationStep<StatementNode>> parsed =
                 ParserFactory.createParser(Version.V_1_0).parse(Sources.tokens(source));
         assertTrue(parsed.isCorrect());
-        return ((CorrectResult<IterationStep<Node>>) parsed).value().value();
+        return ((CorrectResult<IterationStep<StatementNode>>) parsed).value().value();
     }
 
     private static DeclarationKeywordNode declarationIn(String source) {

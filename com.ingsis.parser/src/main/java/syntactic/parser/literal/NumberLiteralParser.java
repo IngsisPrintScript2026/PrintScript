@@ -6,7 +6,7 @@ package syntactic.parser.literal;
 
 import iterator.IterationStep;
 import java.math.BigDecimal;
-import node.expression.literal.NumberLiteralNode;
+import node.NumberLiteralNode;
 import result.CorrectResult;
 import result.Result;
 import syntactic.Parser;

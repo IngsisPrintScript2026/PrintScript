@@ -2,17 +2,15 @@
  * My Project
  */
 
-package node.expression.literal;
+package node;
 
 import java.util.Collections;
 import java.util.List;
-import node.expression.ExpressionNode;
-import node.expression.LiteralNode;
 import position.Position;
 import position.SourceRange;
 import result.Result;
 
-public final record StringLiteralNode(String rawValue, Integer line, Integer column)
+public record StringLiteralNode(String rawValue, Integer line, Integer column)
         implements LiteralNode<String> {
 
     @Override

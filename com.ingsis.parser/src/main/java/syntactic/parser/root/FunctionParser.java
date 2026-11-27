@@ -6,9 +6,9 @@ package syntactic.parser.root;
 
 import iterator.IterationStep;
 import java.util.List;
-import node.expression.ExpressionNode;
-import node.expression.Identifier.IdentifierNode;
-import node.expression.function.CallFunctionNode;
+import node.CallFunctionNode;
+import node.ExpressionNode;
+import node.IdentifierNode;
 import node.factory.NodeFactory;
 import position.Position;
 import result.CorrectResult;

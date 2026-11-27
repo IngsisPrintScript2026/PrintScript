@@ -5,16 +5,18 @@
 package node.factory;
 
 import java.util.List;
-import node.Node;
+import node.AssignNode;
+import node.CallFunctionNode;
+import node.DeclarationKeywordNode;
+import node.ExpressionNode;
+import node.IdentifierNode;
+import node.IfKeywordNode;
+import node.OperatorNode;
 import node.ProgramNode;
-import node.expression.ExpressionNode;
-import node.expression.Identifier.IdentifierNode;
-import node.expression.function.CallFunctionNode;
-import node.expression.operator.OperatorNode;
-import node.keyword.AssignNode;
-import node.keyword.DeclarationKeywordNode;
-import node.keyword.IfKeywordNode;
-import node.keyword.WhileKeywordNode;
+import node.StatementNode;
+import node.WhileKeywordNode;
+import node.expression.operator.OperatorType;
+import node.keyword.declaration.DeclarationInfo;
 import node.keyword.declaration.DeclarationType;
 import token.Token;
 
@@ -28,7 +30,7 @@ public final class NodeFactory {
     }
 
     public static DeclarationKeywordNode createDeclaration(
-            node.keyword.declaration.DeclarationInfo info, IdentifierNode id, ExpressionNode expr) {
+            DeclarationInfo info, IdentifierNode id, ExpressionNode expr) {
         return new DeclarationKeywordNode(
                 info.type(),
                 id,
@@ -64,7 +66,10 @@ public final class NodeFactory {
     }
 
     public static IfKeywordNode createIf(
-            ExpressionNode cond, List<Node> thenBody, List<Node> elseBody, Token ifToken) {
+            ExpressionNode cond,
+            List<StatementNode> thenBody,
+            List<StatementNode> elseBody,
+            Token ifToken) {
         return new IfKeywordNode(
                 cond,
                 thenBody,
@@ -73,11 +78,8 @@ public final class NodeFactory {
                 ifToken.startPosition().column());
     }
 
-    public static node.expression.operator.OperatorNode createOperator(
-            node.expression.operator.OperatorType type,
-            ExpressionNode left,
-            ExpressionNode right,
-            Token opToken) {
+    public static OperatorNode createOperator(
+            OperatorType type, ExpressionNode left, ExpressionNode right, Token opToken) {
         return new OperatorNode(
                 type,
                 left,
@@ -86,12 +88,12 @@ public final class NodeFactory {
                 opToken.startPosition().column());
     }
 
-    public static ProgramNode createProgram(List<Node> statements) {
+    public static ProgramNode createProgram(List<StatementNode> statements) {
         return new ProgramNode(statements, 1, 1);
     }
 
     public static WhileKeywordNode createWhile(
-            ExpressionNode cond, List<Node> body, Token whileToken) {
+            ExpressionNode cond, List<StatementNode> body, Token whileToken) {
         return new WhileKeywordNode(
                 cond, body, whileToken.startPosition().line(), whileToken.startPosition().column());
     }

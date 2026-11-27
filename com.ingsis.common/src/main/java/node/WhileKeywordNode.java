@@ -2,16 +2,14 @@
  * My Project
  */
 
-package node.keyword;
+package node;
 
 import java.util.ArrayList;
 import java.util.List;
-import node.Node;
-import node.expression.ExpressionNode;
-import node.visitor.NodeVisitor;
 
 public record WhileKeywordNode(
-        ExpressionNode condition, List<Node> body, Integer line, Integer column) implements Node {
+        ExpressionNode condition, List<StatementNode> body, Integer line, Integer column)
+        implements StatementNode {
 
     public WhileKeywordNode {
         body = List.copyOf(body);
@@ -28,10 +26,5 @@ public record WhileKeywordNode(
         children.add(condition);
         children.addAll(body);
         return children;
-    }
-
-    @Override
-    public <R, C> R accept(NodeVisitor<R, C> visitor, C context) {
-        return visitor.visit(this, context);
     }
 }

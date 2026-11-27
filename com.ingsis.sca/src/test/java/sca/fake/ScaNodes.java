@@ -6,15 +6,15 @@ package sca.fake;
 
 import java.math.BigDecimal;
 import java.util.List;
-import node.expression.ExpressionNode;
-import node.expression.Identifier.IdentifierNode;
-import node.expression.function.CallFunctionNode;
+import node.CallFunctionNode;
+import node.DeclarationKeywordNode;
+import node.ExpressionNode;
+import node.IdentifierNode;
+import node.NumberLiteralNode;
+import node.OperatorNode;
+import node.StringLiteralNode;
 import node.expression.literal.DataType;
-import node.expression.literal.NumberLiteralNode;
-import node.expression.literal.StringLiteralNode;
-import node.expression.operator.OperatorNode;
 import node.expression.operator.OperatorType;
-import node.keyword.DeclarationKeywordNode;
 import node.keyword.declaration.DeclarationType;
 
 public final class ScaNodes {

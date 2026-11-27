@@ -6,10 +6,10 @@ package syntactic.parser.root;
 
 import iterator.IterationStep;
 import java.util.List;
-import node.Node;
-import node.expression.ExpressionNode;
+import node.ExpressionNode;
+import node.StatementNode;
+import node.WhileKeywordNode;
 import node.factory.NodeFactory;
-import node.keyword.WhileKeywordNode;
 import result.CorrectResult;
 import result.IncorrectResult;
 import result.Result;
@@ -23,9 +23,10 @@ import tokenstream.rules.TokenMatchers;
 
 public class WhileParser implements StatementParser<WhileKeywordNode> {
     private final Parser<ExpressionNode> conditionParser;
-    private final Parser<Node> statementParser;
+    private final Parser<StatementNode> statementParser;
 
-    public WhileParser(Parser<ExpressionNode> conditionParser, Parser<Node> statementParser) {
+    public WhileParser(
+            Parser<ExpressionNode> conditionParser, Parser<StatementNode> statementParser) {
         this.conditionParser = conditionParser;
         this.statementParser = statementParser;
     }
@@ -65,10 +66,11 @@ public class WhileParser implements StatementParser<WhileKeywordNode> {
 
     private Result<IterationStep<WhileKeywordNode>> parseBody(
             Token whileToken, ExpressionNode condition, TokenStream stream) {
-        Result<IterationStep<List<Node>>> blockRes =
+        Result<IterationStep<List<StatementNode>>> blockRes =
                 BlockParserUtils.parseBlock(
                         stream, statementParser, SymbolType.LBRACE, SymbolType.RBRACE);
-        if (!(blockRes instanceof CorrectResult<IterationStep<List<Node>>>(var blockStep))) {
+        if (!(blockRes
+                instanceof CorrectResult<IterationStep<List<StatementNode>>>(var blockStep))) {
             return failure(blockRes);
         }
         WhileKeywordNode node = NodeFactory.createWhile(condition, blockStep.value(), whileToken);

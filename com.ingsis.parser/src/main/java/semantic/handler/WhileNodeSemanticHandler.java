@@ -4,8 +4,8 @@
 
 package semantic.handler;
 
+import node.WhileKeywordNode;
 import node.expression.literal.DataType;
-import node.keyword.WhileKeywordNode;
 import result.CorrectResult;
 import result.IncorrectResult;
 import result.Result;

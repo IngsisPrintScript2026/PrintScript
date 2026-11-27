@@ -9,9 +9,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import iterator.IterationStep;
 import java.util.List;
-import node.Node;
-import node.expression.ExpressionNode;
-import node.keyword.IfKeywordNode;
+import node.ExpressionNode;
+import node.IfKeywordNode;
+import node.StatementNode;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import position.Position;
@@ -52,7 +52,7 @@ class ConditionalParserIntegrationTest {
     void
             conditionalParser_whenParsingIfWithAndWithoutElse_thenCreatesIfKeywordNodeWithMatchingBodies() {
         // Given: ConditionalParser configured for V1.1
-        Parser<Node> stmtParser = ParserFactory.createParser(Version.V_1_1);
+        Parser<StatementNode> stmtParser = ParserFactory.createParser(Version.V_1_1);
         Parser<ExpressionNode> boolParser = asExprParser(new BooleanLiteralParser());
         ConditionalParser parserWithElse =
                 new ConditionalParser(

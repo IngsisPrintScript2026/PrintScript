@@ -6,7 +6,7 @@ package formatter.handler;
 
 import formatter.ASTFormatter;
 import formatter.FormatContext;
-import node.keyword.AssignNode;
+import node.AssignNode;
 
 public class AssignNodeFormatHandler implements FormatNodeHandler<AssignNode> {
     @Override

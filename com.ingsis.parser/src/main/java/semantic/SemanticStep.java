@@ -4,8 +4,9 @@
 
 package semantic;
 
-import node.Node;
+import node.StatementNode;
 import semantic.environment.SemanticEnvironment;
 import tokenstream.TokenStream;
 
-public record SemanticStep(Node node, SemanticEnvironment updatedEnv, TokenStream nextStream) {}
+public record SemanticStep(
+        StatementNode node, SemanticEnvironment updatedEnv, TokenStream nextStream) {}

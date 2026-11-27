@@ -6,9 +6,9 @@ package syntactic.parser.root;
 
 import iterator.IterationStep;
 import java.util.List;
-import node.Node;
-import node.expression.ExpressionNode;
-import node.keyword.IfKeywordNode;
+import node.ExpressionNode;
+import node.IfKeywordNode;
+import node.StatementNode;
 import result.CorrectResult;
 import result.IncorrectResult;
 import result.Result;
@@ -26,19 +26,20 @@ import tokenstream.rules.TokenMatchers;
 
 public class ConditionalParser implements StatementParser<IfKeywordNode> {
     private final Parser<ExpressionNode> conditionParser;
-    private final Parser<Node> statementParser;
+    private final Parser<StatementNode> statementParser;
     private final List<ConditionalElseStrategy> elseStrategies;
 
     public ConditionalParser(
             Parser<ExpressionNode> conditionParser,
-            Parser<Node> statementParser,
+            Parser<StatementNode> statementParser,
             List<ConditionalElseStrategy> elseStrategies) {
         this.conditionParser = conditionParser;
         this.statementParser = statementParser;
         this.elseStrategies = elseStrategies;
     }
 
-    public ConditionalParser(Parser<ExpressionNode> conditionParser, Parser<Node> statementParser) {
+    public ConditionalParser(
+            Parser<ExpressionNode> conditionParser, Parser<StatementNode> statementParser) {
         this(
                 conditionParser,
                 statementParser,
@@ -93,17 +94,17 @@ public class ConditionalParser implements StatementParser<IfKeywordNode> {
 
     private Result<IterationStep<IfKeywordNode>> parseThenBody(
             Token ifToken, ExpressionNode condition, TokenStream stream) {
-        Result<IterationStep<List<Node>>> blockResult =
+        Result<IterationStep<List<StatementNode>>> blockResult =
                 BlockParserUtils.parseBlock(
                         stream, statementParser, SymbolType.LBRACE, SymbolType.RBRACE);
 
         if (!blockResult.isCorrect()) {
             return Result.failure(
-                    ((IncorrectResult<IterationStep<List<Node>>>) blockResult).error());
+                    ((IncorrectResult<IterationStep<List<StatementNode>>>) blockResult).error());
         }
 
-        IterationStep<List<Node>> blockStep =
-                ((CorrectResult<IterationStep<List<Node>>>) blockResult).value();
+        IterationStep<List<StatementNode>> blockStep =
+                ((CorrectResult<IterationStep<List<StatementNode>>>) blockResult).value();
         ConditionalBlock block = new ConditionalBlock(ifToken, condition, blockStep.value());
         return parseElse(block, (TokenStream) blockStep.next());
     }

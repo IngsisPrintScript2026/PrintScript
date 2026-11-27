@@ -5,9 +5,9 @@
 package syntactic.parser.root;
 
 import iterator.IterationStep;
-import node.expression.ExpressionNode;
-import node.expression.Identifier.IdentifierNode;
-import node.keyword.AssignNode;
+import node.AssignNode;
+import node.ExpressionNode;
+import node.IdentifierNode;
 import result.CorrectResult;
 import result.IncorrectResult;
 import result.Result;

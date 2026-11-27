@@ -5,14 +5,14 @@
 package syntactic.parser.root;
 
 import java.util.function.Predicate;
-import node.Node;
+import node.StatementNode;
 import result.CorrectResult;
 import result.Result;
 import syntactic.Parser;
 import token.Token;
 import tokenstream.TokenStream;
 
-public interface StatementParser<T extends Node> extends Parser<T> {
+public interface StatementParser<T extends StatementNode> extends Parser<T> {
     boolean canStart(TokenStream stream);
 
     static boolean peekMatches(TokenStream stream, int offset, Predicate<Token> matcher) {

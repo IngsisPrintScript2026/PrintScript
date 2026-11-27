@@ -2,15 +2,11 @@
  * My Project
  */
 
-package node.keyword;
+package node;
 
 import java.util.List;
-import node.Node;
-import node.expression.ExpressionNode;
-import node.expression.Identifier.IdentifierNode;
 import node.expression.literal.DataType;
 import node.keyword.declaration.DeclarationType;
-import node.visitor.NodeVisitor;
 
 public record DeclarationKeywordNode(
         DeclarationType declarationType,
@@ -19,7 +15,7 @@ public record DeclarationKeywordNode(
         DataType declaredType,
         Integer line,
         Integer column)
-        implements Node {
+        implements StatementNode {
 
     public DataType dataType() {
         return declaredType;
@@ -37,10 +33,5 @@ public record DeclarationKeywordNode(
 
     public boolean isMutable() {
         return declarationType.isMutable();
-    }
-
-    @Override
-    public <R, C> R accept(NodeVisitor<R, C> visitor, C context) {
-        return visitor.visit(this, context);
     }
 }

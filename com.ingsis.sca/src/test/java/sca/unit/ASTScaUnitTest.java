@@ -17,14 +17,14 @@ import static sca.fake.ScaNodes.variable;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import node.Node;
+import node.AssignNode;
+import node.BooleanLiteralNode;
+import node.DeclarationKeywordNode;
+import node.IdentifierNode;
+import node.IfKeywordNode;
 import node.ProgramNode;
-import node.expression.Identifier.IdentifierNode;
-import node.expression.literal.BooleanLiteralNode;
-import node.keyword.AssignNode;
-import node.keyword.DeclarationKeywordNode;
-import node.keyword.IfKeywordNode;
-import node.keyword.WhileKeywordNode;
+import node.StatementNode;
+import node.WhileKeywordNode;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import result.CorrectResult;
@@ -43,7 +43,7 @@ class ASTScaUnitTest {
         return ((CorrectResult<List<String>>) result).value();
     }
 
-    private static ProgramNode program(Node... statements) {
+    private static ProgramNode program(StatementNode... statements) {
         return new ProgramNode(List.of(statements), 1, 1);
     }
 
@@ -240,7 +240,7 @@ class ASTScaUnitTest {
         AssignNode assign = new AssignNode(variable("x"), number(1), 1, 1);
 
         // When
-        List<Node> nodes =
+        List<StatementNode> nodes =
                 List.of(let("badName", 1, 1), ifNode, whileNode, assign, call("println"));
         long withViolations =
                 nodes.stream().filter(n -> !violations(sca.analyzeNode(n, null)).isEmpty()).count();

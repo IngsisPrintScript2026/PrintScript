@@ -2,10 +2,10 @@
  * My Project
  */
 
-package node.expression.operator;
+package node;
 
 import java.util.List;
-import node.expression.ExpressionNode;
+import node.expression.operator.OperatorType;
 import position.Position;
 import position.SourceRange;
 

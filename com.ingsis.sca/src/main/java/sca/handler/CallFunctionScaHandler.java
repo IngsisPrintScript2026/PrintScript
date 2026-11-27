@@ -6,10 +6,12 @@ package sca.handler;
 
 import java.util.ArrayList;
 import java.util.List;
-import node.expression.ExpressionNode;
-import node.expression.Identifier.IdentifierNode;
-import node.expression.LiteralNode;
-import node.expression.function.CallFunctionNode;
+import node.CallFunctionNode;
+import node.ExpressionNode;
+import node.IdentifierNode;
+import node.LiteralNode;
+import node.NilExpressionNode;
+import node.OperatorNode;
 import sca.ASTSca;
 import sca.ScaContext;
 import semantic.environment.SemanticEnvironment;
@@ -44,11 +46,21 @@ public class CallFunctionScaHandler implements ScaNodeHandler<CallFunctionNode> 
         List<String> violations = new ArrayList<>();
         for (int i = 0; i < args.size(); i++) {
             ExpressionNode arg = args.get(i);
-            if (!(arg instanceof LiteralNode) && !(arg instanceof IdentifierNode)) {
+            if (!isLiteralOrIdentifier(arg)) {
                 violations.add(formatViolation(functionName, i, arg));
             }
         }
         return violations;
+    }
+
+    private static boolean isLiteralOrIdentifier(ExpressionNode arg) {
+        return switch (arg) {
+            case LiteralNode<?> literal -> true;
+            case IdentifierNode identifier -> true;
+            case OperatorNode operator -> false;
+            case CallFunctionNode call -> false;
+            case NilExpressionNode nil -> false;
+        };
     }
 
     private String formatViolation(String functionName, int index, ExpressionNode arg) {

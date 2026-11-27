@@ -5,8 +5,8 @@
 package semantic.handler;
 
 import java.util.Optional;
+import node.AssignNode;
 import node.expression.literal.DataType;
-import node.keyword.AssignNode;
 import result.CorrectResult;
 import result.Result;
 import semantic.environment.SemanticEnvironment;

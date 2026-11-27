@@ -2,21 +2,18 @@
  * My Project
  */
 
-package node.keyword;
+package node;
 
 import java.util.ArrayList;
 import java.util.List;
-import node.Node;
-import node.expression.ExpressionNode;
-import node.visitor.NodeVisitor;
 
 public record IfKeywordNode(
         ExpressionNode condition,
-        List<Node> thenBody,
-        List<Node> elseBody,
+        List<StatementNode> thenBody,
+        List<StatementNode> elseBody,
         Integer line,
         Integer column)
-        implements Node {
+        implements StatementNode {
 
     public IfKeywordNode {
         thenBody = List.copyOf(thenBody);
@@ -35,10 +32,5 @@ public record IfKeywordNode(
         children.addAll(thenBody);
         children.addAll(elseBody);
         return children;
-    }
-
-    @Override
-    public <R, C> R accept(NodeVisitor<R, C> visitor, C context) {
-        return visitor.visit(this, context);
     }
 }

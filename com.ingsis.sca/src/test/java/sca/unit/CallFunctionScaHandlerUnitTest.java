@@ -13,7 +13,7 @@ import static sca.fake.ScaNodes.text;
 import static sca.fake.ScaNodes.variable;
 
 import java.util.List;
-import node.expression.function.CallFunctionNode;
+import node.CallFunctionNode;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import sca.ASTSca;

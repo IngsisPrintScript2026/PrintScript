@@ -5,11 +5,11 @@
 package syntactic.strategy;
 
 import iterator.IterationStep;
-import node.expression.ExpressionNode;
-import node.expression.Identifier.IdentifierNode;
-import node.expression.nullObject.NilExpressionNode;
+import node.DeclarationKeywordNode;
+import node.ExpressionNode;
+import node.IdentifierNode;
+import node.NilExpressionNode;
 import node.factory.NodeFactory;
-import node.keyword.DeclarationKeywordNode;
 import result.CorrectResult;
 import result.IncorrectResult;
 import result.Result;

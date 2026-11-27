@@ -9,9 +9,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
+import node.ExpressionNode;
+import node.IdentifierNode;
 import node.Node;
-import node.expression.ExpressionNode;
-import node.expression.Identifier.IdentifierNode;
+import node.StatementNode;
 import result.CorrectResult;
 import result.IncorrectResult;
 import result.Result;
@@ -37,26 +38,26 @@ import version.Version;
 public final class ParserFactory {
     private ParserFactory() {}
 
-    public static Parser<Node> createParser(Version version) {
+    public static Parser<StatementNode> createParser(Version version) {
         LanguageFeatures features =
                 LanguageFeatures.forVersion(version != null ? version : Version.V_1_0);
         Parser<IdentifierNode> identifierParser = new IdentifierParser();
         Parser<ExpressionNode> prattParser = getExpressionNodeParser(identifierParser, features);
-        AtomicReference<Parser<Node>> stmtParserRef = new AtomicReference<>();
-        List<StatementParser<? extends Node>> parsers =
+        AtomicReference<Parser<StatementNode>> stmtParserRef = new AtomicReference<>();
+        List<StatementParser<? extends StatementNode>> parsers =
                 buildStatementParsers(features, identifierParser, prattParser, stmtParserRef);
-        Parser<Node> statementParser = buildCompositeParser(parsers, features.version());
+        Parser<StatementNode> statementParser = buildCompositeParser(parsers, features.version());
         stmtParserRef.set(statementParser);
         return statementParser;
     }
 
     // Order matters: the line-expression parser accepts any expression, so it goes last.
-    private static List<StatementParser<? extends Node>> buildStatementParsers(
+    private static List<StatementParser<? extends StatementNode>> buildStatementParsers(
             LanguageFeatures features,
             Parser<IdentifierNode> identifierParser,
             Parser<ExpressionNode> prattParser,
-            AtomicReference<Parser<Node>> stmtParserRef) {
-        List<StatementParser<? extends Node>> parsers = new ArrayList<>();
+            AtomicReference<Parser<StatementNode>> stmtParserRef) {
+        List<StatementParser<? extends StatementNode>> parsers = new ArrayList<>();
         parsers.add(
                 new DeclarationParser(
                         identifierParser,
@@ -70,12 +71,12 @@ public final class ParserFactory {
     }
 
     // Statements that own a block: their body is parsed with the full statement parser.
-    private static List<StatementParser<? extends Node>> blockStatementParsers(
+    private static List<StatementParser<? extends StatementNode>> blockStatementParsers(
             LanguageFeatures features,
             Parser<ExpressionNode> prattParser,
-            AtomicReference<Parser<Node>> stmtParserRef) {
-        Parser<Node> statementParser = stream -> stmtParserRef.get().parse(stream);
-        List<StatementParser<? extends Node>> parsers = new ArrayList<>();
+            AtomicReference<Parser<StatementNode>> stmtParserRef) {
+        Parser<StatementNode> statementParser = stream -> stmtParserRef.get().parse(stream);
+        List<StatementParser<? extends StatementNode>> parsers = new ArrayList<>();
         if (features.supports(Feature.IF_STATEMENT)) {
             parsers.add(new ConditionalParser(prattParser, statementParser));
         }
@@ -87,13 +88,13 @@ public final class ParserFactory {
 
     // Predictive dispatch: the first parser whose lookahead accepts the stream owns the statement,
     // so its specific error is the one reported to the user.
-    private static Parser<Node> buildCompositeParser(
-            List<StatementParser<? extends Node>> parsers, Version version) {
+    private static Parser<StatementNode> buildCompositeParser(
+            List<StatementParser<? extends StatementNode>> parsers, Version version) {
         return stream -> {
             if (stream == null || stream.isEmpty()) {
                 return Result.failure("EOF");
             }
-            for (StatementParser<? extends Node> p : parsers) {
+            for (StatementParser<? extends StatementNode> p : parsers) {
                 if (p.canStart(stream)) {
                     return widen(p.parse(stream));
                 }
