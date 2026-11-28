@@ -7,7 +7,7 @@ package formatter.handler;
 import formatter.ASTFormatter;
 import formatter.FormatContext;
 import java.util.stream.Collectors;
-import node.expression.function.CallFunctionNode;
+import node.CallFunctionNode;
 
 public class CallFunctionNodeFormatHandler implements FormatNodeHandler<CallFunctionNode> {
     @Override

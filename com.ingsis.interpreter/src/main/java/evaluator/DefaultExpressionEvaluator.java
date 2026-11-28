@@ -13,15 +13,15 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-import node.expression.ExpressionNode;
-import node.expression.Identifier.IdentifierNode;
-import node.expression.function.CallFunctionNode;
-import node.expression.literal.BooleanLiteralNode;
+import node.BooleanLiteralNode;
+import node.CallFunctionNode;
+import node.ExpressionNode;
+import node.IdentifierNode;
+import node.NilExpressionNode;
+import node.NumberLiteralNode;
+import node.OperatorNode;
+import node.StringLiteralNode;
 import node.expression.literal.DataType;
-import node.expression.literal.NumberLiteralNode;
-import node.expression.literal.StringLiteralNode;
-import node.expression.nullObject.NilExpressionNode;
-import node.expression.operator.OperatorNode;
 import node.expression.operator.OperatorType;
 import result.CorrectResult;
 import result.IncorrectResult;
@@ -57,7 +57,6 @@ public class DefaultExpressionEvaluator implements ExpressionEvaluator {
             case IdentifierNode id -> evaluateIdentifier(id, env);
             case OperatorNode op -> evaluateOperator(op, env);
             case CallFunctionNode call -> evaluateCallFunction(call, env, targetType);
-            default -> Result.failure("Unsupported expression node: " + expr);
         };
     }
 

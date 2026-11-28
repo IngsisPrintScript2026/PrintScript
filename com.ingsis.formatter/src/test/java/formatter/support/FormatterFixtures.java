@@ -17,8 +17,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import lexer.Lexer;
-import node.Node;
 import node.ProgramNode;
+import node.StatementNode;
 import result.CorrectResult;
 import result.Result;
 import syntactic.Parser;
@@ -47,14 +47,14 @@ public final class FormatterFixtures {
     }
 
     public static ProgramNode parse(String source) {
-        Parser<Node> parser = ParserFactory.createParser(Version.V_1_1);
+        Parser<StatementNode> parser = ParserFactory.createParser(Version.V_1_1);
         TokenStream stream =
                 new LazyTokenStream(
                         new Lexer(new CharStream(new StreamCharReader(new StringReader(source)))));
-        List<Node> statements = new ArrayList<>();
+        List<StatementNode> statements = new ArrayList<>();
         while (!stream.isEmpty()) {
-            IterationStep<Node> step =
-                    ((CorrectResult<IterationStep<Node>>) parser.parse(stream)).value();
+            IterationStep<StatementNode> step =
+                    ((CorrectResult<IterationStep<StatementNode>>) parser.parse(stream)).value();
             statements.add(step.value());
             stream = step.nextStream();
         }

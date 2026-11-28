@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import lexer.Lexer;
+import position.SourceRange;
 import result.CorrectResult;
 import result.Result;
 import token.Token;
@@ -118,18 +119,37 @@ public class TokenStreamSca {
             List<Token> tokens, int startIdx, String name, List<String> violations) {
         int idx = startIdx;
         int argIndex = 0;
-        Token errorToken = null;
+        Argument arg = new Argument();
         while (idx < tokens.size() && tokens.get(idx).type() != TokenType.RPAREN) {
             Token t = tokens.get(idx);
             if (t.type() == TokenType.COMMA) {
-                recordViolationIfAny(name, argIndex++, errorToken, violations);
-                errorToken = null;
-            } else if (isOperatorToken(t) && errorToken == null) {
-                errorToken = t;
+                recordViolationIfAny(name, argIndex++, arg, violations);
+                arg = new Argument();
+            } else {
+                arg.add(t, isOperatorToken(t));
             }
             idx++;
         }
-        recordViolationIfAny(name, argIndex, errorToken, violations);
+        recordViolationIfAny(name, argIndex, arg, violations);
+    }
+
+    /** Tokens de un argumento: dónde empieza, dónde termina y si tiene algún operador. */
+    private static final class Argument {
+        private Token first;
+        private Token last;
+        private boolean hasOperator;
+
+        void add(Token token, boolean isOperator) {
+            if (first == null) {
+                first = token;
+            }
+            last = token;
+            hasOperator |= isOperator;
+        }
+
+        SourceRange range() {
+            return new SourceRange(first.range().start(), last.range().end());
+        }
     }
 
     private boolean isOperatorToken(Token t) {
@@ -141,13 +161,13 @@ public class TokenStreamSca {
     }
 
     private void recordViolationIfAny(
-            String name, int index, Token token, List<String> violations) {
-        if (token != null) {
+            String name, int index, Argument arg, List<String> violations) {
+        if (arg.hasOperator) {
             violations.add(
                     String.format(
                             "Function '%s' argument at index %d must be a literal or variable,"
-                                    + " found expression at line %d, column %d",
-                            name, index, token.line(), token.column()));
+                                    + " found expression %s",
+                            name, index, arg.range()));
         }
     }
 
@@ -158,9 +178,8 @@ public class TokenStreamSca {
         if (!matchesConvention(idToken.value(), format.trim().toLowerCase(Locale.ROOT))) {
             violations.add(
                     String.format(
-                            "Identifier '%s' does not respect %s naming convention at line %d,"
-                                    + " column %d",
-                            idToken.value(), format, idToken.line(), idToken.column()));
+                            "Identifier '%s' does not respect %s naming convention %s",
+                            idToken.value(), format, idToken.range()));
         }
     }
 

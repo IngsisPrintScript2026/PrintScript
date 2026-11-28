@@ -10,24 +10,24 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import node.AssignNode;
+import node.BooleanLiteralNode;
+import node.CallFunctionNode;
+import node.DeclarationKeywordNode;
+import node.ExpressionNode;
+import node.IdentifierNode;
+import node.IfKeywordNode;
+import node.NilExpressionNode;
 import node.Node;
+import node.NumberLiteralNode;
+import node.OperatorNode;
 import node.ProgramNode;
-import node.expression.ExpressionNode;
-import node.expression.Identifier.IdentifierNode;
-import node.expression.LiteralNode;
-import node.expression.function.CallFunctionNode;
-import node.expression.literal.BooleanLiteralNode;
-import node.expression.literal.NumberLiteralNode;
-import node.expression.literal.StringLiteralNode;
-import node.expression.operator.OperatorNode;
-import node.keyword.AssignNode;
-import node.keyword.DeclarationKeywordNode;
-import node.keyword.IfKeywordNode;
-import node.keyword.WhileKeywordNode;
-import node.visitor.NodeVisitor;
+import node.StatementNode;
+import node.StringLiteralNode;
+import node.WhileKeywordNode;
 import result.Result;
 
-public class ASTFormatter implements NodeVisitor<String, FormatContext>, Formatter {
+public class ASTFormatter implements Formatter {
     private final Map<Class<? extends Node>, FormatNodeHandler<?>> handlers;
     private final FormatContext defaultContext;
 
@@ -67,7 +67,7 @@ public class ASTFormatter implements NodeVisitor<String, FormatContext>, Formatt
         if (program == null) {
             return Result.failure("ProgramNode cannot be null");
         }
-        return Result.success(visit(program, context != null ? context : defaultContext));
+        return Result.success(formatStatement(program, context != null ? context : defaultContext));
     }
 
     @Override
@@ -83,7 +83,28 @@ public class ASTFormatter implements NodeVisitor<String, FormatContext>, Formatt
     }
 
     public String formatStatement(Node node, FormatContext context) {
-        return node.accept(this, context);
+        return switch (node) {
+            case ProgramNode program -> runHandler(ProgramNode.class, program, context);
+            case StatementNode statement -> formatStatement(statement, context);
+        };
+    }
+
+    public String formatStatement(StatementNode statement, FormatContext context) {
+        return switch (statement) {
+            case DeclarationKeywordNode decl ->
+                    runHandler(DeclarationKeywordNode.class, decl, context);
+            case AssignNode assign -> runHandler(AssignNode.class, assign, context);
+            case IfKeywordNode ifNode -> runHandler(IfKeywordNode.class, ifNode, context);
+            case WhileKeywordNode whileNode ->
+                    runHandler(WhileKeywordNode.class, whileNode, context);
+            case CallFunctionNode call -> runHandler(CallFunctionNode.class, call, context);
+            case ExpressionNode expr -> context.getIndent() + formatExpression(expr, context) + ";";
+        };
+    }
+
+    private <T extends Node> String runHandler(Class<T> type, T node, FormatContext context) {
+        FormatNodeHandler<?> handler = handlers.get(type);
+        return handler != null ? handler.formatUntyped(node, context, this) : "";
     }
 
     public String formatExpression(ExpressionNode expr) {
@@ -91,16 +112,19 @@ public class ASTFormatter implements NodeVisitor<String, FormatContext>, Formatt
     }
 
     public String formatExpression(ExpressionNode expr, FormatContext context) {
-        if (expr instanceof OperatorNode op) {
-            return formatOperator(op, context);
-        }
-        if (expr instanceof CallFunctionNode call) {
-            return formatCall(call, context);
-        }
-        if (expr instanceof IdentifierNode id) {
-            return id.name();
-        }
-        return formatLiteralOrSymbol(expr);
+        return switch (expr) {
+            case null -> "";
+            case OperatorNode op -> formatOperator(op, context);
+            case CallFunctionNode call -> formatCall(call, context);
+            case IdentifierNode id -> id.name();
+            case StringLiteralNode str -> "\"" + str.rawValue() + "\"";
+            case NumberLiteralNode num ->
+                    num.rawValue() == null
+                            ? "0"
+                            : num.rawValue().stripTrailingZeros().toPlainString();
+            case BooleanLiteralNode bool -> String.valueOf(bool.rawValue());
+            case NilExpressionNode nil -> nil.symbol();
+        };
     }
 
     private String formatOperator(OperatorNode op, FormatContext context) {
@@ -117,71 +141,5 @@ public class ASTFormatter implements NodeVisitor<String, FormatContext>, Formatt
                         .map(arg -> formatExpression(arg, context))
                         .collect(Collectors.joining(delimiter));
         return call.identifierNode().name() + "(" + args + ")";
-    }
-
-    private String formatLiteralOrSymbol(ExpressionNode expr) {
-        if (expr instanceof StringLiteralNode str) {
-            return "\"" + str.rawValue() + "\"";
-        }
-        if (expr instanceof NumberLiteralNode num) {
-            return num.rawValue() == null
-                    ? "0"
-                    : num.rawValue().stripTrailingZeros().toPlainString();
-        }
-        if (expr instanceof BooleanLiteralNode bool) {
-            return String.valueOf(bool.rawValue());
-        }
-        return formatGenericLiteral(expr);
-    }
-
-    private String formatGenericLiteral(ExpressionNode expr) {
-        if (expr instanceof LiteralNode<?> lit) {
-            return lit.symbol();
-        }
-        return expr != null ? expr.symbol() : "";
-    }
-
-    @Override
-    public String visit(DeclarationKeywordNode decl, FormatContext context) {
-        FormatNodeHandler<?> handler = handlers.get(DeclarationKeywordNode.class);
-        return handler != null ? handler.formatUntyped(decl, context, this) : "";
-    }
-
-    @Override
-    public String visit(AssignNode assign, FormatContext context) {
-        FormatNodeHandler<?> handler = handlers.get(AssignNode.class);
-        return handler != null ? handler.formatUntyped(assign, context, this) : "";
-    }
-
-    @Override
-    public String visit(IfKeywordNode ifNode, FormatContext context) {
-        FormatNodeHandler<?> handler = handlers.get(IfKeywordNode.class);
-        return handler != null ? handler.formatUntyped(ifNode, context, this) : "";
-    }
-
-    @Override
-    public String visit(WhileKeywordNode whileNode, FormatContext context) {
-        FormatNodeHandler<?> handler = handlers.get(WhileKeywordNode.class);
-        return handler != null ? handler.formatUntyped(whileNode, context, this) : "";
-    }
-
-    @Override
-    public String visit(CallFunctionNode call, FormatContext context) {
-        FormatNodeHandler<?> handler = handlers.get(CallFunctionNode.class);
-        return handler != null ? handler.formatUntyped(call, context, this) : "";
-    }
-
-    @Override
-    public String visit(ProgramNode program, FormatContext context) {
-        FormatNodeHandler<?> handler = handlers.get(ProgramNode.class);
-        return handler != null ? handler.formatUntyped(program, context, this) : "";
-    }
-
-    @Override
-    public String visitDefault(Node node, FormatContext context) {
-        if (node instanceof ExpressionNode expr) {
-            return context.getIndent() + formatExpression(expr, context) + ";";
-        }
-        return context.getIndent() + node.symbol();
     }
 }

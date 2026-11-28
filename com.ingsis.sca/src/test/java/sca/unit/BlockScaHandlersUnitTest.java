@@ -9,11 +9,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static sca.fake.ScaNodes.let;
 
 import java.util.List;
-import node.Node;
+import node.BooleanLiteralNode;
+import node.IfKeywordNode;
 import node.ProgramNode;
-import node.expression.literal.BooleanLiteralNode;
-import node.keyword.IfKeywordNode;
-import node.keyword.WhileKeywordNode;
+import node.StatementNode;
+import node.WhileKeywordNode;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import sca.ASTSca;
@@ -26,7 +26,8 @@ import semantic.environment.SemanticEnvironment;
 class BlockScaHandlersUnitTest {
     private static final ScaContext SNAKE = new ScaContext("snake case", false, false);
 
-    private static IfKeywordNode ifNode(List<Node> thenBody, List<Node> elseBody) {
+    private static IfKeywordNode ifNode(
+            List<StatementNode> thenBody, List<StatementNode> elseBody) {
         return new IfKeywordNode(new BooleanLiteralNode(true, 1, 4), thenBody, elseBody, 1, 1);
     }
 

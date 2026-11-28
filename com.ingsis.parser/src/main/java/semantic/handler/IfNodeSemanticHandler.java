@@ -4,8 +4,8 @@
 
 package semantic.handler;
 
+import node.IfKeywordNode;
 import node.expression.literal.DataType;
-import node.keyword.IfKeywordNode;
 import result.CorrectResult;
 import result.Result;
 import semantic.environment.SemanticEnvironment;

@@ -20,19 +20,18 @@ import interpreter.fake.StubExpressionEvaluator;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
-import node.Node;
-import node.ProgramNode;
-import node.expression.ExpressionNode;
-import node.expression.Identifier.IdentifierNode;
-import node.expression.function.CallFunctionNode;
-import node.expression.literal.BooleanLiteralNode;
+import node.AssignNode;
+import node.BooleanLiteralNode;
+import node.CallFunctionNode;
+import node.DeclarationKeywordNode;
+import node.ExpressionNode;
+import node.IdentifierNode;
+import node.IfKeywordNode;
+import node.NumberLiteralNode;
+import node.StatementNode;
+import node.StringLiteralNode;
+import node.WhileKeywordNode;
 import node.expression.literal.DataType;
-import node.expression.literal.NumberLiteralNode;
-import node.expression.literal.StringLiteralNode;
-import node.keyword.AssignNode;
-import node.keyword.DeclarationKeywordNode;
-import node.keyword.IfKeywordNode;
-import node.keyword.WhileKeywordNode;
 import node.keyword.declaration.DeclarationType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -59,11 +58,11 @@ class StatementExecutorUnitTest {
     }
 
     private static IfKeywordNode ifNode(
-            ExpressionNode condition, List<Node> thenBody, List<Node> elseBody) {
+            ExpressionNode condition, List<StatementNode> thenBody, List<StatementNode> elseBody) {
         return new IfKeywordNode(condition, thenBody, elseBody, 1, 1);
     }
 
-    private static WhileKeywordNode whileNode(ExpressionNode condition, List<Node> body) {
+    private static WhileKeywordNode whileNode(ExpressionNode condition, List<StatementNode> body) {
         return new WhileKeywordNode(condition, body, 1, 1);
     }
 
@@ -533,14 +532,14 @@ class StatementExecutorUnitTest {
 
     @Test
     @DisplayName(
-            "Given: a program node as statement | When: executing | Then: fails with 'Unsupported"
-                    + " statement node'")
+            "Given: a bare expression as statement | When: executing | Then: fails with"
+                    + " 'Unsupported statement node'")
     void executor_whenStatementIsUnsupported_thenFails() {
         // Given
         DefaultStatementExecutor executor = printing(new SpyOutput());
 
         // When
-        Result<Void> result = executor.execute(new ProgramNode(List.of(), 1, 1), new Environment());
+        Result<Void> result = executor.execute(new IdentifierNode("x", 1, 1), new Environment());
 
         // Then
         assertTrue(errorOf(result).contains("Unsupported statement node"));

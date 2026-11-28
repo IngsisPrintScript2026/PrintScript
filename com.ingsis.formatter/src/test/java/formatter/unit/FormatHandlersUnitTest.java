@@ -17,20 +17,20 @@ import formatter.handler.WhileNodeFormatHandler;
 import formatter.support.FormatContextBuilder;
 import java.math.BigDecimal;
 import java.util.List;
-import node.Node;
+import node.AssignNode;
+import node.BooleanLiteralNode;
+import node.CallFunctionNode;
+import node.DeclarationKeywordNode;
+import node.ExpressionNode;
+import node.IdentifierNode;
+import node.IfKeywordNode;
+import node.NilExpressionNode;
+import node.NumberLiteralNode;
 import node.ProgramNode;
-import node.expression.ExpressionNode;
-import node.expression.Identifier.IdentifierNode;
-import node.expression.function.CallFunctionNode;
-import node.expression.literal.BooleanLiteralNode;
+import node.StatementNode;
+import node.StringLiteralNode;
+import node.WhileKeywordNode;
 import node.expression.literal.DataType;
-import node.expression.literal.NumberLiteralNode;
-import node.expression.literal.StringLiteralNode;
-import node.expression.nullObject.NilExpressionNode;
-import node.keyword.AssignNode;
-import node.keyword.DeclarationKeywordNode;
-import node.keyword.IfKeywordNode;
-import node.keyword.WhileKeywordNode;
 import node.keyword.declaration.DeclarationType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -55,7 +55,8 @@ class FormatHandlersUnitTest {
         return new CallFunctionNode(id("println"), List.of(arg), 1, 1);
     }
 
-    private static IfKeywordNode ifElse(List<Node> thenBody, List<Node> elseBody) {
+    private static IfKeywordNode ifElse(
+            List<StatementNode> thenBody, List<StatementNode> elseBody) {
         return new IfKeywordNode(new BooleanLiteralNode(true, 1, 1), thenBody, elseBody, 1, 1);
     }
 

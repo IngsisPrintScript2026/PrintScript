@@ -18,15 +18,15 @@ import interpreter.fake.SpyOutput;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
-import node.expression.ExpressionNode;
-import node.expression.Identifier.IdentifierNode;
-import node.expression.function.CallFunctionNode;
-import node.expression.literal.BooleanLiteralNode;
+import node.BooleanLiteralNode;
+import node.CallFunctionNode;
+import node.ExpressionNode;
+import node.IdentifierNode;
+import node.NilExpressionNode;
+import node.NumberLiteralNode;
+import node.OperatorNode;
+import node.StringLiteralNode;
 import node.expression.literal.DataType;
-import node.expression.literal.NumberLiteralNode;
-import node.expression.literal.StringLiteralNode;
-import node.expression.nullObject.NilExpressionNode;
-import node.expression.operator.OperatorNode;
 import node.expression.operator.OperatorType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -504,43 +504,5 @@ class ExpressionEvaluatorUnitTest {
 
         // Then
         assertTrue(errorOf(result).contains("Unsupported function call: println"));
-    }
-
-    @Test
-    @DisplayName(
-            "Given: an unknown expression node type | When: evaluating | Then: fails with"
-                    + " 'Unsupported expression node'")
-    void evaluator_whenNodeTypeIsUnknown_thenFails() {
-        // Given
-        DefaultExpressionEvaluator evaluator = new DefaultExpressionEvaluator();
-        ExpressionNode unknown = new UnknownExpressionNode();
-
-        // When
-        Result<Object> result = evaluator.evaluate(unknown, new Environment());
-
-        // Then
-        assertTrue(errorOf(result).contains("Unsupported expression node"));
-    }
-
-    private static final class UnknownExpressionNode implements ExpressionNode {
-        @Override
-        public Integer line() {
-            return 1;
-        }
-
-        @Override
-        public Integer column() {
-            return 1;
-        }
-
-        @Override
-        public String symbol() {
-            return "?";
-        }
-
-        @Override
-        public List<ExpressionNode> children() {
-            return List.of();
-        }
     }
 }

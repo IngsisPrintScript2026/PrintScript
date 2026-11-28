@@ -4,9 +4,9 @@
 
 package semantic.handler;
 
+import node.DeclarationKeywordNode;
+import node.NilExpressionNode;
 import node.expression.literal.DataType;
-import node.expression.nullObject.NilExpressionNode;
-import node.keyword.DeclarationKeywordNode;
 import result.CorrectResult;
 import result.Result;
 import semantic.environment.SemanticEnvironment;

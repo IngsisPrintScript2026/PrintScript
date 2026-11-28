@@ -8,12 +8,12 @@ import environment.Environment;
 import executor.StatementExecutor;
 import java.util.ArrayList;
 import java.util.List;
-import node.Node;
+import node.StatementNode;
 import result.Result;
 
 public final class FakeStatementExecutor implements StatementExecutor {
     private final Result<Void> answer;
-    private final List<Node> executed = new ArrayList<>();
+    private final List<StatementNode> executed = new ArrayList<>();
 
     private FakeStatementExecutor(Result<Void> answer) {
         this.answer = answer;
@@ -28,12 +28,12 @@ public final class FakeStatementExecutor implements StatementExecutor {
     }
 
     @Override
-    public Result<Void> execute(Node statement, Environment env) {
+    public Result<Void> execute(StatementNode statement, Environment env) {
         executed.add(statement);
         return answer;
     }
 
-    public List<Node> executed() {
+    public List<StatementNode> executed() {
         return List.copyOf(executed);
     }
 }

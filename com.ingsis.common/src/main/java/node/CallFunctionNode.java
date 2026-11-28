@@ -2,13 +2,10 @@
  * My Project
  */
 
-package node.expression.function;
+package node;
 
 import java.util.ArrayList;
 import java.util.List;
-import node.expression.ExpressionNode;
-import node.expression.Identifier.IdentifierNode;
-import node.visitor.NodeVisitor;
 
 public record CallFunctionNode(
         IdentifierNode identifierNode,
@@ -32,10 +29,5 @@ public record CallFunctionNode(
     @Override
     public String symbol() {
         return identifierNode.name();
-    }
-
-    @Override
-    public <R, C> R accept(NodeVisitor<R, C> visitor, C context) {
-        return visitor.visit(this, context);
     }
 }

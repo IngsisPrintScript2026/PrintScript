@@ -8,6 +8,7 @@ import java.io.InputStream;
 import pipeline.StatementAction;
 import pipeline.StatementPipeline;
 import progress.ProgressListener;
+import result.CorrectResult;
 import result.IncorrectResult;
 import result.Result;
 import semantic.environment.SemanticEnvironment;
@@ -36,7 +37,7 @@ public class ValidationService {
                                     StatementAction.NONE);
             return switch (res) {
                 case IncorrectResult<SemanticEnvironment>(String err) -> Result.failure(err);
-                default -> Result.success(SUCCESS_MESSAGE);
+                case CorrectResult<SemanticEnvironment> ok -> Result.success(SUCCESS_MESSAGE);
             };
         } catch (RuntimeException e) {
             return Result.failure("Validation error: " + e.getMessage());

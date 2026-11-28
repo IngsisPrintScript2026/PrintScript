@@ -2,11 +2,10 @@
  * My Project
  */
 
-package node.expression.nullObject;
+package node;
 
 import java.util.Collections;
 import java.util.List;
-import node.expression.ExpressionNode;
 
 public record NilExpressionNode() implements ExpressionNode {
 

@@ -7,8 +7,8 @@ package formatter.handler;
 import formatter.ASTFormatter;
 import formatter.FormatContext;
 import java.util.List;
-import node.Node;
-import node.keyword.WhileKeywordNode;
+import node.StatementNode;
+import node.WhileKeywordNode;
 
 public class WhileNodeFormatHandler implements FormatNodeHandler<WhileKeywordNode> {
     @Override
@@ -46,9 +46,12 @@ public class WhileNodeFormatHandler implements FormatNodeHandler<WhileKeywordNod
     }
 
     private void appendBlock(
-            StringBuilder sb, List<Node> body, FormatContext context, ASTFormatter formatter) {
+            StringBuilder sb,
+            List<StatementNode> body,
+            FormatContext context,
+            ASTFormatter formatter) {
         FormatContext innerContext = context.incrementIndent();
-        for (Node stmt : body) {
+        for (StatementNode stmt : body) {
             sb.append(formatter.formatStatement(stmt, innerContext)).append("\n");
         }
         sb.append(context.getIndent()).append("}");

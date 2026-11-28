@@ -4,7 +4,7 @@
 
 package pipeline;
 
-import node.Node;
+import node.StatementNode;
 import result.Result;
 import semantic.environment.SemanticEnvironment;
 
@@ -12,5 +12,5 @@ import semantic.environment.SemanticEnvironment;
 public interface StatementAction {
     StatementAction NONE = (statement, env) -> Result.success(null);
 
-    Result<Void> apply(Node statement, SemanticEnvironment env);
+    Result<Void> apply(StatementNode statement, SemanticEnvironment env);
 }

@@ -23,14 +23,14 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import node.Node;
+import node.CallFunctionNode;
+import node.DeclarationKeywordNode;
+import node.ExpressionNode;
+import node.IdentifierNode;
 import node.ProgramNode;
-import node.expression.ExpressionNode;
-import node.expression.Identifier.IdentifierNode;
-import node.expression.function.CallFunctionNode;
+import node.StatementNode;
+import node.StringLiteralNode;
 import node.expression.literal.DataType;
-import node.expression.literal.StringLiteralNode;
-import node.keyword.DeclarationKeywordNode;
 import node.keyword.declaration.DeclarationType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -54,7 +54,7 @@ class DefaultInterpreterUnitTest {
         return println(new StringLiteralNode(text, 1, 1));
     }
 
-    private static ProgramNode program(Node... statements) {
+    private static ProgramNode program(StatementNode... statements) {
         return new ProgramNode(List.of(statements), 1, 1);
     }
 
@@ -78,8 +78,8 @@ class DefaultInterpreterUnitTest {
     void interpreter_whenInterpretingProgram_thenExecutesEveryStatementInOrder() {
         // Given
         FakeStatementExecutor executor = FakeStatementExecutor.succeeding();
-        Node first = println("a");
-        Node second = println("b");
+        StatementNode first = println("a");
+        StatementNode second = println("b");
 
         // When
         Result<Void> result =

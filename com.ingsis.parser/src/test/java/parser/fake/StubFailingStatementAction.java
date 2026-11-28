@@ -4,7 +4,7 @@
 
 package parser.fake;
 
-import node.Node;
+import node.StatementNode;
 import pipeline.StatementAction;
 import result.Result;
 import semantic.environment.SemanticEnvironment;
@@ -17,7 +17,7 @@ public final class StubFailingStatementAction implements StatementAction {
     }
 
     @Override
-    public Result<Void> apply(Node statement, SemanticEnvironment env) {
+    public Result<Void> apply(StatementNode statement, SemanticEnvironment env) {
         return Result.failure(message);
     }
 }

@@ -5,7 +5,7 @@
 package syntactic.parser.literal;
 
 import iterator.IterationStep;
-import node.expression.literal.StringLiteralNode;
+import node.StringLiteralNode;
 import result.CorrectResult;
 import result.Result;
 import syntactic.Parser;

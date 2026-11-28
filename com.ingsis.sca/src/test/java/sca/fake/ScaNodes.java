@@ -6,15 +6,15 @@ package sca.fake;
 
 import java.math.BigDecimal;
 import java.util.List;
-import node.expression.ExpressionNode;
-import node.expression.Identifier.IdentifierNode;
-import node.expression.function.CallFunctionNode;
+import node.CallFunctionNode;
+import node.DeclarationKeywordNode;
+import node.ExpressionNode;
+import node.IdentifierNode;
+import node.NumberLiteralNode;
+import node.OperatorNode;
+import node.StringLiteralNode;
 import node.expression.literal.DataType;
-import node.expression.literal.NumberLiteralNode;
-import node.expression.literal.StringLiteralNode;
-import node.expression.operator.OperatorNode;
 import node.expression.operator.OperatorType;
-import node.keyword.DeclarationKeywordNode;
 import node.keyword.declaration.DeclarationType;
 
 public final class ScaNodes {
@@ -39,8 +39,14 @@ public final class ScaNodes {
         return new CallFunctionNode(new IdentifierNode(function, 1, 1), List.of(args), 1, 1);
     }
 
+    /** {@code 1 + 2} con el '+' en (line, column): ocupa de column - 2 a column + 2. */
     public static OperatorNode sumAt(int line, int column) {
-        return new OperatorNode(OperatorType.PLUS, number(1), number(2), line, column);
+        return new OperatorNode(
+                OperatorType.PLUS,
+                new NumberLiteralNode(BigDecimal.valueOf(1), line, column - 2),
+                new NumberLiteralNode(BigDecimal.valueOf(2), line, column + 2),
+                line,
+                column);
     }
 
     public static NumberLiteralNode number(int value) {

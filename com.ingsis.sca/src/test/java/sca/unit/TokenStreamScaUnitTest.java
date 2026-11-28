@@ -28,7 +28,8 @@ class TokenStreamScaUnitTest {
     private static final ScaContext READ_INPUT_RULE = new ScaContext(null, false, true);
 
     private static Token tok(TokenType type, String value, int column) {
-        return new Token(type, value, new Position(1, column));
+        return new Token(
+                type, value, new Position(1, column), new Position(1, column + value.length() - 1));
     }
 
     private static List<Token> declaration(TokenType keyword, String name) {
@@ -150,8 +151,8 @@ class TokenStreamScaUnitTest {
 
     @Test
     @DisplayName(
-            "Given: println rule enabled | When: println(1 + 2) | Then: reports the operator"
-                    + " position and argument index 0")
+            "Given: println rule enabled | When: println(1 + 2) | Then: reports the range of the"
+                    + " whole expression and argument index 0")
     void tokenSca_whenPrintlnHasExpressionAndRuleOn_thenReportsViolation() {
         // Given
         List<Token> tokens = printlnOfSum();
@@ -163,7 +164,9 @@ class TokenStreamScaUnitTest {
         assertEquals(1, violations.size());
         assertTrue(violations.get(0).contains("'println'"));
         assertTrue(violations.get(0).contains("index 0"));
-        assertTrue(violations.get(0).contains("line 1, column 11"));
+        assertTrue(
+                violations.get(0).contains("from line 1, column 9 to line 1, column 13"),
+                violations.get(0));
     }
 
     @Test
@@ -274,7 +277,9 @@ class TokenStreamScaUnitTest {
         // Then
         assertEquals(1, violations.size());
         assertTrue(violations.get(0).contains("'readInput'"));
-        assertTrue(violations.get(0).contains("column 15"));
+        assertTrue(
+                violations.get(0).contains("from line 1, column 11 to line 1, column 19"),
+                violations.get(0));
     }
 
     @Test

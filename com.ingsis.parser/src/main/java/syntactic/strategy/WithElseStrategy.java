@@ -6,9 +6,9 @@ package syntactic.strategy;
 
 import iterator.IterationStep;
 import java.util.List;
-import node.Node;
+import node.IfKeywordNode;
+import node.StatementNode;
 import node.factory.NodeFactory;
-import node.keyword.IfKeywordNode;
 import result.CorrectResult;
 import result.IncorrectResult;
 import result.Result;
@@ -28,7 +28,7 @@ public class WithElseStrategy implements ConditionalElseStrategy {
 
     @Override
     public Result<IterationStep<IfKeywordNode>> parseElse(
-            ConditionalBlock block, TokenStream stream, Parser<Node> statementParser) {
+            ConditionalBlock block, TokenStream stream, Parser<StatementNode> statementParser) {
         Result<IterationStep<Token>> elseResult = stream.consume(TokenType.ELSE);
         if (!elseResult.isCorrect()) {
             return Result.failure(((IncorrectResult<IterationStep<Token>>) elseResult).error());
@@ -39,16 +39,19 @@ public class WithElseStrategy implements ConditionalElseStrategy {
     }
 
     private Result<IterationStep<IfKeywordNode>> parseElseBody(
-            ConditionalBlock block, TokenStream postElseStream, Parser<Node> statementParser) {
-        Result<IterationStep<List<Node>>> elseBlockResult =
+            ConditionalBlock block,
+            TokenStream postElseStream,
+            Parser<StatementNode> statementParser) {
+        Result<IterationStep<List<StatementNode>>> elseBlockResult =
                 BlockParserUtils.parseBlock(
                         postElseStream, statementParser, SymbolType.LBRACE, SymbolType.RBRACE);
         if (!elseBlockResult.isCorrect()) {
             return Result.failure(
-                    ((IncorrectResult<IterationStep<List<Node>>>) elseBlockResult).error());
+                    ((IncorrectResult<IterationStep<List<StatementNode>>>) elseBlockResult)
+                            .error());
         }
-        IterationStep<List<Node>> elseBlockStep =
-                ((CorrectResult<IterationStep<List<Node>>>) elseBlockResult).value();
+        IterationStep<List<StatementNode>> elseBlockStep =
+                ((CorrectResult<IterationStep<List<StatementNode>>>) elseBlockResult).value();
         IfKeywordNode ifNode =
                 NodeFactory.createIf(
                         block.condition(),

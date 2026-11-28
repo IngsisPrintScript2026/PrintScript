@@ -11,13 +11,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import iterator.IterationStep;
 import java.util.List;
-import node.Node;
-import node.expression.ExpressionNode;
-import node.expression.Identifier.IdentifierNode;
-import node.expression.literal.BooleanLiteralNode;
+import node.BooleanLiteralNode;
+import node.DeclarationKeywordNode;
+import node.ExpressionNode;
+import node.IdentifierNode;
+import node.StatementNode;
+import node.StringLiteralNode;
 import node.expression.literal.DataType;
-import node.expression.literal.StringLiteralNode;
-import node.keyword.DeclarationKeywordNode;
 import node.keyword.declaration.DeclarationInfo;
 import node.keyword.declaration.DeclarationType;
 import org.junit.jupiter.api.DisplayName;
@@ -192,7 +192,7 @@ class LiteralAndSymbolParsersUnitTest {
     void argumentsAndBlockParserUtils_whenParsingStreams_thenExtractsElementsCorrectly() {
         // Given: parsers and tokens for empty and multi argument lists
         Parser<StringLiteralNode> strParser = new StringLiteralParser();
-        Parser<Node> stmtParser = ParserFactory.createParser(Version.V_1_0);
+        Parser<StatementNode> stmtParser = ParserFactory.createParser(Version.V_1_0);
 
         List<Token> emptyArgs =
                 List.of(
@@ -255,7 +255,7 @@ class LiteralAndSymbolParsersUnitTest {
                         new Token(TokenType.RBRACE, "}", pos, pos));
 
         // When: parsing code block
-        Result<IterationStep<List<Node>>> blockRes =
+        Result<IterationStep<List<StatementNode>>> blockRes =
                 BlockParserUtils.parseBlock(
                         new TokenStreamAdapter(blockTokens, 0),
                         stmtParser,
@@ -265,6 +265,10 @@ class LiteralAndSymbolParsersUnitTest {
         // Then: block yields 1 statement node
         assertTrue(blockRes.isCorrect());
         assertEquals(
-                1, ((CorrectResult<IterationStep<List<Node>>>) blockRes).value().value().size());
+                1,
+                ((CorrectResult<IterationStep<List<StatementNode>>>) blockRes)
+                        .value()
+                        .value()
+                        .size());
     }
 }

@@ -10,11 +10,12 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import iterator.IterationStep;
+import node.BooleanLiteralNode;
+import node.DeclarationKeywordNode;
+import node.IfKeywordNode;
 import node.Node;
-import node.expression.literal.BooleanLiteralNode;
+import node.StatementNode;
 import node.expression.literal.DataType;
-import node.keyword.DeclarationKeywordNode;
-import node.keyword.IfKeywordNode;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import parser.support.Sources;
@@ -41,10 +42,10 @@ class PrintScript11RulesIntegrationTest {
     }
 
     private static Node firstStatement(String source) {
-        Result<IterationStep<Node>> parsed =
+        Result<IterationStep<StatementNode>> parsed =
                 ParserFactory.createParser(Version.V_1_1).parse(Sources.tokens(source));
         assertTrue(parsed.isCorrect());
-        return ((CorrectResult<IterationStep<Node>>) parsed).value().value();
+        return ((CorrectResult<IterationStep<StatementNode>>) parsed).value().value();
     }
 
     @Test

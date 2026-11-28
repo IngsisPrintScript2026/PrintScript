@@ -80,7 +80,9 @@ class LexerTokenRangeIntegrationTest {
 
         // Then
         assertEquals(
-                "Lexical error: unrecognized character '@' at line 1, column 19", lexed.failure());
+                "Lexical error: unrecognized character '@' from line 1, column 19 to line 1, column"
+                        + " 19",
+                lexed.failure());
     }
 
     @Test
@@ -112,6 +114,21 @@ class LexerTokenRangeIntegrationTest {
         // Then
         assertTrue(failure.contains("'#'"));
         assertTrue(failure.contains("line 2, column 3"));
+    }
+
+    @Test
+    @DisplayName(
+            "Given: an unterminated string | When: lexing | Then: the error goes from the opening"
+                    + " quote to the last character read")
+    void lexer_whenStringIsUnterminated_thenErrorSpansTheUnreadText() {
+        // Given
+        String source = "println(\"abc";
+
+        // When
+        String failure = lex(source).failure();
+
+        // Then
+        assertTrue(failure.contains("from line 1, column 9 to line 1, column 12"), failure);
     }
 
     @Test

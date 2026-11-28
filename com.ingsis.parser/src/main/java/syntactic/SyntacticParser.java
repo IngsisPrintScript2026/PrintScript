@@ -7,8 +7,8 @@ package syntactic;
 import iterator.IterationStep;
 import java.util.ArrayList;
 import java.util.List;
-import node.Node;
 import node.ProgramNode;
+import node.StatementNode;
 import result.CorrectResult;
 import result.IncorrectResult;
 import result.Result;
@@ -17,17 +17,17 @@ import tokenstream.TokenStream;
 import version.Version;
 
 public final class SyntacticParser implements Parser<ProgramNode> {
-    private final Parser<Node> chainParser;
+    private final Parser<StatementNode> chainParser;
 
     public SyntacticParser(Version version) {
         this.chainParser = ParserFactory.createParser(version);
     }
 
-    public SyntacticParser(Parser<Node> chainParser) {
+    public SyntacticParser(Parser<StatementNode> chainParser) {
         this.chainParser = chainParser;
     }
 
-    public Result<IterationStep<Node>> parseStatement(TokenStream stream) {
+    public Result<IterationStep<StatementNode>> parseStatement(TokenStream stream) {
         if (stream == null || stream.isEmpty()) {
             return Result.failure("EOF");
         }
@@ -35,16 +35,17 @@ public final class SyntacticParser implements Parser<ProgramNode> {
     }
 
     public Result<ProgramNode> parseProgram(TokenStream stream) {
-        List<Node> statements = new ArrayList<>();
+        List<StatementNode> statements = new ArrayList<>();
         TokenStream currentStream = stream;
 
         while (!currentStream.isEmpty()) {
             switch (parseStatement(currentStream)) {
-                case CorrectResult<IterationStep<Node>>(IterationStep<Node> step) -> {
+                case CorrectResult<IterationStep<StatementNode>>(
+                        IterationStep<StatementNode> step) -> {
                     statements.add(step.value());
                     currentStream = (TokenStream) step.next();
                 }
-                case IncorrectResult<IterationStep<Node>>(String err) -> {
+                case IncorrectResult<IterationStep<StatementNode>>(String err) -> {
                     return Result.failure(err);
                 }
             }

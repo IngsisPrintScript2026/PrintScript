@@ -11,8 +11,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static parser.support.Sources.token;
 
 import java.util.List;
-import node.Node;
-import node.expression.function.CallFunctionNode;
+import node.CallFunctionNode;
+import node.StatementNode;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import parser.fake.FakeCallPerTokensParser;
@@ -57,7 +57,7 @@ class StatementPipelineUnitTest {
         return ((IncorrectResult<SemanticEnvironment>) result).error();
     }
 
-    private static String nameOf(Node statement) {
+    private static String nameOf(StatementNode statement) {
         return ((CallFunctionNode) statement).identifierNode().name();
     }
 

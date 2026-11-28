@@ -13,7 +13,7 @@ import static sca.fake.ScaNodes.text;
 import static sca.fake.ScaNodes.variable;
 
 import java.util.List;
-import node.expression.function.CallFunctionNode;
+import node.CallFunctionNode;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import sca.ASTSca;
@@ -32,8 +32,8 @@ class CallFunctionScaHandlerUnitTest {
 
     @Test
     @DisplayName(
-            "Given: println rule enabled | When: println receives 1 + 2 at line 4, column 9 |"
-                    + " Then: reports the function, the index and the position")
+            "Given: println rule enabled | When: println receives 1 + 2 with the '+' at line 4,"
+                    + " column 9 | Then: reports the function, the index and the expression range")
     void callHandler_whenPrintlnHasExpressionAndRuleOn_thenReportsViolation() {
         // Given
         CallFunctionNode println = call("println", sumAt(4, 9));
@@ -46,7 +46,7 @@ class CallFunctionScaHandlerUnitTest {
         String violation = violations.get(0);
         assertTrue(violation.contains("'println'"));
         assertTrue(violation.contains("index 0"));
-        assertTrue(violation.contains("line 4, column 9"));
+        assertTrue(violation.contains("from line 4, column 7 to line 4, column 11"), violation);
     }
 
     @Test
@@ -154,7 +154,9 @@ class CallFunctionScaHandlerUnitTest {
         // Then
         assertEquals(1, violations.size());
         assertTrue(violations.get(0).contains("'readInput'"));
-        assertTrue(violations.get(0).contains("line 2, column 20"));
+        assertTrue(
+                violations.get(0).contains("from line 2, column 18 to line 2, column 22"),
+                violations.get(0));
     }
 
     @Test

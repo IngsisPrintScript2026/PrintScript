@@ -11,8 +11,8 @@ import executor.StatementExecutor;
 import iterator.IterationStep;
 import java.util.Locale;
 import java.util.function.Consumer;
-import node.Node;
 import node.ProgramNode;
+import node.StatementNode;
 import position.Position;
 import position.SourceRange;
 import result.CorrectResult;
@@ -24,12 +24,12 @@ import token.Token;
 import tokenstream.TokenStream;
 
 public class DefaultInterpreter implements Interpreter {
-    private final syntactic.Parser<Node> statementParser;
+    private final syntactic.Parser<StatementNode> statementParser;
     private final SemanticChecker semanticChecker;
     private final StatementExecutor statementExecutor;
 
     public DefaultInterpreter(
-            syntactic.Parser<Node> statementParser,
+            syntactic.Parser<StatementNode> statementParser,
             SemanticChecker semanticChecker,
             StatementExecutor statementExecutor) {
         this.statementParser = statementParser;
@@ -38,7 +38,7 @@ public class DefaultInterpreter implements Interpreter {
     }
 
     public DefaultInterpreter(
-            syntactic.Parser<Node> statementParser,
+            syntactic.Parser<StatementNode> statementParser,
             SemanticChecker semanticChecker,
             Consumer<String> outputEmitter,
             builtin.FunctionRegistry functionRegistry) {
@@ -107,11 +107,10 @@ public class DefaultInterpreter implements Interpreter {
         TokenStream current = source[0];
         source[0] = null;
         while (!current.isEmpty()) {
-            Result<IterationStep<Node>> parsed = statementParser.parse(current);
-            if (!parsed.isCorrect()) {
+            Result<IterationStep<StatementNode>> parsed = statementParser.parse(current);
+            if (!(parsed instanceof CorrectResult<IterationStep<StatementNode>>(var step))) {
                 return handleParseError(parsed, current, env);
             }
-            IterationStep<Node> step = ((CorrectResult<IterationStep<Node>>) parsed).value();
             TokenStream next = (TokenStream) step.next();
             Result<SemanticEnvironment> res =
                     process(step.value(), env, runtimeEnv, statementRange(current, next));
@@ -125,10 +124,10 @@ public class DefaultInterpreter implements Interpreter {
     }
 
     private Result<SemanticEnvironment> handleParseError(
-            Result<IterationStep<Node>> parseResult,
+            Result<IterationStep<StatementNode>> parseResult,
             TokenStream statementStart,
             SemanticEnvironment currentSemEnv) {
-        String err = ((IncorrectResult<IterationStep<Node>>) parseResult).error();
+        String err = ((IncorrectResult<IterationStep<StatementNode>>) parseResult).error();
         if (err.toUpperCase(Locale.ROOT).startsWith("EOF")) {
             return Result.success(currentSemEnv);
         }
@@ -146,7 +145,10 @@ public class DefaultInterpreter implements Interpreter {
     }
 
     private Result<SemanticEnvironment> process(
-            Node statement, SemanticEnvironment semEnv, Environment runtimeEnv, SourceRange range) {
+            StatementNode statement,
+            SemanticEnvironment semEnv,
+            Environment runtimeEnv,
+            SourceRange range) {
         SemanticEnvironment nextEnv = semEnv;
         if (semanticChecker != null) {
             Result<SemanticEnvironment> semResult = semanticChecker.checkNode(statement, semEnv);
@@ -191,7 +193,7 @@ public class DefaultInterpreter implements Interpreter {
 
     @Override
     public Result<Void> interpret(ProgramNode program, Environment globalEnv) {
-        for (Node statement : program.statements()) {
+        for (StatementNode statement : program.statements()) {
             Result<Void> execRes = statementExecutor.execute(statement, globalEnv);
             if (!execRes.isCorrect()) {
                 String err = ((IncorrectResult<Void>) execRes).error();

@@ -9,6 +9,7 @@ import iterator.SafeIterator;
 import java.util.List;
 import metaChar.MetaCharStringBuilder;
 import metaChar.MetaCharacter;
+import position.SourceRange;
 import result.CorrectResult;
 import result.IncorrectResult;
 import result.Result;
@@ -109,10 +110,11 @@ public class Lexer implements SafeIterator<Token> {
 
     private Result<IterationStep<Token>> lexicalError(List<MetaCharacter> unrecognized) {
         MetaCharacter first = unrecognized.get(0);
+        MetaCharacter last = unrecognized.get(unrecognized.size() - 1);
         return Result.failure(
                 "Lexical error: unrecognized character '"
                         + first.character()
-                        + "' at "
-                        + first.position().describe());
+                        + "' "
+                        + new SourceRange(first.position(), last.position()));
     }
 }

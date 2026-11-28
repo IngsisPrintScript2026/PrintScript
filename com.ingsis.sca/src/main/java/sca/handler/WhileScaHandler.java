@@ -6,8 +6,8 @@ package sca.handler;
 
 import java.util.ArrayList;
 import java.util.List;
-import node.Node;
-import node.keyword.WhileKeywordNode;
+import node.StatementNode;
+import node.WhileKeywordNode;
 import sca.ASTSca;
 import sca.ScaContext;
 import semantic.environment.SemanticEnvironment;
@@ -22,7 +22,7 @@ public class WhileScaHandler implements ScaNodeHandler<WhileKeywordNode> {
     public List<String> check(
             WhileKeywordNode whileNode, SemanticEnvironment env, ScaContext context, ASTSca sca) {
         List<String> violations = new ArrayList<>();
-        for (Node stmt : whileNode.body()) {
+        for (StatementNode stmt : whileNode.body()) {
             violations.addAll(sca.analyzeStatement(stmt, env, context));
         }
         return violations;

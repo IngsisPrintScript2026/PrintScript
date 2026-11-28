@@ -6,7 +6,7 @@ package syntactic.parser.literal;
 
 import iterator.IterationStep;
 import java.util.Set;
-import node.expression.Identifier.IdentifierNode;
+import node.IdentifierNode;
 import node.factory.NodeFactory;
 import result.CorrectResult;
 import result.Result;

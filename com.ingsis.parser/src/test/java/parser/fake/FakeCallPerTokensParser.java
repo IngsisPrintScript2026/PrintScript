@@ -6,9 +6,9 @@ package parser.fake;
 
 import iterator.IterationStep;
 import java.util.List;
-import node.Node;
-import node.expression.Identifier.IdentifierNode;
-import node.expression.function.CallFunctionNode;
+import node.CallFunctionNode;
+import node.IdentifierNode;
+import node.StatementNode;
 import result.CorrectResult;
 import result.IncorrectResult;
 import result.Result;
@@ -16,7 +16,7 @@ import syntactic.Parser;
 import token.Token;
 import tokenstream.TokenStream;
 
-public final class FakeCallPerTokensParser implements Parser<Node> {
+public final class FakeCallPerTokensParser implements Parser<StatementNode> {
     private final int tokensPerStatement;
 
     public FakeCallPerTokensParser(int tokensPerStatement) {
@@ -24,7 +24,7 @@ public final class FakeCallPerTokensParser implements Parser<Node> {
     }
 
     @Override
-    public Result<IterationStep<Node>> parse(TokenStream stream) {
+    public Result<IterationStep<StatementNode>> parse(TokenStream stream) {
         if (!(stream.peek(0) instanceof CorrectResult<Token>(Token first))) {
             return Result.failure("EOF");
         }

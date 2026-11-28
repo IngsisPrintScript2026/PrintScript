@@ -4,7 +4,7 @@
 
 package parser.fake;
 
-import node.expression.function.CallFunctionNode;
+import node.CallFunctionNode;
 import result.Result;
 import semantic.environment.SemanticEnvironment;
 import semantic.handler.SemanticNodeHandler;

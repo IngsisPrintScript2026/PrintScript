@@ -9,10 +9,10 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import node.expression.function.CallFunctionNode;
+import node.AssignNode;
+import node.CallFunctionNode;
+import node.DeclarationKeywordNode;
 import node.expression.literal.DataType;
-import node.keyword.AssignNode;
-import node.keyword.DeclarationKeywordNode;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import parser.fake.SpyStatementAction;

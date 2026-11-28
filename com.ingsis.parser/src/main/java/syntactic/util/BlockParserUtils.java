@@ -7,7 +7,7 @@ package syntactic.util;
 import iterator.IterationStep;
 import java.util.ArrayList;
 import java.util.List;
-import node.Node;
+import node.StatementNode;
 import result.CorrectResult;
 import result.IncorrectResult;
 import result.Result;
@@ -19,9 +19,9 @@ import tokenstream.TokenStream;
 public final class BlockParserUtils {
     private BlockParserUtils() {}
 
-    public static Result<IterationStep<List<Node>>> parseBlock(
+    public static Result<IterationStep<List<StatementNode>>> parseBlock(
             TokenStream stream,
-            Parser<Node> statementParser,
+            Parser<StatementNode> statementParser,
             SymbolType openBrace,
             SymbolType closeBrace) {
         Result<TokenStream> openRes = consumeSymbol(stream, openBrace);
@@ -35,19 +35,24 @@ public final class BlockParserUtils {
                 new ArrayList<>());
     }
 
-    private static Result<IterationStep<List<Node>>> parseBlockStatements(
-            TokenStream stream, Parser<Node> parser, SymbolType closeBrace, List<Node> statements) {
+    private static Result<IterationStep<List<StatementNode>>> parseBlockStatements(
+            TokenStream stream,
+            Parser<StatementNode> parser,
+            SymbolType closeBrace,
+            List<StatementNode> statements) {
         if (isNextSymbol(stream, closeBrace)) {
             return finishBlock(stream, closeBrace, statements);
         }
         if (stream.isEmpty()) {
             return Result.failure("Expected '" + closeBrace.symbol() + "' at end of block");
         }
-        Result<IterationStep<Node>> stmtRes = parser.parse(stream);
+        Result<IterationStep<StatementNode>> stmtRes = parser.parse(stream);
         if (!stmtRes.isCorrect()) {
-            return Result.failure(((IncorrectResult<IterationStep<Node>>) stmtRes).error());
+            return Result.failure(
+                    ((IncorrectResult<IterationStep<StatementNode>>) stmtRes).error());
         }
-        IterationStep<Node> step = ((CorrectResult<IterationStep<Node>>) stmtRes).value();
+        IterationStep<StatementNode> step =
+                ((CorrectResult<IterationStep<StatementNode>>) stmtRes).value();
         statements.add(step.value());
         return parseBlockStatements((TokenStream) step.next(), parser, closeBrace, statements);
     }
@@ -66,8 +71,8 @@ public final class BlockParserUtils {
                 && SymbolType.isSymbol(((CorrectResult<Token>) peek).value(), symbol);
     }
 
-    private static Result<IterationStep<List<Node>>> finishBlock(
-            TokenStream stream, SymbolType closeBrace, List<Node> statements) {
+    private static Result<IterationStep<List<StatementNode>>> finishBlock(
+            TokenStream stream, SymbolType closeBrace, List<StatementNode> statements) {
         Result<TokenStream> closeRes = consumeSymbol(stream, closeBrace);
         if (!closeRes.isCorrect())
             return Result.failure(((IncorrectResult<TokenStream>) closeRes).error());

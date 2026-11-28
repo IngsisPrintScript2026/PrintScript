@@ -13,7 +13,7 @@ import static sca.fake.ScaNodes.sumAt;
 import static sca.fake.ScaNodes.text;
 
 import java.util.List;
-import node.keyword.DeclarationKeywordNode;
+import node.DeclarationKeywordNode;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import sca.ASTSca;

@@ -7,8 +7,8 @@ package sca.handler;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import node.expression.Identifier.IdentifierNode;
-import node.keyword.DeclarationKeywordNode;
+import node.DeclarationKeywordNode;
+import node.IdentifierNode;
 import sca.ASTSca;
 import sca.ScaContext;
 import semantic.environment.SemanticEnvironment;
@@ -38,9 +38,8 @@ public class DeclarationScaHandler implements ScaNodeHandler<DeclarationKeywordN
         if (!matchesConvention(idNode.name(), format.trim().toLowerCase(Locale.ROOT))) {
             violations.add(
                     String.format(
-                            "Identifier '%s' does not respect %s naming convention at line %d,"
-                                    + " column %d",
-                            idNode.name(), format, idNode.line(), idNode.column()));
+                            "Identifier '%s' does not respect %s naming convention %s",
+                            idNode.name(), format, idNode.range()));
         }
     }
 

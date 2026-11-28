@@ -5,7 +5,7 @@
 package sca.handler;
 
 import java.util.List;
-import node.keyword.AssignNode;
+import node.AssignNode;
 import sca.ASTSca;
 import sca.ScaContext;
 import semantic.environment.SemanticEnvironment;
